@@ -13,8 +13,10 @@ from tinydb import TinyDB, Query
 
 import typer
 
-from Show import Show
+from MOV import search_123mov
+from Show import Show, Source
 from XiaoBao import search_xiao_bao
+from YingHua import search_yinghua
 
 app = typer.Typer()
 
@@ -55,6 +57,10 @@ def check_season_index(show_title: str) -> int:
             return 8
         elif '第九季' in show_title:
             return 9
+    elif 'Season' in show_title:
+        return int(show_title.lower().split('season')[-1])
+    elif 'part' in show_title:
+        return 1
     elif typer.prompt('这个节目是否续季？（not S1)', default='').capitalize() == 'Y':
         return typer.prompt(text='这个节目是第几季？', type=int)
     else:
@@ -80,11 +86,13 @@ def search_media(query: str):
     #     result_index += 1
 
     query_results = []
-    query_results += search_xiao_bao(query)
+    # query_results += search_xiao_bao(query)
+    # query_results += search_123mov(query)
+    query_results += search_yinghua(query)
     for result_index, result in enumerate(query_results):
         print(result_index, result.title, result.note)
 
-    chosen_show: Show = query_results[int(input("请选择你下载的节目："))]
+    chosen_show: Show = query_results[typer.prompt(text='请选择你下载的节目', type=int)]
 
     # chosen_show = \
     #     query_results[int(input("请选择你下载的节目：")) - 1].find('a', attrs={'class': 'myui-vodlist__thumb'})[
@@ -124,11 +132,12 @@ def search_media(query: str):
     episode_index: int = 0
     specials_index: int = 0
     for episode in show_details['episodes']:
+        print(episode)
         episode_name = episode["title"]
         if download_all or typer.prompt(text=f'Would you like to download this {episode_name}? (Y/n)',
                                         type=str, default='n').capitalize() == 'Y':
             not_specials = re.match(
-                r"^[0-9]{8}$|^[0-9]{8}[（(]*第[0-9]+期[(（上中下)）]*[)）]?$|^[0-9]{1,2}$|^第[0-9]+期[上中下]*$",
+                r"^[0-9]{8}$|^[0-9]{8}[（(]*第[0-9]+[期集][(（上中下)）]*[)）]?$|^[0-9]{1,2}$|^第[0-9]+[期集][上中下]*$",
                 episode_name)
             if not_specials:
                 season_dir = show_dir + "/Season " + str(season_index).zfill(2)
@@ -142,12 +151,13 @@ def search_media(query: str):
 
             if not os.path.isdir(season_dir):
                 os.mkdir(season_dir)
-            download_episode(show_prefix, season_index if not_specials else 0, season_dir, episode_index, episode)
+            download_episode(show_prefix, season_index if not_specials else 0, season_dir, episode_index, episode,
+                             chosen_show.source)
 
     print(show_title, " 下载完成")
 
 
-def download_episode(show_prefix: str, season_index: int, season_dir: str, episode_index: int, episode):
+def download_episode(show_prefix: str, season_index: int, season_dir: str, episode_index: int, episode, source: Source):
     """
         Downloads episode
         :param season_index:
@@ -163,13 +173,14 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         :return: void
         :rtype:
         """
+
     episode_name = episode["title"]
     # try:
     #     int(episode_name)
     # except ValueError:
     #     print("Episode should be Specials")
 
-    episode_url = episode.a['href']
+    episode_url = episode['href']
     episode_filename: str | Any = f"{show_prefix} - S{str(season_index).zfill(2)}E{str(episode_index).zfill(2)} - {episode_name}"
     print(f"Downloading to file {episode_filename}")
 
@@ -179,18 +190,29 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         return
 
     # print(episode_name, episode_url)
-    episode_details_page: bytes = requests.get(url='https://xiaoheimi.net' + episode_url,
-                                               headers={'User-Agent': 'Mozilla/5.0'}).content
-    episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-    episode_script: str = str(episode_soup.find('div', attrs={"class": "myui-player__box"}).find('script'))
-    episode_m3u8 = re.findall(r"https:\\\/\\\/m3u.haiwaikan.com\\\/xm3u8\\\/[\w\d]+.m3u8", episode_script)[
-        0].replace(
-        '\\', "")
+    episode_m3u8 = ''
 
-    # TODO: Background download
+    if source == Source.XiaoBao:
+        episode_details_page: bytes = requests.get(url='https://xiaoheimi.net' + episode_url,
+                                                   headers={ 'User-Agent': 'Mozilla/5.0' }).content
+        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
+        episode_script: str = str(episode_soup.find('div', attrs={ "class": "myui-player__box" }).find('script'))
+        episode_m3u8 = re.findall(r"https:\\\/\\\/m3u.haiwaikan.com\\\/xm3u8\\\/[\w\d]+.m3u8", episode_script)[
+            0].replace(
+            '\\', "")
+    elif source == Source.YingHua:
+        episode_details_page: bytes = requests.get(url=f'https://www.yhdmp.cc{episode_url}',
+                                                   headers={ 'User-Agent': 'Mozilla/5.0' }).content
+        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
+        episode_m3u8: str = f"https://www.yhdmp.cc{episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']}"
+
+        # TODO: Background download
 
     # m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
     # mp4_file_name=episode_filename, mp4_file_dir=show_dir)
+    if 'm3u8' not in episode_m3u8:
+        print('m3u8 Load Error, Stream probably does not exist: ' + episode_m3u8)
+        return
     m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
                                          mp4_file_name=episode_filename, mp4_file_dir=season_dir)
     # print("成功下载", episode_name)

@@ -10,19 +10,32 @@ class Source(Enum):
     XiaoBao = 1
     OVLED = 2
     MOV = 3
+    YingHua = 4
 
 
 class Show:
     def __init__(self, result, source: Source):
+        self._source = source
         if source == Source.XiaoBao:
-            self._source = source
-            self.title = result.find('a', attrs={'class': 'searchkey'}).get_text()
-            self.note = result.find('span', attrs={'class': 'pic-text text-right'}).get_text()
-            show = result.find('a', attrs={'class': 'myui-vodlist__thumb'})[
+            self.title = result.find('a', attrs={ 'class': 'searchkey' }).get_text()
+            self.note = result.find('span', attrs={ 'class': 'pic-text text-right' }).get_text()
+            show = result.find('a', attrs={ 'class': 'myui-vodlist__thumb' })[
                 'href']
             self.source_id = re.search(r'/index.php/vod/detail/id/(\d+).html', show).group(1)
             show_details_url: str | Any = "https://xiaoheimi.net/index.php/vod/detail/id/" + self.source_id + ".html"
             self._details_url = show_details_url
+        elif source == Source.MOV:
+            self.title = result['title']
+            self.note = ""
+            self.source_id = ""
+            self.details_url = f'https://ww1.new-movies123.co{result["href"]}'
+        elif source == Source.YingHua:
+            self.title = result.find_all('a')[1].get_text()
+            self.note = result.find('font').get_text()
+            self.source_id = ''
+            self.details_url = f'https://www.yhdmp.cc{result.find("a")["href"]}'
+        print(self.source_id)
+        print(self._details_url)
 
     @property
     def title(self):  # This getter method name is *the* name
@@ -57,13 +70,29 @@ class Show:
         self._details_url = details_url  # the "value" name isn't special
 
     def fetch_details(self):
-        show_details_page: bytes = requests.get(url=self.details_url, headers={'User-Agent': 'Mozilla/5.0'}).content
+        show_details_page: bytes = requests.get(url=self.details_url, headers={ 'User-Agent': 'Mozilla/5.0' }).content
         soup: BeautifulSoup = BeautifulSoup(show_details_page, 'html.parser')
 
-        details = {'title': None, 'description': None, 'episodes': [None], 'year': None}
+        details = { 'title': None, 'description': None, 'episodes': [None], 'year': None }
         if self._source == Source.XiaoBao:
             details['title']: str = str(soup.title.string).replace(" - 小宝影院 - 在线视频", "")
-            details['description'] = soup.find("span", attrs={"class": "data", "style": "display: none;"}).get_text()
-            details['episodes'] = soup.find("ul", attrs={'class': "myui-content__list"}).contents
-            details['year'] = str(soup.find("p", attrs={"class": "data"}).contents[-1].get_text())
+            details['description'] = soup.find("span", attrs={ "class": "data", "style": "display: none;" }).get_text()
+            details['episodes'] = soup.find("ul", attrs={ 'class': "myui-content__list" }).contents
+            details['year'] = str(soup.find("p", attrs={ "class": "data" }).contents[-1].get_text())
+        elif self._source == Source.MOV:
+            details['title'] = self.title
+            details['episodes'] = soup.find("div", attrs={ "aria-labelledby": "episodes-select-tab" }).find_all('a')
+            details['year'] = soup.find('a', { 'href': re.compile(r'/year/[0-9]{4}') }).get_text()
+            print(details['episodes'])
+            print(details['year'])
+            # BUG: Can't find link to good quality video
+            # TODO: Use VPN
+        elif self._source == Source.YingHua:
+            details['title'] = self.title
+            details['episodes'] = soup.find_all('div', attrs={ "class": 'movurl' })[1].findChildren('a')
+            details['year'] = soup.find('a', { 'href': re.compile(r'/list/\?year=[0-9]{4}') }).get_text()
         return details
+
+    @property
+    def source(self):  # This getter method name is *the* name
+        return self._source
