@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import os.path
 import re
-import urllib.parse
+from urllib.parse import unquote
 from typing import Any
 
 import requests
 from bs4 import BeautifulSoup, PageElement, ResultSet
+# from selenium import webdriver
+from selenium import webdriver
 import m3u8_To_MP4
 from tinydb import TinyDB, Query
 
@@ -17,8 +19,18 @@ from MOV import search_123mov
 from Show import Show, Source
 from XiaoBao import search_xiao_bao
 from YingHua import search_yinghua
+from db import fetch_db
 
 app = typer.Typer()
+
+global db
+
+
+def createHeadlessFirefoxBrowser():
+    options = webdriver.FirefoxOptions()
+    options.add_argument("--disable-notifications")
+    options.add_argument('--headless')
+    return webdriver.Firefox(executable_path='./geckodriver', options=options)
 
 
 # Login to TVDB
@@ -86,7 +98,8 @@ def search_media(query: str):
     #     result_index += 1
 
     query_results = []
-    # query_results += search_xiao_bao(query)
+    # TODO: Search in db first / or put db results first
+    query_results += search_xiao_bao(query)
     # query_results += search_123mov(query)
     query_results += search_yinghua(query)
     for result_index, result in enumerate(query_results):
@@ -99,10 +112,13 @@ def search_media(query: str):
     #         'href']
     # show_index: str | Any = re.search(r'/index.php/vod/detail/id/(\d+).html', chosen_show).group(1)
     # show_index = query_results[chosen_index]['showId']
+    # TODO: if searched result is from database, get source from db
     show_details = chosen_show.fetch_details()
 
     # season_index = 1
+    # TODO: if from db, fetch season_index from db if possible
     season_index = check_season_index(show_details['title'])
+    # TODO: if from db, fetch year of first season if possible
     show_year = show_details['year']
 
     if season_index > 1:
@@ -112,11 +128,13 @@ def search_media(query: str):
 
     # TODO: Check
     # show_title = typer.prompt(show_title + '的 general 节目名称是：')
+    # TODO: if from db, fetch general title, or directory name from database
     show_title = show_details['title'].partition(" 第")[0]
 
     show_prefix: str = show_title + " (" + str(show_year) + ")"
 
     # base_path: str = '/Volumes/Viewable'
+    # TODO: Check if directory for this show exists, if so, get that directory
     show_dir: str = base_path + '/TV Series/' + show_prefix
     # if os.path.ismount(base_path):
     if not os.path.isdir(show_dir):
@@ -126,6 +144,8 @@ def search_media(query: str):
     #     print(base_path, "has not been mounted yet. Exiting...")
     #     quit()
 
+    # TODO: Check monitor file in directory, check files not downloaded
+    # IDEA: it is known that hash is unique for a video, if so, hash can be matched to ensure there are no additional ads embedded in videos
     download_all: bool = typer.prompt(text='Would you like to download all episodes? (Y/n)',
                                       type=str, default='Y').capitalize() == 'Y'
 
@@ -134,13 +154,20 @@ def search_media(query: str):
     for episode in show_details['episodes']:
         print(episode)
         episode_name = episode["title"]
+        episode_number = None
         if download_all or typer.prompt(text=f'Would you like to download this {episode_name}? (Y/n)',
                                         type=str, default='n').capitalize() == 'Y':
             not_specials = re.match(
-                r"^[0-9]{8}$|^[0-9]{8}[（(]*第[0-9]+[期集][(（上中下)）]*[)）]?$|^[0-9]{1,2}$|^第[0-9]+[期集][上中下]*$",
+                r"^[0-9]{8}$|^[0-9]{8}[（(]*第([0-9]+)[期集][(（上中下)）]*[)）]?$|^([0-9]{1,3})$|^第([0-9]+)[期集][上中下]*$",
                 episode_name)
             if not_specials:
                 season_dir = show_dir + "/Season " + str(season_index).zfill(2)
+                episode_number = re.search(
+                    r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
+                    episode_name).group()
+                print(episode_number)
+                episode_number = re.findall(r'\d+', episode_number)[0]
+                print(int(episode_number))
 
                 episode_index += 1
             else:
@@ -151,7 +178,8 @@ def search_media(query: str):
 
             if not os.path.isdir(season_dir):
                 os.mkdir(season_dir)
-            download_episode(show_prefix, season_index if not_specials else 0, season_dir, episode_index, episode,
+            download_episode(show_prefix, season_index if not_specials else 0, season_dir,
+                             episode_index if episode_number is None else episode_number, episode,
                              chosen_show.source)
 
     print(show_title, " 下载完成")
@@ -179,8 +207,13 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
     #     int(episode_name)
     # except ValueError:
     #     print("Episode should be Specials")
-
-    episode_url = episode['href']
+    print("episode", episode)
+    print("episode.find('a')", episode.find('a'))
+    if episode.find('a') is None:
+        episode_url = episode['href']
+    else:
+        print(episode)
+        episode_url = episode.find('a')['href']
     episode_filename: str | Any = f"{show_prefix} - S{str(season_index).zfill(2)}E{str(episode_index).zfill(2)} - {episode_name}"
     print(f"Downloading to file {episode_filename}")
 
@@ -201,10 +234,22 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
             0].replace(
             '\\', "")
     elif source == Source.YingHua:
-        episode_details_page: bytes = requests.get(url=f'https://www.yhdmp.cc{episode_url}',
-                                                   headers={ 'User-Agent': 'Mozilla/5.0' }).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-        episode_m3u8: str = f"https://www.yhdmp.cc{episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']}"
+        # episode_details_page: bytes = requests.get(url=,
+        #                                            headers={ 'User-Agent': 'Mozilla/5.0' }).content
+        # browser = webdriver.PhantomJS()
+        browser = createHeadlessFirefoxBrowser()
+        browser.get(f'https://www.yhdmp.cc{episode_url}')
+        # episode_details_page =
+        episode_soup: BeautifulSoup = BeautifulSoup(browser.page_source, 'html.parser')
+        print(episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' }))
+        print(episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0])
+        source_str = episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']
+        if len(source_str) == 0:
+            print("No Source available...")
+            return
+        episode_m3u8: str = f"{episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0].split('url=')[1]}.m3u8"
+        episode_m3u8 = unquote(episode_m3u8)
+        # print(episode_m3u8)
 
         # TODO: Background download
 
@@ -229,18 +274,9 @@ def check_dir_mounted(path: str):
         quit()
 
 
-def fetch_database(path: str):
-    """
-    Fetch Auto download database in directory
-    :param path:
-    :type path:
-    """
-    return TinyDB(f'{path}/db.json')
-
-
 if __name__ == '__main__':
     # app()
     base_path: str = '/Volumes/Viewable'
     check_dir_mounted(base_path)
-    db = fetch_database(base_path)
+    # db = fetch_db()
     typer.run(search_media)
