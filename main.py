@@ -33,7 +33,7 @@ def create_headless_firefox_browser():
     options.add_argument("--disable-notifications")
     options.add_argument('--headless')
     global browser
-    browser = webdriver.Firefox(executable_path='./geckodriver', options=options)
+    browser = webdriver.Firefox(executable_path='geckodriver-mac', options=options)
     return browser
 
 
