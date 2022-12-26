@@ -3273,3 +3273,17 @@ JavaScript warning: https://www.xmfans.me/yxsf/yh_js/history.js?ver=566357, line
 JavaScript warning: https://www.xmfans.me/yxsf/js/yx_playpre10.js?ver=566357, line 17: unreachable code after return statement
 JavaScript warning: https://www.xmfans.me/yxsf/player/dpx2/hls.min.ft.js?ver=202103141620, line 2: unreachable code after return statement
 JavaScript warning: https://www.xmfans.me/yxsf/player/dpx2/hls.min.ft.js?ver=202103141620, line 2: unreachable code after return statement
+1672058843737	geckodriver	INFO	Listening on 127.0.0.1:58244
+1672058844774	mozrunner::runner	INFO	Running command: "/Applications/Firefox.app/Contents/MacOS/firefox-bin" "--marionette" "--disable-notifications" "--headless" "-foreground" "-no-remote" "-profile" "/var/folders/g7/k2w66pnd7634pnblstd4myq40000gn/T/rust_mozprofilew1vAMF"
+*** You are running in headless mode.
+1672058846163	Marionette	INFO	Marionette enabled
+1672058846234	Marionette	INFO	Listening on port 58255
+Read port: 58255
+1672058846442	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /var/folders/g7/k2w66pnd7634pnblstd4myq40000gn/T/rust_mozprofilew1vAMF/search.json.mozlz4", (void 0)))
+JavaScript warning: https://xiaoheimi.net/static/js/home.js, line 11: unreachable code after return statement
+JavaScript error: https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7548340262798230, line 1: SyntaxError: expected expression, got '<'
+JavaScript error: https://hm.baidu.com/hm.js?e3af07dbd64ff6edb5a83669cb450994, line 1: SyntaxError: expected expression, got '<'
+JavaScript warning: https://www.xmfans.me/yxsf/yh_js/history.js?ver=566357, line 78: unreachable code after return statement
+JavaScript warning: https://www.xmfans.me/yxsf/js/yx_playpre10.js?ver=566357, line 17: unreachable code after return statement

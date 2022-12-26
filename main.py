@@ -24,10 +24,11 @@ from db import fetch_db
 app = typer.Typer()
 
 global db
-global browser
+
+browser = None
 
 
-def createHeadlessFirefoxBrowser():
+def create_headless_firefox_browser():
     options = webdriver.FirefoxOptions()
     options.add_argument("--disable-notifications")
     options.add_argument('--headless')
@@ -102,6 +103,7 @@ def search_media(query: str):
 
     query_results = []
     # TODO: Search in db first / or put db results first
+    global browser
     query_results += search_xiao_bao(browser, query)
     # query_results += search_123mov(query)
     query_results += search_yinghua(browser, query)
@@ -240,7 +242,7 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         # episode_details_page: bytes = requests.get(url=,
         #                                            headers={ 'User-Agent': 'Mozilla/5.0' }).content
         # browser = webdriver.PhantomJS()
-        browser = createHeadlessFirefoxBrowser()
+        browser = create_headless_firefox_browser()
         browser.get(f'https://www.yhdmp.cc{episode_url}')
         # episode_details_page =
         episode_soup: BeautifulSoup = BeautifulSoup(browser.page_source, 'html.parser')
@@ -281,5 +283,6 @@ if __name__ == '__main__':
     # app()
     base_path: str = '/Volumes/Viewable'
     check_dir_mounted(base_path)
+    create_headless_firefox_browser()
     # db = fetch_db()
     typer.run(search_media)
