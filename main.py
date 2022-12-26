@@ -24,13 +24,16 @@ from db import fetch_db
 app = typer.Typer()
 
 global db
+global browser
 
 
 def createHeadlessFirefoxBrowser():
     options = webdriver.FirefoxOptions()
     options.add_argument("--disable-notifications")
     options.add_argument('--headless')
-    return webdriver.Firefox(executable_path='./geckodriver', options=options)
+    global browser
+    browser = webdriver.Firefox(executable_path='./geckodriver', options=options)
+    return browser
 
 
 # Login to TVDB
@@ -99,9 +102,9 @@ def search_media(query: str):
 
     query_results = []
     # TODO: Search in db first / or put db results first
-    query_results += search_xiao_bao(query)
+    query_results += search_xiao_bao(browser, query)
     # query_results += search_123mov(query)
-    query_results += search_yinghua(query)
+    query_results += search_yinghua(browser, query)
     for result_index, result in enumerate(query_results):
         print(result_index, result.title, result.note)
 
