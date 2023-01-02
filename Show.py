@@ -1,9 +1,14 @@
 import re
 from enum import Enum
-from typing import Any
+from typing import Any, Union
 
+import cloudscraper
 import requests
 from bs4 import BeautifulSoup
+
+from fake_useragent import UserAgent
+
+ua = UserAgent()
 
 
 class Source(Enum):
@@ -22,7 +27,8 @@ class Show:
             show = result.find('a', attrs={ 'class': 'myui-vodlist__thumb' })[
                 'href']
             self.source_id = re.search(r'/index.php/vod/detail/id/(\d+).html', show).group(1)
-            show_details_url: str | Any = "https://xiaoheimi.net/index.php/vod/detail/id/" + self.source_id + ".html"
+            show_details_url: Union[
+                str, Any] = "https://xiaoheimi.net/index.php/vod/detail/id/" + self.source_id + ".html"
             self._details_url = show_details_url
         elif source == Source.MOV:
             self.title = result['title']
@@ -70,7 +76,10 @@ class Show:
         self._details_url = details_url  # the "value" name isn't special
 
     def fetch_details(self):
-        show_details_page: bytes = requests.get(url=self.details_url, headers={ 'User-Agent': 'Mozilla/5.0' }).content
+        # show_details_page: bytes = requests.get(url=self.details_url, headers={ 'User-Agent': ua.random }).content
+        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
+        show_details_page = scraper.get(self.details_url).content
+        # soup: BeautifulSoup = BeautifulSoup(show_details_page, 'html.parser')
         soup: BeautifulSoup = BeautifulSoup(show_details_page, 'html.parser')
 
         details = { 'title': None, 'description': None, 'episodes': [None], 'year': None }

@@ -2,15 +2,18 @@
 import os.path
 import re
 from urllib.parse import unquote
-from typing import Any
+from typing import Any, Union
 
+import cloudscraper
 import requests
 from bs4 import BeautifulSoup, PageElement, ResultSet
 # from selenium import webdriver
 from selenium import webdriver
 import m3u8_To_MP4
 from tinydb import TinyDB, Query
+from fake_useragent import UserAgent
 
+ua = UserAgent()
 # import tvdb_v4_official
 
 import typer
@@ -93,7 +96,7 @@ def search_media(query: str):
     # query: str = args.media_name
     print(query)
 
-    result: PageElement | Any
+    result: Union[PageElement, Any]
     # for result in query_results:
     #     result_index += 1
 
@@ -101,7 +104,7 @@ def search_media(query: str):
     # TODO: Search in db first / or put db results first
     query_results += search_xiao_bao(query)
     # query_results += search_123mov(query)
-    query_results += search_yinghua(query)
+    # query_results += search_yinghua(query)
     for result_index, result in enumerate(query_results):
         print(result_index, result.title, result.note)
 
@@ -162,14 +165,18 @@ def search_media(query: str):
                 episode_name)
             if not_specials:
                 season_dir = show_dir + "/Season " + str(season_index).zfill(2)
-                episode_number = re.search(
-                    r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
-                    episode_name).group()
-                print(episode_number)
-                episode_number = re.findall(r'\d+', episode_number)[0]
+                episode_index += 1
+                try:
+                    episode_number = re.search(
+                        r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
+                        episode_name).group()
+                    print(episode_number)
+                    episode_number = re.findall(r'\d+', episode_number)[0]
+
+                except AttributeError:
+                    episode_number = episode_index
                 print(int(episode_number))
 
-                episode_index += 1
             else:
                 print("Episode should be Specials")
                 season_dir = show_dir + "/Specials"
@@ -214,7 +221,8 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
     else:
         print(episode)
         episode_url = episode.find('a')['href']
-    episode_filename: str | Any = f"{show_prefix} - S{str(season_index).zfill(2)}E{str(episode_index).zfill(2)} - {episode_name}"
+    episode_filename: Union[
+        str, Any] = f"{show_prefix} - S{str(season_index).zfill(2)}E{str(episode_index).zfill(2)} - {episode_name}"
     print(f"Downloading to file {episode_filename}")
 
     # Check if file exists already
@@ -226,8 +234,10 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
     episode_m3u8 = ''
 
     if source == Source.XiaoBao:
-        episode_details_page: bytes = requests.get(url='https://xiaoheimi.net' + episode_url,
-                                                   headers={ 'User-Agent': 'Mozilla/5.0' }).content
+        # episode_details_page: bytes = requests.get(url='https://xiaoheimi.net' + episode_url,
+        #                                            headers={ 'User-Agent': ua.random }).content
+        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
+        episode_details_page = scraper.get('https://xiaoheimi.net' + episode_url).content
         episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
         episode_script: str = str(episode_soup.find('div', attrs={ "class": "myui-player__box" }).find('script'))
         episode_m3u8 = re.findall(r"https:\\\/\\\/m3u.haiwaikan.com\\\/xm3u8\\\/[\w\d]+.m3u8", episode_script)[
@@ -237,10 +247,12 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         # episode_details_page: bytes = requests.get(url=,
         #                                            headers={ 'User-Agent': 'Mozilla/5.0' }).content
         # browser = webdriver.PhantomJS()
-        browser = createHeadlessFirefoxBrowser()
-        browser.get(f'https://www.yhdmp.cc{episode_url}')
+        # browser = createHeadlessFirefoxBrowser()
+        # browser.get(f'https://www.yhdmp.cc{episode_url}')
         # episode_details_page =
-        episode_soup: BeautifulSoup = BeautifulSoup(browser.page_source, 'html.parser')
+        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
+        episode_details_page = scraper.get(f'https://www.yhdmp.cc{episode_url}').content
+        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
         print(episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' }))
         print(episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0])
         source_str = episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']
