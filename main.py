@@ -14,6 +14,8 @@ import m3u8_To_MP4
 from tinydb import TinyDB, Query
 from fake_useragent import UserAgent
 
+from OLEVOD import search_olevod
+
 ua = UserAgent()
 # import tvdb_v4_official
 
@@ -95,7 +97,7 @@ def search_media(query: str):
 
     # query: str = urllib.parse.quote(input("请输入节目名字："))
     # query: str = args.media_name
-    print(query)
+    # print(query)
 
     result: Union[PageElement, Any]
     # for result in query_results:
@@ -103,28 +105,23 @@ def search_media(query: str):
 
     query_results = []
     # TODO: Search in db first / or put db results first
-    query_results += search_xiao_bao(query)
+    # query_results += search_xiao_bao(query)
     # query_results += search_123mov(query)
     # query_results += search_yinghua(query)
+    query_results += search_olevod(query)
     for result_index, result in enumerate(query_results):
         print(result_index, result.title, result.note)
 
     chosen_show: Show = query_results[typer.prompt(text='请选择你下载的节目', type=int)]
 
-    # chosen_show = \
-    #     query_results[int(input("请选择你下载的节目：")) - 1].find('a', attrs={'class': 'myui-vodlist__thumb'})[
-    #         'href']
-    # show_index: str | Any = re.search(r'/index.php/vod/detail/id/(\d+).html', chosen_show).group(1)
-    # show_index = query_results[chosen_index]['showId']
     # TODO: if searched result is from database, get source from db
     show_details = chosen_show.fetch_details()
 
-    # season_index = 1
     # TODO: if from db, fetch season_index from db if possible
     season_index = check_season_index(show_details['title'])
     season_index = typer.prompt(text='Fix the season index? ', default=season_index, type=int)
     # TODO: if from db, fetch year of first season if possible
-    print(season_index)
+    # print(season_index)
     show_year = show_details['year']
 
     if season_index > 1:
@@ -139,16 +136,10 @@ def search_media(query: str):
 
     show_prefix: str = show_title + " (" + str(show_year) + ")"
 
-    # base_path: str = '/Volumes/Viewable'
     # TODO: Check if directory for this show exists, if so, get that directory
     show_dir: str = base_path + '/TV Series/' + show_prefix
-    # if os.path.ismount(base_path):
     if not os.path.isdir(show_dir):
         os.mkdir(show_dir)
-
-    # else:
-    #     print(base_path, "has not been mounted yet. Exiting...")
-    #     quit()
 
     # TODO: Check monitor file in directory, check files not downloaded
     # IDEA: it is known that hash is unique for a video, if so, hash can be matched to ensure there are no additional ads embedded in videos
@@ -158,8 +149,10 @@ def search_media(query: str):
     episode_index: int = 0
     specials_index: int = 0
     for episode in show_details['episodes']:
-        print(episode)
-        episode_name = episode["title"]
+        try:
+            episode_name = episode["title"]
+        except KeyError:
+            episode_name = episode.find('a').get_text()
         episode_number = None
         if download_all or typer.prompt(text=f'Would you like to download this {episode_name}? (Y/n)',
                                         type=str, default='n').capitalize() == 'Y':
@@ -173,12 +166,10 @@ def search_media(query: str):
                     episode_number = re.search(
                         r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
                         episode_name).group()
-                    print(episode_number)
                     episode_number = re.findall(r'\d+', episode_number)[0]
 
                 except AttributeError:
                     episode_number = episode_index
-                print(int(episode_number))
 
             else:
                 print("Episode should be Specials")
@@ -212,17 +203,14 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         :rtype:
         """
 
-    episode_name = episode["title"]
-    # try:
-    #     int(episode_name)
-    # except ValueError:
-    #     print("Episode should be Specials")
-    print("episode", episode)
-    print("episode.find('a')", episode.find('a'))
+    try:
+        episode_name = episode["title"]
+    except KeyError:
+        episode_name = episode.find('a').get_text()
+
     if episode.find('a') is None:
         episode_url = episode['href']
     else:
-        print(episode)
         episode_url = episode.find('a')['href']
     episode_filename: Union[
         str, Any] = f"{show_prefix} - S{str(season_index).zfill(2)}E{str(episode_index).zfill(2)} - {episode_name}"
@@ -247,24 +235,22 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
             0].replace(
             '\\', "")
     elif source == Source.YingHua:
-        # episode_details_page: bytes = requests.get(url=,
-        #                                            headers={ 'User-Agent': 'Mozilla/5.0' }).content
-        # browser = webdriver.PhantomJS()
-        # browser = createHeadlessFirefoxBrowser()
-        # browser.get(f'https://www.yhdmp.cc{episode_url}')
-        # episode_details_page =
         scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
         episode_details_page = scraper.get(f'https://www.yhdmp.cc{episode_url}').content
         episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-        print(episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' }))
-        print(episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0])
         source_str = episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']
         if len(source_str) == 0:
             print("No Source available...")
             return
         episode_m3u8: str = f"{episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0].split('url=')[1]}.m3u8"
         episode_m3u8 = unquote(episode_m3u8)
-        # print(episode_m3u8)
+    elif source == Source.OLEVOD:
+        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
+        episode_details_page = scraper.get('https://www.olevod.com' + episode_url).content
+        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
+        episode_script: str = str(episode_soup.find('div', attrs={ "class": "player_video" }).find('script'))
+        episode_m3u8 = \
+            re.findall(r"https:\\\/\\\/europe.olemovienews.com[\w\d\/\\\.]*.m3u8", episode_script)[0].replace('\\', "")
 
         # TODO: Background download
 

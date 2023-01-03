@@ -16,6 +16,7 @@ class Source(Enum):
     OVLED = 2
     MOV = 3
     YingHua = 4
+    OLEVOD = 5
 
 
 class Show:
@@ -40,6 +41,15 @@ class Show:
             self.note = result.find('font').get_text()
             self.source_id = ''
             self.details_url = f'https://www.yhdmp.cc{result.find("a")["href"]}'
+        elif source == Source.OLEVOD:
+            self.title = result.find('a', attrs={ 'class': 'vodlist_thumb' })['title']
+            self.note = result.find('span', attrs={ 'class': 'pic_text text_right' }).get_text()
+            show = result.find('a', attrs={ 'class': 'vodlist_thumb' })[
+                'href']
+            self.source_id = re.search(r'/index.php/vod/detail/id/(\d+).html', show).group(1)
+            show_details_url: Union[
+                str, Any] = "https://www.olevod.com/index.php/vod/detail/id/" + self.source_id + ".html"
+            self._details_url = show_details_url
         print(self.source_id)
         print(self._details_url)
 
@@ -100,6 +110,12 @@ class Show:
             details['title'] = self.title
             details['episodes'] = soup.find_all('div', attrs={ "class": 'movurl' })[1].findChildren('a')
             details['year'] = soup.find('a', { 'href': re.compile(r'/list/\?year=[0-9]{4}') }).get_text()
+        elif self._source == Source.OLEVOD:
+            details['title']: str = soup.find("h2", attrs={ "class": "title" }).get_text()
+            details['description'] = soup.find("div", attrs={ "class": "content_desc" }).find("span").get_text()
+            details['episodes'] = soup.find("ul", attrs={ 'class': "content_playlist" }).find_all("li")
+            details['year'] = soup.find('a',
+                                        { 'href': re.compile(r'/index.php/vod/search/year/[0-9]{4}.html') }).get_text()
         return details
 
     @property
