@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
 import re
+import shutil
 from urllib.parse import unquote
 from typing import Any, Union
 
@@ -121,7 +122,9 @@ def search_media(query: str):
     # season_index = 1
     # TODO: if from db, fetch season_index from db if possible
     season_index = check_season_index(show_details['title'])
+    season_index = typer.prompt(text='Fix the season index? ', default=season_index, type=int)
     # TODO: if from db, fetch year of first season if possible
+    print(season_index)
     show_year = show_details['year']
 
     if season_index > 1:
@@ -186,7 +189,7 @@ def search_media(query: str):
             if not os.path.isdir(season_dir):
                 os.mkdir(season_dir)
             download_episode(show_prefix, season_index if not_specials else 0, season_dir,
-                             episode_index if episode_number is None else episode_number, episode,
+                             episode_index if not_specials else specials_index, episode,
                              chosen_show.source)
 
     print(show_title, " 下载完成")
@@ -270,8 +273,18 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
     if 'm3u8' not in episode_m3u8:
         print('m3u8 Load Error, Stream probably does not exist: ' + episode_m3u8)
         return
-    m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
-                                         mp4_file_name=episode_filename, mp4_file_dir=season_dir)
+    temp_dir = '/Users/yyymx/Movies/temp-parts/' + episode_filename
+    if not os.path.isdir(temp_dir):
+        os.mkdir(temp_dir)
+        m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
+                                             mp4_file_name=episode_filename, mp4_file_dir=season_dir,
+                                             tmpdir=temp_dir)
+        print('Completed downloading, removing temp dir...')
+        # os.rmdir(temp_dir)
+        shutil.rmtree(temp_dir, ignore_errors=True)
+    else:
+        print('Temp Dir for this episode exists, should be already downloading')
+
     # print("成功下载", episode_name)
 
 

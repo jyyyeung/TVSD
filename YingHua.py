@@ -18,7 +18,6 @@ def search_yinghua(query: str) -> [Show]:
     search_result_page = scraper.get(search_url).content
     query_result_soup: BeautifulSoup = BeautifulSoup(search_result_page, 'html.parser')
     # print(query_result_soup)
-    # BUG: Does not work cuz of cloudflare
     query_results: ResultSet[Any] = query_result_soup.find('div', attrs={ 'class': 'lpic' }).findChildren('li')
     result_list = []
     result_index: int = 1
