@@ -12,19 +12,16 @@ from bs4 import BeautifulSoup, PageElement, ResultSet
 from selenium import webdriver
 import m3u8_To_MP4
 from tinydb import TinyDB, Query
-from fake_useragent import UserAgent
 
-from OLEVOD import search_olevod
+import MOV
+import XiaoBao
+import YingHua
+import OLEVOD
 
-ua = UserAgent()
 # import tvdb_v4_official
 
 import typer
 
-from MOV import search_123mov
-from Show import Show, Source
-from XiaoBao import search_xiao_bao
-from YingHua import search_yinghua
 from db import fetch_db
 
 app = typer.Typer()
@@ -105,14 +102,15 @@ def search_media(query: str):
 
     query_results = []
     # TODO: Search in db first / or put db results first
-    # query_results += search_xiao_bao(query)
-    # query_results += search_123mov(query)
-    # query_results += search_yinghua(query)
-    query_results += search_olevod(query)
-    for result_index, result in enumerate(query_results):
-        print(result_index, result.title, result.note)
+    query_results += XiaoBao.search_xiaobao(query)
+    query_results += MOV.search_mov(query)
+    query_results += YingHua.search_yinghua(query)
+    query_results += OLEVOD.search_olevod(query)
 
-    chosen_show: Show = query_results[typer.prompt(text='请选择你下载的节目', type=int)]
+    for result_index, result in enumerate(query_results):
+        print(result_index, result.source, result.title, result.note)
+
+    chosen_show = query_results[typer.prompt(text='请选择你下载的节目', type=int)]
 
     # TODO: if searched result is from database, get source from db
     show_details = chosen_show.fetch_details()
@@ -181,12 +179,12 @@ def search_media(query: str):
                 os.mkdir(season_dir)
             download_episode(show_prefix, season_index if not_specials else 0, season_dir,
                              episode_index if not_specials else specials_index, episode,
-                             chosen_show.source)
+                             chosen_show)
 
     print(show_title, " 下载完成")
 
 
-def download_episode(show_prefix: str, season_index: int, season_dir: str, episode_index: int, episode, source: Source):
+def download_episode(show_prefix: str, season_index: int, season_dir: str, episode_index: int, episode, show):
     """
         Downloads episode
         :param season_index:
@@ -223,36 +221,9 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
 
     # print(episode_name, episode_url)
     episode_m3u8 = ''
+    episode_m3u8 = show.fetch_episode_m3u8(episode_url)
 
-    if source == Source.XiaoBao:
-        # episode_details_page: bytes = requests.get(url='https://xiaoheimi.net' + episode_url,
-        #                                            headers={ 'User-Agent': ua.random }).content
-        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
-        episode_details_page = scraper.get('https://xiaoheimi.net' + episode_url).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-        episode_script: str = str(episode_soup.find('div', attrs={ "class": "myui-player__box" }).find('script'))
-        episode_m3u8 = re.findall(r"https:\\\/\\\/m3u.haiwaikan.com\\\/xm3u8\\\/[\w\d]+.m3u8", episode_script)[
-            0].replace(
-            '\\', "")
-    elif source == Source.YingHua:
-        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
-        episode_details_page = scraper.get(f'https://www.yhdmp.cc{episode_url}').content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-        source_str = episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']
-        if len(source_str) == 0:
-            print("No Source available...")
-            return
-        episode_m3u8: str = f"{episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0].split('url=')[1]}.m3u8"
-        episode_m3u8 = unquote(episode_m3u8)
-    elif source == Source.OLEVOD:
-        scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
-        episode_details_page = scraper.get('https://www.olevod.com' + episode_url).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-        episode_script: str = str(episode_soup.find('div', attrs={ "class": "player_video" }).find('script'))
-        episode_m3u8 = \
-            re.findall(r"https:\\\/\\\/europe.olemovienews.com[\w\d\/\\\.]*.m3u8", episode_script)[0].replace('\\', "")
-
-        # TODO: Background download
+    # TODO: Background download
 
     # m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
     # mp4_file_name=episode_filename, mp4_file_dir=show_dir)
