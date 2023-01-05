@@ -2,38 +2,22 @@
 import os.path
 import re
 import shutil
-from urllib.parse import unquote
 from typing import Any, Union
 
-import cloudscraper
-import requests
-from bs4 import BeautifulSoup, PageElement, ResultSet
-# from selenium import webdriver
-from selenium import webdriver
 import m3u8_To_MP4
-from tinydb import TinyDB, Query
+import typer
+from bs4 import PageElement
 
 import MOV
+import OLEVOD
 import XiaoBao
 import YingHua
-import OLEVOD
 
 # import tvdb_v4_official
-
-import typer
-
-from db import fetch_db
 
 app = typer.Typer()
 
 global db
-
-
-def createHeadlessFirefoxBrowser():
-    options = webdriver.FirefoxOptions()
-    options.add_argument("--disable-notifications")
-    options.add_argument('--headless')
-    return webdriver.Firefox(executable_path='./geckodriver', options=options)
 
 
 # Login to TVDB
@@ -43,7 +27,6 @@ def createHeadlessFirefoxBrowser():
 # def search_tvdb():
 #
 
-# @app.command()
 
 def check_season_index(show_title: str) -> int:
     """
