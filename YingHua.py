@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any, re
+from urllib.parse import unquote
 
 import cloudscraper
 from bs4 import BeautifulSoup, ResultSet
-from urllib.parse import unquote
 
 from Show import Show, Source
 
@@ -20,19 +20,29 @@ def search_yinghua(query: str) -> [Show]:
         return []
 
     for result in query_results:
-        show = YingHua(result)
+        show = YingHua.from_query(result)
         result_list.append(show)
     return result_list
 
 
 class YingHua(Show):
-    def __init__(self, result, source: Source):
-        super().__init__(result, Source.YingHua)
+    def __init__(self, result):
+        super().__init__(Source.YingHua, result)
 
-        self.title = result.find_all('a')[1].get_text()
-        self.note = result.find('font').get_text()
-        self.source_id = ''
-        self.details_url = f'https://www.yhdmp.cc{result.find("a")["href"]}'
+    @classmethod
+    def from_json(cls, json_content):
+        return cls(json_content)
+
+    @classmethod
+    def from_query(cls, query_result):
+        data = {
+            'title': query_result.find_all('a')[1].get_text(),
+            'note': query_result.find('font').get_text(),
+            'source_id': None,
+            'details_url': f'https://www.yhdmp.cc{query_result.find("a")["href"]}'
+        }
+
+        return cls(data)
 
     def fetch_details(self):
         soup = super().fetch_details_soup()
@@ -40,6 +50,8 @@ class YingHua(Show):
         self.details['title'] = self.title
         self.details['episodes'] = soup.find_all('div', attrs={ "class": 'movurl' })[1].findChildren('a')
         self.details['year'] = soup.find('a', { 'href': re.compile(r'/list/\?year=[0-9]{4}') }).get_text()
+
+        return self.details
 
     def fetch_episode_m3u8(self, episode_url):
         episode_details_page = self._scraper.get(f'https://www.yhdmp.cc{episode_url}').content

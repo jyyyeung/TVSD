@@ -2,6 +2,7 @@
 import os.path
 import re
 import shutil
+from difflib import SequenceMatcher
 from typing import Any, Union
 
 import m3u8_To_MP4
@@ -10,8 +11,10 @@ from bs4 import PageElement
 
 import MOV
 import OLEVOD
+import Show
 import XiaoBao
 import YingHua
+import utils
 
 # import tvdb_v4_official
 
@@ -28,44 +31,7 @@ global db
 #
 
 
-def check_season_index(show_title: str) -> int:
-    """
-    Checks if season number for a particular show
-    :param show_title:
-    :type show_title:
-    :return:
-    :rtype:
-    """
-    if '第' in show_title:
-        if '第一季' in show_title:
-            return 1
-        elif '第二季' in show_title:
-            return 2
-        elif '第三季' in show_title:
-            return 3
-        elif '第四季' in show_title:
-            return 4
-        elif '第五季' in show_title:
-            return 5
-        elif '第六季' in show_title:
-            return 6
-        elif '第七季' in show_title:
-            return 7
-        elif '第八季' in show_title:
-            return 8
-        elif '第九季' in show_title:
-            return 9
-    elif 'Season' in show_title:
-        return int(show_title.lower().split('season')[-1])
-    elif 'part' in show_title:
-        return 1
-    elif typer.prompt('这个节目是否续季？（not S1)', default='').capitalize() == 'Y':
-        return typer.prompt(text='这个节目是第几季？', type=int)
-    else:
-        return 1
-
-
-def search_media(query: str):
+def search_media(query):
     """
 
     :param query:
@@ -77,45 +43,57 @@ def search_media(query: str):
 
     # query: str = urllib.parse.quote(input("请输入节目名字："))
     # query: str = args.media_name
-    # print(query)
+    print(query)
 
-    result: Union[PageElement, Any]
-    # for result in query_results:
-    #     result_index += 1
+    chosen_show = None
+    is_exist = False
 
-    query_results = []
-    # TODO: Search in db first / or put db results first
-    query_results += XiaoBao.search_xiaobao(query)
-    query_results += MOV.search_mov(query)
-    query_results += YingHua.search_yinghua(query)
-    query_results += OLEVOD.search_olevod(query)
+    # dir loop check dir
+    for directory in os.listdir(base_path + '/TV Series/'):
+        season_title = directory.split(' ')[0]
+        similarity_ratio = SequenceMatcher(None, query, season_title).ratio()
+        if similarity_ratio >= 0.8:
+            # print(season_title, similarity_ratio)
+            if typer.prompt(text=f'Are you looking for {directory}?', type=str, default='n').capitalize() == 'Y':
+                is_exist = True
+                chosen_show = utils.load_source_details(base_path + '/TV Series/' + directory)
 
-    for result_index, result in enumerate(query_results):
-        print(result_index, result.source, result.title, result.note)
+    if not is_exist:
+        # SequenceMatcher(None, a, b).ratio()
 
-    chosen_show = query_results[typer.prompt(text='请选择你下载的节目', type=int)]
+        result: Union[PageElement, Any]
+        # for result in query_results:
+        #     result_index += 1
+
+        query_results: [Show] = []
+        # TODO: Search in db first / or put db results first
+        query_results += XiaoBao.search_xiaobao(query)
+        query_results += MOV.search_mov(query)
+        query_results += YingHua.search_yinghua(query)
+        query_results += OLEVOD.search_olevod(query)
+
+        for result_index, result in enumerate(query_results):
+            # print(result.title)
+            print(result_index, result.source, result.title, result.note)
+
+        chosen_show = query_results[typer.prompt(text='请选择你下载的节目', type=int)]
 
     # TODO: if searched result is from database, get source from db
     show_details = chosen_show.fetch_details()
 
+    show_title = chosen_show.title
+
     # TODO: if from db, fetch season_index from db if possible
-    season_index = check_season_index(show_details['title'])
-    season_index = typer.prompt(text='Fix the season index? ', default=season_index, type=int)
+    season_index = chosen_show.show_season_index
+
     # TODO: if from db, fetch year of first season if possible
     # print(season_index)
-    show_year = show_details['year']
-
-    if season_index > 1:
-        # TODO: Auto
-        show_year = int(show_year) - season_index + 1
-        show_year = typer.prompt(text=f'第一季在那一年？(calculated={show_year})', type=int, default=show_year)
+    show_year = chosen_show.show_begin_year
 
     # TODO: Check
     # show_title = typer.prompt(show_title + '的 general 节目名称是：')
     # TODO: if from db, fetch general title, or directory name from database
-    show_title = show_details['title'].partition(" 第")[0]
-
-    show_prefix: str = show_title + " (" + str(show_year) + ")"
+    show_prefix = chosen_show.show_prefix
 
     # TODO: Check if directory for this show exists, if so, get that directory
     show_dir: str = base_path + '/TV Series/' + show_prefix

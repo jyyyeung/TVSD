@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, re
 
 import cloudscraper
 from bs4 import BeautifulSoup, ResultSet
@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, ResultSet
 from Show import Show, Source
 
 
-def search_mov(self, query: str):
+def search_mov(query: str):
     search_url: str = f"https://ww1.new-movies123.co/search/{query}"
     scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
     search_result_page = scraper.get(search_url).content
@@ -16,18 +16,29 @@ def search_mov(self, query: str):
     result_index: int = 1
 
     for result in query_results:
-        show = MOV(result)
+        show = MOV.from_query(result)
         result_list.append(show)
     return result_list
 
 
 class MOV(Show):
     def __init__(self, result):
-        super().__init__(result, Source.MOV)
-        self.title = result['title']
-        self.note = ""
-        self.source_id = ""
-        self.details_url = f'https://ww1.new-movies123.co{result["href"]}'
+        super().__init__(Source.MOV, result)
+
+    @classmethod
+    def from_json(cls, json_content):
+        return cls(json_content)
+
+    @classmethod
+    def from_query(cls, query_result):
+        data = {
+            'title': query_result['title'],
+            'note': None,
+            'source_id': None,
+            'details_url': f'https://ww1.new-movies123.co{query_result["href"]}'
+        }
+
+        return cls(data)
 
     def fetch_details(self):
         soup = super().fetch_details_soup()
@@ -38,3 +49,4 @@ class MOV(Show):
         print(self.details['episodes'])
         print(self.details['year'])
         # BUG: Can't find link to good quality video
+        return self.details
