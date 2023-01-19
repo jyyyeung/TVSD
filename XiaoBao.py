@@ -23,7 +23,7 @@ def search_xiaobao(query):
     query_results: ResultSet[Any] = query_result_soup.find_all('li', attrs={ 'class': 'clearfix' })
     result_list = []
     result_index: int = 1
- 
+
     for result in query_results:
         show = XiaoBao.from_query(result)
         result_list.append(show)
@@ -45,12 +45,12 @@ class XiaoBao(Show):
     @classmethod
     def from_query(cls, query_result):
         show = query_result.find('a', attrs={ 'class': 'myui-vodlist__thumb' })['href']
-
+        source_id = re.search(r'/index.php/vod/detail/id/(\d+).html', show).group(1)
         data = {
             'title': query_result.find('a', attrs={ 'class': 'searchkey' }).get_text(),
             'note': query_result.find('span', attrs={ 'class': 'pic-text text-right' }).get_text(),
-            'source_id': re.search(r'/index.php/vod/detail/id/(\d+).html', show).group(1),
-            'details_url': "https://xiaoheimi.net/index.php/vod/detail/id/" + super().source_id + ".html"
+            'source_id': source_id,
+            'details_url': "https://xiaoheimi.net/index.php/vod/detail/id/" + source_id + ".html"
         }
 
         return cls(data)

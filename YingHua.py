@@ -1,8 +1,10 @@
-from typing import Any, re
+import re
+from typing import Any
 from urllib.parse import unquote
 
 import cloudscraper
 from bs4 import BeautifulSoup, ResultSet
+from requests_html import HTMLSession
 
 from Show import Show, Source
 
@@ -54,12 +56,14 @@ class YingHua(Show):
         return self.details
 
     def fetch_episode_m3u8(self, episode_url):
-        episode_details_page = self._scraper.get(f'https://www.yhdmp.cc{episode_url}').content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, 'html.parser')
-        source_str = episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src']
+        response = HTMLSession().get(f'https://www.yhdmp.cc{episode_url}')
+        response.html.render(wait=2, sleep=3)
+
+        source_str = 'https://www.yhdmp.cc' + response.html.find('iframe')[0].attrs['src']
+        source_str = re.findall(r'https%3A.*m3u8', source_str)[0]
+
         if len(source_str) == 0:
             print("No Source available...")
             return
-        episode_m3u8: str = f"{episode_soup.find('iframe', attrs={ 'id': 'yh_playfram' })['src'].split('.m3u8')[0].split('url=')[1]}.m3u8"
-        episode_m3u8 = unquote(episode_m3u8)
+        episode_m3u8 = unquote(source_str)
         return episode_m3u8

@@ -58,7 +58,7 @@ def search_media(query):
                 is_exist = True
                 chosen_show = utils.load_source_details(base_path + '/TV Series/' + directory)
 
-    if not is_exist:
+    if not is_exist or chosen_show is None:
         # SequenceMatcher(None, a, b).ratio()
 
         result: Union[PageElement, Any]
@@ -82,6 +82,8 @@ def search_media(query):
     show_details = chosen_show.fetch_details()
 
     show_title = chosen_show.title
+
+    print(chosen_show)
 
     # TODO: if from db, fetch season_index from db if possible
     season_index = chosen_show.show_season_index
@@ -183,6 +185,7 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
     # print(episode_name, episode_url)
     episode_m3u8 = ''
     episode_m3u8 = show.fetch_episode_m3u8(episode_url)
+    print(episode_m3u8)
 
     # TODO: Background download
 

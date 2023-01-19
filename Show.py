@@ -89,8 +89,8 @@ class Show:
             self._note = result['note'] if 'note' in result.keys() else None
             self._source_id = result['source_id'] if 'source_id' in result.keys() else None
             self._details_url = result['details_url'] if 'details_url' in result.keys() else None
-            self._show_info = result['show_info'] if 'show_info' in result.keys() else None
-        # self._show_title = None
+            if 'show_info' in result.keys(): self._show_info = result['show_info']
+            # self._show_title = None
 
     @property
     def title(self):  # This getter method name is *the* name
@@ -168,6 +168,7 @@ class Show:
 
     @property
     def show_season_index(self):
+        print(self._show_info)
         return self._show_info['season'] if self._show_info['season'] is not None else self.query_season_index()
 
     def generate_prefix(self):
