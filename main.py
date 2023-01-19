@@ -9,11 +9,8 @@ import m3u8_To_MP4
 import typer
 from bs4 import PageElement
 
-import MOV
-import OLEVOD
+import BuDing3
 import Show
-import XiaoBao
-import YingHua
 import utils
 
 # import tvdb_v4_official
@@ -67,10 +64,11 @@ def search_media(query):
 
         query_results: [Show] = []
         # TODO: Search in db first / or put db results first
-        query_results += XiaoBao.search_xiaobao(query)
-        query_results += MOV.search_mov(query)
-        query_results += YingHua.search_yinghua(query)
-        query_results += OLEVOD.search_olevod(query)
+        query_results += BuDing3.search_bu_ding3(query)
+        # query_results += XiaoBao.search_xiaobao(query)
+        # query_results += MOV.search_mov(query)
+        # query_results += YingHua.search_yinghua(query)
+        # query_results += OLEVOD.search_olevod(query)
 
         for result_index, result in enumerate(query_results):
             # print(result.title)
@@ -140,10 +138,11 @@ def search_media(query):
 
             if not os.path.isdir(season_dir):
                 os.mkdir(season_dir)
+
             download_episode(show_prefix, season_index if not_specials else 0, season_dir,
                              episode_index if not_specials else specials_index, episode,
                              chosen_show)
-
+    chosen_show.save_source_details()
     print(show_title, " 下载完成")
 
 

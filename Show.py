@@ -56,6 +56,7 @@ class Source(AutoName):
     OLEVOD = auto()
     MOV = auto()
     YingHua = auto()
+    BuDing3 = auto()
 
 
 class Show:
