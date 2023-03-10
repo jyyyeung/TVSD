@@ -216,12 +216,13 @@ class Show:
     def save_source_details(self):
         show_details = {
             "title": self.title,
-            "source": self.source,
+            "source": self.source.name,
             "details_url": self.details_url,
             "source_id": self.source_id,
             "note": self.note,
-            "details": self.details
+            # "details": self.details
         }
+        print(show_details)
         show_details_json = json.dumps(show_details, indent=4)
         with open("YYYDown_show.json", "w") as outfile:
             outfile.write(show_details_json)

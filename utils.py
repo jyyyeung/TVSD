@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 from MOV import MOV
 from OLEVOD import OLEVOD
@@ -25,3 +26,20 @@ def load_source_details(season_dir: str):
         return YingHua.from_json(show_details)
     if source == Source.OLEVOD:
         return OLEVOD.from_json(show_details)
+
+
+def mkdir_if_no(check_dir: str):
+    if not os.path.isdir(check_dir):
+        os.mkdir(check_dir)
+
+
+def get_next_specials_index(show_dir: str) -> int:
+    existing_episode_indexes: [int] = []
+    specials_dir = show_dir + "/Specials"
+    if os.path.exists(specials_dir):
+        for existing_special in os.listdir(specials_dir):
+            existing_episode_indexes += re.search(r'S00E(\d{2})', existing_special).groups()
+        existing_episode_indexes.sort()
+
+        return int(existing_episode_indexes[-1])
+    return 0

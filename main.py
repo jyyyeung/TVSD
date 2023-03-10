@@ -9,8 +9,9 @@ import m3u8_To_MP4
 import typer
 from bs4 import PageElement
 
-import BuDing3
+import OLEVOD
 import Show
+import XiaoBao
 import utils
 
 # import tvdb_v4_official
@@ -64,11 +65,11 @@ def search_media(query):
 
         query_results: [Show] = []
         # TODO: Search in db first / or put db results first
-        query_results += BuDing3.search_bu_ding3(query)
-        # query_results += XiaoBao.search_xiaobao(query)
+        # query_results += BuDing3.search_bu_ding3(query)
+        query_results += XiaoBao.search_xiaobao(query)
         # query_results += MOV.search_mov(query)
         # query_results += YingHua.search_yinghua(query)
-        # query_results += OLEVOD.search_olevod(query)
+        query_results += OLEVOD.search_olevod(query)
 
         for result_index, result in enumerate(query_results):
             # print(result.title)
@@ -97,8 +98,7 @@ def search_media(query):
 
     # TODO: Check if directory for this show exists, if so, get that directory
     show_dir: str = base_path + '/TV Series/' + show_prefix
-    if not os.path.isdir(show_dir):
-        os.mkdir(show_dir)
+    utils.mkdir_if_no(show_dir)
 
     # TODO: Check monitor file in directory, check files not downloaded
     # IDEA: it is known that hash is unique for a video, if so, hash can be matched to ensure there are no additional ads embedded in videos
@@ -106,7 +106,10 @@ def search_media(query):
                                       type=str, default='Y').capitalize() == 'Y'
 
     episode_index: int = 0
-    specials_index: int = 0
+
+    specials_index: int = utils.get_next_specials_index(show_dir)
+    print(specials_index)
+
     for episode in show_details['episodes']:
         try:
             episode_name = episode["title"]
@@ -124,8 +127,11 @@ def search_media(query):
                 try:
                     episode_number = re.search(
                         r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
-                        episode_name).group()
-                    episode_number = re.findall(r'\d+', episode_number)[0]
+                        episode_name).groups()[0]
+                    # print(episode_number)
+                    episode_index = int(re.findall(r'\d+', episode_number)[0])
+
+                    # print(episode_number)
 
                 except AttributeError:
                     episode_number = episode_index
@@ -136,8 +142,7 @@ def search_media(query):
                 # download_episode(show_prefix, season_dir, episode_index, episode)
                 specials_index += 1
 
-            if not os.path.isdir(season_dir):
-                os.mkdir(season_dir)
+            utils.mkdir_if_no(season_dir)
 
             download_episode(show_prefix, season_index if not_specials else 0, season_dir,
                              episode_index if not_specials else specials_index, episode,
@@ -174,12 +179,19 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         episode_url = episode.find('a')['href']
     episode_filename: Union[
         str, Any] = f"{show_prefix} - S{str(season_index).zfill(2)}E{str(episode_index).zfill(2)} - {episode_name}"
-    print(f"Downloading to file {episode_filename}")
 
     # Check if file exists already
     if os.path.isfile(f"{season_dir}/{episode_filename}.mp4"):
         print(f"{episode_filename} already exists in directory, skipping... ")
         return
+    # specials exists already
+    for existing_episode in os.listdir(season_dir):
+        # print(episode_name, existing_episode)
+        if existing_episode.endswith(".mp4") and episode_name in existing_episode:
+            print(f"{episode_filename} probably exist as {existing_episode}, skipping...")
+            return
+
+    print(f"Downloading to file {episode_filename}")
 
     # print(episode_name, episode_url)
     episode_m3u8 = ''
