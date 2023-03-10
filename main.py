@@ -140,6 +140,7 @@ def search_media(query):
                 print("Episode should be Specials")
                 season_dir = show_dir + "/Specials"
                 # download_episode(show_prefix, season_dir, episode_index, episode)
+                # TODO: Do not increment specials_index if specials exist already
                 specials_index += 1
 
             utils.mkdir_if_no(season_dir)
