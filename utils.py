@@ -38,8 +38,11 @@ def get_next_specials_index(show_dir: str) -> int:
     specials_dir = show_dir + "/Specials"
     if os.path.exists(specials_dir):
         for existing_special in os.listdir(specials_dir):
-            existing_episode_indexes += re.search(r'S00E(\d{2})', existing_special).groups()
+            try:
+                existing_episode_indexes += re.search(r'S00E(\d{2})', existing_special).groups()
+            except AttributeError:
+                print("No Existing Specials")
         existing_episode_indexes.sort()
-
-        return int(existing_episode_indexes[-1])
+        if len(existing_episode_indexes) > 0:
+            return int(existing_episode_indexes[-1])
     return 0

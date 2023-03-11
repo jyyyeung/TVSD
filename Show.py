@@ -4,9 +4,6 @@ from enum import Enum, auto
 import cloudscraper
 import typer
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
-
-ua = UserAgent()
 
 
 def check_season_index(show_title: str) -> int:
@@ -56,7 +53,6 @@ class Source(AutoName):
     OLEVOD = auto()
     MOV = auto()
     YingHua = auto()
-    BuDing3 = auto()
 
 
 class Show:
@@ -90,8 +86,8 @@ class Show:
             self._note = result['note'] if 'note' in result.keys() else None
             self._source_id = result['source_id'] if 'source_id' in result.keys() else None
             self._details_url = result['details_url'] if 'details_url' in result.keys() else None
-            if 'show_info' in result.keys(): self._show_info = result['show_info']
-            # self._show_title = None
+            self._show_info = result['show_info'] if 'show_info' in result.keys() else self._show_info
+        # self._show_title = None
 
     @property
     def title(self):  # This getter method name is *the* name
@@ -159,7 +155,8 @@ class Show:
 
     @property
     def show_begin_year(self):
-        return self._show_info['begin_year'] if self._show_info['begin_year'] is not None else self.query_begin_year
+        return self._show_info['begin_year'] if (self._show_info[
+                                                     'begin_year'] is not None and self.show_season_index == 1) else self.query_begin_year
 
     def query_season_index(self):
         season_index = check_season_index(self.title)
@@ -169,13 +166,14 @@ class Show:
 
     @property
     def show_season_index(self):
-        print(self._show_info)
-        return self._show_info['season'] if self._show_info['season'] is not None else self.query_season_index()
+        return self._show_info['season'] if (self._show_info is not None and self._show_info[
+            'season'] is not None) else self.query_season_index()
 
     def generate_prefix(self):
         show_details = self.fetch_details()
 
         show_title = show_details['title'].partition(" 第")[0]
+        show_details['year'] = self.query_begin_year()
 
         show_prefix: str = show_title + " (" + str(show_details['year']) + ")"
         self._show_info['prefix'] = show_prefix
@@ -216,13 +214,12 @@ class Show:
     def save_source_details(self):
         show_details = {
             "title": self.title,
-            "source": self.source.name,
+            "source": self.source,
             "details_url": self.details_url,
             "source_id": self.source_id,
             "note": self.note,
-            # "details": self.details
+            "details": self.details
         }
-        print(show_details)
         show_details_json = json.dumps(show_details, indent=4)
         with open("YYYDown_show.json", "w") as outfile:
             outfile.write(show_details_json)

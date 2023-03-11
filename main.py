@@ -18,8 +18,17 @@ import utils
 
 app = typer.Typer()
 
+# tempDir = '/Users/yyymx/Movies/temp-parts/'
+# base_path: str = '/Volumes/Viewable'
+#  TODO: Environment variable or something
+temp_base_path = '/home/yyymx/Media/temp-parts/'  # TODO: Create if does not exist
+base_path: str = '/data/nfs/viewable'
+
 global db
 
+
+# TODO: Database query for specials index for a particular episode
+# TODO: Allow submit changes to database?
 
 # Login to TVDB
 # tvdb = tvdb_v4_official.TVDB("afb01b0b-7823-4d53-92b5-078fbd649c49")
@@ -89,7 +98,7 @@ def search_media(query):
 
     # TODO: if from db, fetch year of first season if possible
     # print(season_index)
-    show_year = chosen_show.show_begin_year
+    # show_year = chosen_show.show_begin_year
 
     # TODO: Check
     # show_title = typer.prompt(show_title + '的 general 节目名称是：')
@@ -206,7 +215,8 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
     if 'm3u8' not in episode_m3u8:
         print('m3u8 Load Error, Stream probably does not exist: ' + episode_m3u8)
         return
-    temp_dir = '/Users/yyymx/Movies/temp-parts/' + episode_filename
+    # todo: dynamic directory
+    temp_dir = temp_base_path + episode_filename
     if not os.path.isdir(temp_dir):
         os.mkdir(temp_dir)
         m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
@@ -227,14 +237,16 @@ def check_dir_mounted(path: str):
     :param path: Path to check
     :type path: str
     """
-    if not os.path.ismount(path):
+
+    if not (os.path.ismount(path) and os.path.isdir(path + '/TV Series')):
         print(path, "has not been mounted yet. Exiting...")
         quit()
 
 
 if __name__ == '__main__':
     # app()
-    base_path: str = '/Volumes/Viewable'
+    # todo: dynamic directory
+    # base_path: str = '/Volumes/Viewable'
     check_dir_mounted(base_path)
     # db = fetch_db()
     typer.run(search_media)
