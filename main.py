@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os.path
+import os
 import re
 import shutil
 from difflib import SequenceMatcher
@@ -8,12 +8,12 @@ from typing import Any, Union
 import m3u8_To_MP4
 import typer
 from bs4 import PageElement
+from dotenv import load_dotenv
 
 import OLEVOD
 import Show
-import XiaoBao
 import utils
-from dotenv import load_dotenv
+import XiaoBao
 
 load_dotenv()
 
@@ -25,7 +25,7 @@ app = typer.Typer()
 # base_path: str = '/Volumes/Viewable'
 #  TODO: Environment variable or something
 temp_base_path = os.getenv('TEMP_PATH')  # TODO: Create if does not exist
-base_path: str = os.getenv('DEST_PATH')
+base_path: str|None = os.getenv('DEST_PATH')
 
 global db
 
@@ -137,14 +137,19 @@ def search_media(query):
                 season_dir = show_dir + "/Season " + str(season_index).zfill(2)
                 episode_index += 1
                 try:
-                    episode_number = re.search(
+                    print(episode_name)
+                    episode_number_match = re.match(
                         r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
-                        episode_name).groups()[0]
-                    # print(episode_number)
-                    episode_index = int(re.findall(r'\d+', episode_number)[0])
+                        episode_name).groups()
+                    
+                    # Filter out all None matches
+                    episode_number = [i for i in episode_number_match if i is not None][0]
+                    
+                    print(f"episode_number: {episode_number}")
+                    # episode_index = int(re.findall(r'\d*', episode_number)[0])
+                    episode_index = int(re.findall(r'^\d{1,3}$', episode_number)[0])
 
                     # print(episode_number)
-
                 except AttributeError:
                     episode_number = episode_index
 
