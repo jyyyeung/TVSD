@@ -13,6 +13,9 @@ import OLEVOD
 import Show
 import XiaoBao
 import utils
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # import tvdb_v4_official
 
@@ -21,8 +24,8 @@ app = typer.Typer()
 # tempDir = '/Users/yyymx/Movies/temp-parts/'
 # base_path: str = '/Volumes/Viewable'
 #  TODO: Environment variable or something
-temp_base_path = '/home/yyymx/Media/temp-parts/'  # TODO: Create if does not exist
-base_path: str = '/data/nfs/viewable'
+temp_base_path = os.getenv('TEMP_PATH')  # TODO: Create if does not exist
+base_path: str = os.getenv('DEST_PATH')
 
 global db
 
