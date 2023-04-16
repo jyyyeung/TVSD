@@ -104,9 +104,10 @@ def search_media(query):
     # show_year = chosen_show.show_begin_year
 
     # TODO: Check
-    # show_title = typer.prompt(show_title + '的 general 节目名称是：')
     # TODO: if from db, fetch general title, or directory name from database
     show_prefix = chosen_show.show_prefix
+
+    show_prefix = typer.prompt(text=f'{show_title}的 general 节目名称是：', type=str, default=chosen_show.show_prefix)
 
     # TODO: Check if directory for this show exists, if so, get that directory
     show_dir: str = base_path + '/TV Series/' + show_prefix
@@ -224,7 +225,7 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         print('m3u8 Load Error, Stream probably does not exist: ' + episode_m3u8)
         return
     # todo: dynamic directory
-    temp_dir = temp_base_path + episode_filename
+    temp_dir = temp_base_path+"/" + episode_filename
     if not os.path.isdir(temp_dir):
         os.mkdir(temp_dir)
         m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
