@@ -25,7 +25,7 @@ app = typer.Typer()
 # base_path: str = '/Volumes/Viewable'
 #  TODO: Environment variable or something
 temp_base_path = os.getenv('TEMP_PATH')  # TODO: Create if does not exist
-base_path: str|None = os.getenv('DEST_PATH')
+base_path: str | None = os.getenv('DEST_PATH')
 
 global db
 
@@ -113,7 +113,8 @@ def search_media(query):
     utils.mkdir_if_no(show_dir)
 
     # TODO: Check monitor file in directory, check files not downloaded
-    # IDEA: it is known that hash is unique for a video, if so, hash can be matched to ensure there are no additional ads embedded in videos
+    #  IDEA: it is known that hash is unique for a
+    #  video, if so, hash can be matched to ensure there are no additional ads embedded in videos
     download_all: bool = typer.prompt(text='Would you like to download all episodes? (Y/n)',
                                       type=str, default='Y').capitalize() == 'Y'
 
@@ -141,10 +142,10 @@ def search_media(query):
                     episode_number_match = re.match(
                         r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$",
                         episode_name).groups()
-                    
+
                     # Filter out all None matches
                     episode_number = [i for i in episode_number_match if i is not None][0]
-                    
+
                     print(f"episode_number: {episode_number}")
                     # episode_index = int(re.findall(r'\d*', episode_number)[0])
                     episode_index = int(re.findall(r'^\d{1,3}$', episode_number)[0])
@@ -190,6 +191,12 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         episode_name = episode["title"]
     except KeyError:
         episode_name = episode.find('a').get_text()
+
+    # TODO: Temporary solution, check if 中 exists
+    if '（上' in episode_name or '期上' in episode_name:
+        episode_name = "part1"
+    elif '（下' in episode_name or '期下' in episode_name:
+        episode_name = "part2"
 
     if episode.find('a') is None:
         episode_url = episode['href']
