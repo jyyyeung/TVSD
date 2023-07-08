@@ -10,6 +10,7 @@ import typer
 from bs4 import PageElement
 from dotenv import load_dotenv
 
+import IFY
 import OLEVOD
 import Show
 import utils
@@ -78,10 +79,11 @@ def search_media(query):
         query_results: [Show] = []
         # TODO: Search in db first / or put db results first
         # query_results += BuDing3.search_bu_ding3(query)
-        query_results += XiaoBao.search_xiaobao(query)
+        # query_results += XiaoBao.search_xiaobao(query)
         # query_results += MOV.search_mov(query)
         # query_results += YingHua.search_yinghua(query)
-        query_results += OLEVOD.search_olevod(query)
+        # query_results += OLEVOD.search_olevod(query)
+        query_results += IFY.search_iyf(query)
 
         for result_index, result in enumerate(query_results):
             # print(result.title)
@@ -231,7 +233,7 @@ def download_episode(show_prefix: str, season_index: int, season_dir: str, episo
         print('m3u8 Load Error, Stream probably does not exist: ' + episode_m3u8)
         return
     # todo: dynamic directory
-    temp_dir = temp_base_path + episode_filename
+    temp_dir = temp_base_path+'/' + episode_filename
     if not os.path.isdir(temp_dir):
         os.mkdir(temp_dir)
         m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
