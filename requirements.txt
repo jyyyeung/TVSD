@@ -38,7 +38,6 @@ smmap==5.0.0
 soupsieve==2.4.1
 stevedore==5.1.0
 tqdm==4.65.0
-tvsd==1.0.0a1
 typer==0.7.0
 typing_extensions==4.7.1
 urllib3==1.26.16
