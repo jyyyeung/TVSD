@@ -1,7 +1,7 @@
 beautifulsoup4==4.11.2
 cloudscraper==1.2.68
-m3u8_To_MP4==0.1.11
+m3u8-To-MP4==0.1.11
 python-dotenv==1.0.0
 requests==2.31.0
-requests_html==0.10.0
+requests-html==0.10.0
 typer==0.7.0
