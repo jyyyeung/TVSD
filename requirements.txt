@@ -44,3 +44,8 @@ urllib3==1.26.16
 w3lib==2.1.1
 websockets==10.4
 zipp==3.16.0
+
+mkdocstrings==0.22.0
+mkdocs==1.4.3
+mkdocs-material==9.1.18
+mkdocstrings[python]~=0.22.0
