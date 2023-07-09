@@ -14,7 +14,7 @@ setup(
     name="tvsd",
     alias="tv_series_downloader",
     version="1.0.0-alpha.1",
-    description="A sample Python package",
+    description="search and downloads TV and movies from websites",
     author="JYYYEUNG",
     author_email="yeungjyy@gmail.com",
     url="https://github.com/SheepYY039/tv-series-download",
