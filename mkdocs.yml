@@ -1,0 +1,7 @@
+site_name: TVSeries Download
+plugins:
+  - mkdocstrings
+  - search
+  # - mkdocs-typer
+theme:
+  name: "material"
