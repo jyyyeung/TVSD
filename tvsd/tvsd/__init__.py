@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 
 import typer
 from dotenv import load_dotenv
 from tvsd.download import Download
 from tvsd.search import SearchQuery
-from tvsd.utils import check_dir_mounted
+from tvsd.utils import check_dir_mounted, LOGGER
 
 
 load_dotenv()
@@ -45,4 +46,5 @@ def quick_start():
 
     # TODO: dynamic directory
     check_dir_mounted(base_path)
+    LOGGER.debug("Base path: %s", base_path)
     typer.run(search_media_and_download)

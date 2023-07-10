@@ -6,31 +6,6 @@ from tvsd import utils
 
 if TYPE_CHECKING:
     from tvsd.season import Season
-    from tvsd.show import Show
-
-
-def get_episode_name(episode: "Episode") -> str:
-    """Gets the episode name from the episode object.
-
-    Args:
-        episode (Episode): The episode object.
-
-    Returns:
-        str: The episode name.
-    """
-    if isinstance(episode, Episode):
-        episode_name = episode.name
-    else:
-        # could be a bs4.element.Tag
-        episode.find("a").get_text()
-
-    # TODO: Temporary solution, check if 中 exists
-    if "（上" in episode_name or "期上" in episode_name:
-        episode_name = "part1"
-    elif "（下" in episode_name or "期下" in episode_name:
-        episode_name = "part2"
-
-    return episode_name
 
 
 class Episode:
@@ -156,6 +131,11 @@ class Episode:
         Returns:
             str: The episode name.
         """
+        # TODO: Temporary solution, check if 中 exists
+        # if "（上" in episode_name or "期上" in episode_name:
+        #     episode_name = "part1"
+        # elif "（下" in episode_name or "期下" in episode_name:
+        #     episode_name = "part2"
         return self._name
 
     @property
@@ -180,10 +160,6 @@ class Episode:
         Returns:
             str: The episode url.
         """
-        # if isinstance(self, Episode):
-        #     episode_url = episode.episode_url
-        # else:
-        #     episode_url = episode.find("a")["href"]
         episode_url = self._url
         return episode_url
 
@@ -236,7 +212,7 @@ class Episode:
         Returns:
             str: The m3u8 url of the episode.
         """
-        return self.season.source.fetch_episode_m3u8(episode_url=self._url)
+        return self.season.source.fetch_episode_m3u8(relative_episode_url=self._url)
 
     @property
     def relative_destination_dir(self) -> str:

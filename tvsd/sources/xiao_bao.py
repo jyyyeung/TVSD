@@ -45,15 +45,11 @@ class XiaoBao(Source):
             self._result_list.append(show)
         return self._result_list
 
-    # @classmethod
-    # def from_json(cls, json_content):
-    #     return cls(json_content)
-
     @classmethod
     def parse_from_query(cls, query_result: BeautifulSoup) -> "Season":
         page = query_result.find("a", attrs={"class": "myui-vodlist__thumb"})["href"]
         source_id = re.search(r"/index.php/vod/detail/id/(\d+).html", page).group(1)
-        logging.info(source_id)
+        utils.LOGGER.info(source_id)
         note = query_result.find(
             "span", attrs={"class": "pic-text text-right"}
         ).get_text()
@@ -85,7 +81,7 @@ class XiaoBao(Source):
         """
 
         episode_title = soup.find("a").get_text()
-        logging.info(episode_title)
+        utils.LOGGER.info(episode_title)
         episode_url = soup.find("a", attrs={"class": "btn btn-default"})["href"]
 
         episode_details = {
@@ -107,22 +103,22 @@ class XiaoBao(Source):
         soup = super().fetch_details_soup(season_url)
 
         title = str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
-        logging.info(title)
+        utils.LOGGER.info(title)
         description = (
             soup.find(
                 "span", attrs={"class": "data", "style": "display: none;"}
             ).get_text()
             or None
         )
-        logging.info(description)
+        utils.LOGGER.info(description)
         episodes = (
             soup.find("ul", attrs={"class": "myui-content__list"}).contents or None
         )
-        logging.info(episodes)
+        utils.LOGGER.info(episodes)
         year = (
             str(soup.find("p", attrs={"class": "data"}).contents[-1].get_text()) or None
         )
-        logging.info(year)
+        utils.LOGGER.info(year)
 
         details = {
             "title": title,

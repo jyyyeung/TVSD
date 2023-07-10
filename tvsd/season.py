@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import List, Callable, TYPE_CHECKING
 from bs4 import Tag
@@ -8,6 +7,7 @@ import typer
 
 from tvsd.show import Show
 from tvsd.episode import Episode
+from tvsd.utils import LOGGER
 
 
 if TYPE_CHECKING:
@@ -198,7 +198,7 @@ class Season:
         Returns:
             str: year of the season
         """
-        logging.info(self)
+        LOGGER.info(self)
         return self._year
 
     @property

@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from typing import List
@@ -16,15 +17,26 @@ SCRAPER = cloudscraper.create_scraper(
     },
 )
 
+LOGGER = logging
+LOGGER.basicConfig(level=logging.DEBUG)
 
-def mkdir_if_no(check_dir: str):
+
+def mkdir_if_no(check_dir: str, recursive: bool = True):
     """Creates a directory if it does not exist
 
     Args:
         check_dir (str): Directory to check
     """
     if not os.path.isdir(check_dir):
-        os.mkdir(check_dir)
+        if recursive:
+            os.makedirs(check_dir, exist_ok=True)
+        else:
+            try:
+                os.mkdir(check_dir)
+            except FileNotFoundError:
+                LOGGER.error(
+                    f"Parent directory does not exist, cannot create directory {check_dir}"
+                )
 
 
 def mkdir_from_base(check_dir: str):

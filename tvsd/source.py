@@ -1,15 +1,16 @@
 import json
+import logging
 import os
-from typing import TYPE_CHECKING, Any, List, Union
-from bs4 import BeautifulSoup, ResultSet
+from typing import Any, List, Union
+from typing_extensions import Literal
+from bs4 import BeautifulSoup, ResultSet, Tag
+from tvsd import utils
+from abc import ABC, abstractmethod
+from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
 
-import cloudscraper
 
 from tvsd.show import Show
-
-if TYPE_CHECKING:
-    from tvsd.season import Season
-    from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
+from tvsd.season import Season
 
 
 def load_source_details(season_dir: str):
@@ -41,57 +42,88 @@ def load_source_details(season_dir: str):
     #     return OLEVOD.from_json(show_details)
 
 
-class Source:
+class Source(ABC):
     """Source class"""
 
     def __init__(self) -> None:
-        self._scraper = cloudscraper.create_scraper(
-            delay=10,
-            browser={
-                "custom": "ScraperBot/1.0",
-            },
-        )
         self._query: str
         self._results: List[Season]
         self._exists_locally: bool
         self._chosen_show: Season
 
-        self._search_url: str = None
-        self._search_result_page: str = None
         self._query_result_soup: BeautifulSoup = None
         self._result_list: Union[Show, Season] = []
-        self._result_index: int = 1
         self._query_results: ResultSet[Any] = None
 
-    @classmethod
-    def fetch_details_soup(cls, details_url: str) -> BeautifulSoup:
-        """Grabs the details page soup
+    # @classmethod
+    # def parse_from_json(cls, json_content):
+    #     return cls(json_content)
+
+    ### SEARCHING FOR A SHOW ###
+
+    def query_from_source(
+        self, search_query: str
+    ) -> List[Union[Literal["Show"], Literal["Season"]]]:
+        """Searches for a show
 
         Returns:
-            BeautifulSoup: Soup of details page
+            Union(List[Show, Season], []): List of shows or seasons
         """
-        scraper = cloudscraper.create_scraper(
-            delay=10,
-            browser={
-                "custom": "ScraperBot/1.0",
-            },
-        )
-        show_details_page = scraper.get(details_url).content
-        soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
-        return soup
+        search_url = self._search_url(search_query)
+        utils.LOGGER.debug(f"Searching for {search_query} in {search_url}")
+        query_result_soup = self.get_query_result_soup(search_url)
+        query_results = self._get_query_results(query_result_soup)
+        # Below are same for all
+        self._result_list: Union([Show, Season], []) = []
 
-    @classmethod
-    def query_from_source(cls, query: str):
-        """Queries the source for the query
+        for result in query_results:
+            show = self.parse_from_query(result)
+            self._result_list.append(show)
+        return self._result_list
+
+    @abstractmethod
+    def _search_url(self, search_query: str) -> str:
+        """Returns the search url for where to search for the query
 
         Args:
             query (str): Query to search for
+
+        Returns:
+            str: Search url
+        """
+        return ""
+
+    @abstractmethod
+    def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
+        """Returns the query results from the soup
+
+        Args:
+            query_result_soup (BeautifulSoup): Soup of the query result
+
+        Returns:
+            ResultSet[Any]: Query results
         """
         pass
 
-    @classmethod
+    def get_query_result_soup(self, search_url: str) -> BeautifulSoup:
+        """Returns the query result soup
+
+        Args:
+            search_url (str): Search url
+
+        Returns:
+            BeautifulSoup: Query result soup
+        """
+        search_result_page = utils.SCRAPER.get(search_url).content
+        query_result_soup: BeautifulSoup = BeautifulSoup(
+            search_result_page, "html.parser"
+        )
+        return query_result_soup
+
+    ##### PARSE EPISODE DETAILS FROM URL #####
+
     def parse_episode_details_from_li(
-        cls, soup: BeautifulSoup
+        self, soup: BeautifulSoup
     ) -> "EpisodeDetailsFromURL":
         """Parses the episode details from the soup
 
@@ -101,14 +133,40 @@ class Source:
         Returns:
             Episode: Episode object
         """
-        pass
 
-    @classmethod
-    def parse_from_json(cls, json_content):
-        return cls(json_content)
+        episode_details = {
+            "title": self._set_episode_title(soup),
+            "url": self._set_relative_episode_url(soup),
+        }
+        return EpisodeDetailsFromURL(episode_details)
 
-    @classmethod
-    def parse_from_query(cls, query_result: BeautifulSoup) -> "Season":
+    @abstractmethod
+    def _set_episode_title(self, soup: Tag) -> str:
+        """Sets the episode title
+
+        Args:
+            soup (Tag): Soup of the episode details page
+
+        Returns:
+            str: Episode title
+        """
+        return ""
+
+    @abstractmethod
+    def _set_relative_episode_url(self, soup: Tag) -> str:
+        """Sets the relative episode url
+
+        Args:
+            soup (Tag): Soup of the episode details page
+
+        Returns:
+            str: Relative episode url
+        """
+        return ""
+
+    ##### PARSE SEASON FROM QUERY RESULT #####
+
+    def parse_from_query(self, query_result: BeautifulSoup) -> "Season":
         """Parses the query result
 
         Args:
@@ -117,10 +175,62 @@ class Source:
         Returns:
             Season: Season object
         """
-        pass
+        source_id = self.get_result_source_id(query_result)
+        note = self._get_result_note(query_result)
+        details_url = self._get_result_details_url(source_id)
 
-    @classmethod
-    def parse_season_from_details_url(cls, season_url: str) -> "SeasonDetailsFromURL":
+        details: "SeasonDetailsFromURL" = self.parse_season_from_details_url(
+            details_url
+        )
+        season = Season(
+            note=note,
+            details=details,
+            details_url=details_url,
+            fetch_episode_m3u8=self.fetch_episode_m3u8,
+            episodes=details["episodes"],
+            source=self,
+        )
+        return season
+
+    @abstractmethod
+    def _get_result_note(self, query_result: BeautifulSoup) -> str:
+        """Gets the result note
+
+        Args:
+            query_result (BeautifulSoup): Query result
+
+        Returns:
+            str: Result note
+        """
+        return ""
+
+    @abstractmethod
+    def get_result_source_id(self, query_result: BeautifulSoup) -> str:
+        """Gets the result source id
+
+        Args:
+            query_result (BeautifulSoup): Query result
+
+        Returns:
+            str: Result source id
+        """
+        return ""
+
+    @abstractmethod
+    def _get_result_details_url(self, source_id: str) -> str:
+        """Gets the result details url
+
+        Args:
+            source_id (str): Result source id
+
+        Returns:
+            str: Result details url
+        """
+        return ""
+
+    #### PARSE SEASON DETAILS FROM DETAILS URL ####
+
+    def parse_season_from_details_url(self, season_url: str) -> "SeasonDetailsFromURL":
         """Parses details from details url
 
         Args:
@@ -129,10 +239,79 @@ class Source:
         Returns:
             dict: Details found on the details page
         """
-        print("Method for finding details from this source is undefined...")
-        return {}
+        soup = self.fetch_details_soup(season_url)
+        details = {
+            "title": self._set_season_title(soup),
+            "description": self._set_season_description(soup),
+            "episodes": self._set_season_episodes(soup),
+            "year": self._set_season_year(soup),
+        }
 
-    def fetch_episode_m3u8(self, episode_url: str) -> str:
+        # print("Method for finding details from this source is undefined...")
+        return SeasonDetailsFromURL(details)
+
+    def fetch_details_soup(self, details_url: str) -> BeautifulSoup:
+        """Grabs the details page soup
+
+        Returns:
+            BeautifulSoup: Soup of details page
+        """
+
+        show_details_page = utils.SCRAPER.get(details_url).content
+        soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
+        return soup
+
+    @abstractmethod
+    def _set_season_title(self, soup: BeautifulSoup) -> str:
+        """Sets the season title
+
+        Args:
+            soup (BeautifulSoup): Soup of the season details page
+
+        Returns:
+            str: Season title
+        """
+        return ""
+
+    @abstractmethod
+    def _set_season_description(self, soup: BeautifulSoup) -> str:
+        """Sets the season description
+
+        Args:
+            soup (BeautifulSoup): Soup of the season details page
+
+        Returns:
+            str: Season description
+        """
+        return ""
+
+    @abstractmethod
+    def _set_season_episodes(self, soup: BeautifulSoup) -> List[str]:
+        """Sets the season episodes
+
+        Args:
+            soup (BeautifulSoup): Soup of the season details page
+
+        Returns:
+            List[str]: Season episodes
+        """
+        return []
+
+    @abstractmethod
+    def _set_season_year(self, soup: BeautifulSoup) -> str:
+        """Sets the season year
+
+        Args:
+            soup (BeautifulSoup): Soup of the season details page
+
+        Returns:
+            str: Season year
+        """
+        return ""
+
+    ######## FETCH EPISODE M3U8 ########
+
+    def fetch_episode_m3u8(self, relative_episode_url: str) -> str:
         """Fetches the m3u8 url for the episode
 
         Args:
@@ -141,4 +320,56 @@ class Source:
         Returns:
             str | None: m3u8 url
         """
-        print("Method for finding episode m3u8 from this source is undefined...")
+        episode_url = self._episode_url(relative_episode_url)
+        episode_details_page = utils.SCRAPER.get(episode_url).content
+        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
+        episode_script = self._set_episode_script(episode_soup)
+        episode_m3u8 = self._set_episode_m3u8(episode_script)
+        return episode_m3u8
+
+    @abstractmethod
+    def _episode_url(self, relative_episode_url: str) -> str:
+        """Returns the episode url
+
+        Args:
+            relative_episode_url (str): Relative episode url
+
+        Returns:
+            str: Episode url
+        """
+        return relative_episode_url
+
+    @abstractmethod
+    def _set_episode_script(self, episode_soup: BeautifulSoup) -> str:
+        """Sets the episode script
+
+        Args:
+            episode_soup (BeautifulSoup): Soup of the episode details page
+
+        Returns:
+            str: Episode script
+        """
+        return ""
+
+    @abstractmethod
+    def _set_episode_m3u8(self, episode_script: str) -> str:
+        """Sets the episode m3u8
+
+        Args:
+            episode_script (str): Episode script
+
+        Returns:
+            str: Episode m3u8
+        """
+        return ""
+
+    ################
+
+    @property
+    def source_name(self) -> str:
+        """Returns the name of the class
+
+        Returns:
+            str: Name of the class
+        """
+        return self.__class__.__name__
