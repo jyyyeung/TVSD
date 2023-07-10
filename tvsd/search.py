@@ -30,7 +30,8 @@ class SearchQuery:
         Args:
             base_path (str): Base path to local media directory
         """
-        # self.check_local_shows(base_path)
+        if False:
+            self.check_local_shows(base_path)
 
         if not self._exists_locally or self._chosen_show is None:
             self.find_shows_online()
@@ -78,18 +79,15 @@ class SearchQuery:
 
         LOGGER.debug("Searching for %s", self._query)
 
+        query_results += OLEVOD().query_from_source(self._query)
+        query_results += XiaoBao().query_from_source(self._query)
         # query_results += BuDing3.search_bu_ding3(query)
-        # query_results += XiaoBao.search_xiaobao(query)
         # query_results += MOV.search_mov(query)
         # query_results += YingHua.search_yinghua(query)
-        # query_results += XiaoBao().query(self._query)
-        query_results += OLEVOD().query_from_source(self._query)
-        # query_results += OLEVOD.search_olevod(self._query)
         # query_results += IFY.search_iyf(self._query)
 
         # enumerate results for printing
         for result_index, result in enumerate(query_results):
-            # print(result.title)
             print(result_index, result.title, result.source.source_name, result.note)
 
         self._chosen_show = query_results[typer.prompt(text="请选择你下载的节目", type=int)]

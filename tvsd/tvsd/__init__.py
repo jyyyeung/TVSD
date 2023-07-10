@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
-import logging
 import os
+import sys
 
 import typer
 from dotenv import load_dotenv
@@ -45,6 +44,7 @@ def quick_start():
     """Quick start"""
 
     # TODO: dynamic directory
-    check_dir_mounted(base_path)
+    if not check_dir_mounted(base_path):
+        sys.exit()
     LOGGER.debug("Base path: %s", base_path)
     typer.run(search_media_and_download)

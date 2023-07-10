@@ -4,12 +4,6 @@ import re
 from typing import List
 import cloudscraper
 
-# from MOV import MOV
-# from OLEVOD import OLEVOD
-# from Show import Source
-# from XiaoBao import XiaoBao
-# from YingHua import YingHua
-
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
     browser={
@@ -110,13 +104,17 @@ def get_next_specials_index(show_dir: str) -> int:
     return 0
 
 
-def check_dir_mounted(path: str):
-    """
-    Check if a directory exists
-    :param path: Path to check
-    :type path: str
+def check_dir_mounted(path: str) -> bool:
+    """Check if a directory Exists
+
+    Args:
+        path (str): Path to check
+
+    Returns:
+        bool: True if directory exists
     """
 
-    if not (os.path.ismount(path) and os.path.isdir(path + "/TV Series")):
-        print(path, "has not been mounted yet. Exiting...")
-        os.system.exit(1)
+    if os.path.ismount(path) and os.path.isdir(path + "/TV Series"):
+        return True
+    print(path, "has not been mounted yet. Exiting...")
+    return False

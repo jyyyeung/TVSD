@@ -9,11 +9,23 @@ from tvsd.source import Source
 class OLEVOD(Source):
     """Olevod class"""
 
+    ### SEARCHING FOR A SHOW ###
+
     def _search_url(self, search_query: str) -> str:
         return f"https://www.olevod.com/index.php/vod/search.html?wd={search_query}&submit="
 
     def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
         return query_result_soup.find_all("li", attrs={"class": "searchlist_item"})
+
+    ##### PARSE EPISODE DETAILS FROM URL #####
+
+    def _set_relative_episode_url(self, soup: Tag) -> str:
+        return soup.find("a")["href"]
+
+    def _set_season_title(self, soup: BeautifulSoup):
+        return soup.find("h2", attrs={"class": "title"}).get_text()
+
+    ##### PARSE SEASON FROM QUERY RESULT #####
 
     def _get_result_note(self, query_result: BeautifulSoup) -> str:
         try:
@@ -31,14 +43,10 @@ class OLEVOD(Source):
     def _get_result_details_url(self, source_id: str) -> str:
         return f"https://www.olevod.com/index.php/vod/detail/id/{source_id}.html"
 
+    #### PARSE SEASON DETAILS FROM DETAILS URL ####
+
     def _set_episode_title(self, soup: Tag) -> str:
         return soup.find("a").get_text()
-
-    def _set_relative_episode_url(self, soup: Tag) -> str:
-        return soup.find("a")["href"]
-
-    def _set_season_title(self, soup: BeautifulSoup):
-        return soup.find("h2", attrs={"class": "title"}).get_text()
 
     def _set_season_description(self, soup: BeautifulSoup):
         return soup.find("div", attrs={"class": "content_desc"}).find("span").get_text()
@@ -50,6 +58,8 @@ class OLEVOD(Source):
         return soup.find(
             "a", {"href": re.compile(r"/index.php/vod/search/year/[0-9]{4}.html")}
         ).get_text()
+
+    ######## FETCH EPISODE M3U8 ########
 
     def _episode_url(self, relative_episode_url: str) -> str:
         return "https://www.olevod.com" + relative_episode_url
