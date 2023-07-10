@@ -4,10 +4,15 @@ from typing import Any
 from bs4 import BeautifulSoup, ResultSet, Tag
 
 from tvsd.source import Source
+from tvsd.utils import LOGGER
 
 
 class XiaoBao(Source):
     """XiaoBao class"""
+
+    def __init__(self):
+        super().__init__()  # Call parent constructor
+        self.__status__ = "active"
 
     ### SEARCHING FOR A SHOW ###
 
@@ -22,7 +27,7 @@ class XiaoBao(Source):
     ##### PARSE EPISODE DETAILS FROM URL #####
 
     def _set_season_title(self, soup: BeautifulSoup):
-        return soup.find("a").get_text()
+        return str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
 
     def _set_relative_episode_url(self, soup: Tag) -> str:
         return soup.find("a", attrs={"class": "btn btn-default"})["href"]
@@ -35,12 +40,13 @@ class XiaoBao(Source):
         ).get_text()
         return note
 
-    def get_result_source_id(self, query_result: BeautifulSoup) -> str:
+    def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
         page = query_result.find("a", attrs={"class": "myui-vodlist__thumb"})["href"]
         source_id = re.search(r"/index.php/vod/detail/id/(\d+).html", page).group(1)
         return source_id
 
-    def _get_result_details_url(self, source_id: str) -> str:
+    def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
+        source_id = self._get_result_source_id(query_result=query_result)
         return f"https://xiaoheimi.net/index.php/vod/detail/id/{source_id}.html"
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####

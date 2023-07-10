@@ -1,52 +1,64 @@
-from typing import Any, re
+import re
+from typing import Any
 
-import cloudscraper
-from bs4 import BeautifulSoup, ResultSet
+from bs4 import BeautifulSoup, ResultSet, Tag
 
-from Show import Show, Source
+from tvsd.source import Source
 
-
-def search_mov(query: str):
-    search_url: str = f"https://ww1.new-movies123.co/search/{query}"
-    scraper = cloudscraper.create_scraper(delay=10, browser={ 'custom': 'ScraperBot/1.0', })
-    search_result_page = scraper.get(search_url).content
-    query_result_soup: BeautifulSoup = BeautifulSoup(search_result_page, 'html.parser')
-    query_results: ResultSet[Any] = query_result_soup.find_all('a', attrs={ 'class': 'item_series' })
-    result_list = []
-    result_index: int = 1
-
-    for result in query_results:
-        show = MOV.from_query(result)
-        result_list.append(show)
-    return result_list
+__status__ = "Development"
 
 
-class MOV(Show):
-    def __init__(self, result):
-        super().__init__(Source.MOV, result)
+class Mov(Source):
+    """Mov class"""
 
-    @classmethod
-    def from_json(cls, json_content):
-        return cls(json_content)
+    ### SEARCHING FOR A SHOW ###
 
-    @classmethod
-    def from_query(cls, query_result):
-        data = {
-            'title': query_result['title'],
-            'note': None,
-            'source_id': None,
-            'details_url': f'https://ww1.new-movies123.co{query_result["href"]}'
-        }
+    def _search_url(self, search_query: str) -> str:
+        return f"https://ww1.new-movies123.co/search/{search_query}"
 
-        return cls(data)
+    def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
+        return query_result_soup.find_all("a", attrs={"class": "item_series"})
 
-    def fetch_details(self):
-        soup = super().fetch_details_soup()
+    ##### PARSE EPISODE DETAILS FROM URL #####
 
-        self.details['title'] = self.title
-        self.details['episodes'] = soup.find("div", attrs={ "aria-labelledby": "episodes-select-tab" }).find_all('a')
-        self.details['year'] = soup.find('a', { 'href': re.compile(r'/year/[0-9]{4}') }).get_text()
-        print(self.details['episodes'])
-        print(self.details['year'])
+    def _set_season_title(self, soup: BeautifulSoup):
+        return None
+
+    def _set_relative_episode_url(self, soup: Tag) -> str:
+        return None
+
+    ##### PARSE SEASON FROM QUERY RESULT #####
+
+    def _get_result_note(self, query_result: BeautifulSoup) -> str:
+        return None
+
+    def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
+        return f'https://ww1.new-movies123.co{query_result["href"]}'
+
+    #### PARSE SEASON DETAILS FROM DETAILS URL ####
+
+    def _set_episode_title(self, soup: Tag) -> str:
+        return None
+
+    def _set_season_description(self, soup: BeautifulSoup):
+        return None
+
+    def _set_season_episodes(self, soup: BeautifulSoup):
+        return soup.find(
+            "div", attrs={"aria-labelledby": "episodes-select-tab"}
+        ).find_all("a")
+
+    def _set_season_year(self, soup: BeautifulSoup):
+        return soup.find("a", {"href": re.compile(r"/year/[0-9]{4}")}).get_text()
+
+    ######## FETCH EPISODE M3U8 ########
+
+    def _episode_url(self, relative_episode_url: str) -> str:
         # BUG: Can't find link to good quality video
-        return self.details
+        return None
+
+    def _set_episode_script(self, episode_soup: BeautifulSoup) -> str:
+        return None
+
+    def _set_episode_m3u8(self, episode_script: str) -> str:
+        return None

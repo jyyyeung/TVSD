@@ -1,11 +1,17 @@
 from difflib import SequenceMatcher
+import inspect
 import os
+import pyclbr
+import sys
 from typing import TYPE_CHECKING, Any, Literal, Union, List
 from bs4 import PageElement
 
 import typer
-from tvsd.sources.xiao_bao import XiaoBao
 
+
+from tvsd import sources
+from tvsd.source import Source
+from tvsd.sources.xiao_bao import XiaoBao
 from tvsd.sources.olevod import OLEVOD
 
 from tvsd.utils import LOGGER
@@ -79,14 +85,21 @@ class SearchQuery:
 
         LOGGER.debug("Searching for %s", self._query)
 
-        query_results += OLEVOD().query_from_source(self._query)
-        query_results += XiaoBao().query_from_source(self._query)
-        # query_results += BuDing3.search_bu_ding3(query)
-        # query_results += MOV.search_mov(query)
-        # query_results += YingHua.search_yinghua(query)
-        # query_results += IFY.search_iyf(self._query)
+        for file in dir(sources):
+            if not file.startswith("__"):
+                for cls_name, cls_obj in inspect.getmembers(
+                    sys.modules[f"tvsd.sources.{file}"]
+                ):
+                    if cls_name == "Source":
+                        continue
+                    if (
+                        inspect.isclass(cls_obj)
+                        and issubclass(cls_obj, Source)
+                        and cls_obj().__status__ == "active"
+                    ):
+                        LOGGER.info(f"Searching {cls_name}...")
+                        query_results += cls_obj().query_from_source(self._query)
 
-        # enumerate results for printing
         for result_index, result in enumerate(query_results):
             print(result_index, result.title, result.source.source_name, result.note)
 

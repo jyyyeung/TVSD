@@ -55,6 +55,8 @@ class Source(ABC):
         self._result_list: Union[Show, Season] = []
         self._query_results: ResultSet[Any] = None
 
+        self.__status__ = "parent"
+
     # @classmethod
     # def parse_from_json(cls, json_content):
     #     return cls(json_content)
@@ -175,10 +177,10 @@ class Source(ABC):
         Returns:
             Season: Season object
         """
-        source_id = self.get_result_source_id(query_result)
-        note = self._get_result_note(query_result)
-        details_url = self._get_result_details_url(source_id)
 
+        details_url = self._get_result_details_url(query_result)
+
+        note = self._get_result_note(query_result)
         details: "SeasonDetailsFromURL" = self.parse_season_from_details_url(
             details_url
         )
@@ -205,7 +207,7 @@ class Source(ABC):
         return ""
 
     @abstractmethod
-    def get_result_source_id(self, query_result: BeautifulSoup) -> str:
+    def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
         """Gets the result source id
 
         Args:
@@ -217,7 +219,7 @@ class Source(ABC):
         return ""
 
     @abstractmethod
-    def _get_result_details_url(self, source_id: str) -> str:
+    def _get_result_details_url(self, query_result: str) -> str:
         """Gets the result details url
 
         Args:

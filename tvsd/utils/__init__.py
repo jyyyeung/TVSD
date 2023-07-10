@@ -3,6 +3,7 @@ import os
 import re
 from typing import List
 import cloudscraper
+from dotenv import load_dotenv
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
@@ -13,6 +14,12 @@ SCRAPER = cloudscraper.create_scraper(
 
 LOGGER = logging
 LOGGER.basicConfig(level=logging.DEBUG)
+
+load_dotenv()
+
+
+TEMP_BASE_PATH = os.getenv("TEMP_PATH")
+BASE_PATH: str = os.getenv("DEST_PATH")
 
 
 def mkdir_if_no(check_dir: str, recursive: bool = True):

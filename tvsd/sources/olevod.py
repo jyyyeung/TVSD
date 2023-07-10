@@ -9,6 +9,10 @@ from tvsd.source import Source
 class OLEVOD(Source):
     """Olevod class"""
 
+    def __init__(self):
+        super().__init__()  # Call parent constructor
+        self.__status__ = "active"
+
     ### SEARCHING FOR A SHOW ###
 
     def _search_url(self, search_query: str) -> str:
@@ -36,11 +40,13 @@ class OLEVOD(Source):
             note = ""
         return note
 
-    def get_result_source_id(self, query_result: BeautifulSoup) -> str:
+    def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
         page = query_result.find("a", attrs={"class": "vodlist_thumb"})["href"]
         return re.search(r"/index.php/vod/detail/id/(\d+).html", page).group(1)
 
-    def _get_result_details_url(self, source_id: str) -> str:
+    def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
+        source_id = self._get_result_source_id(query_result=query_result)
+
         return f"https://www.olevod.com/index.php/vod/detail/id/{source_id}.html"
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
