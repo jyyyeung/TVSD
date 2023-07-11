@@ -11,6 +11,7 @@ import typer
 
 from tvsd import sources
 from tvsd.source import Source
+from tvsd.sources.ssstv import SSSTV
 from tvsd.sources.xiao_bao import XiaoBao
 from tvsd.sources.olevod import OLEVOD
 
@@ -86,6 +87,7 @@ class SearchQuery:
         LOGGER.debug("Searching for %s", self._query)
 
         for file in dir(sources):
+            LOGGER.debug(f"Found {file}...")
             if not file.startswith("__"):
                 for cls_name, cls_obj in inspect.getmembers(
                     sys.modules[f"tvsd.sources.{file}"]
