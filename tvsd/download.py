@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from typing import Literal
@@ -67,14 +66,14 @@ class Download:
     @dispatch(Show)
     def download_all(self, show: Literal["Show"]):
         """Download all episodes in a show"""
-        logging.debug("Downloading all episodes in show")
+        utils.LOGGER.debug("Downloading all episodes in show")
         for season in show.seasons:
             self.download_all(season)
 
     @dispatch(Season)
     def download_all(self, season: Literal["Season"]):
         """Download all episodes in a season"""
-        logging.info("Downloading all episodes in season")
+        utils.LOGGER.info("Downloading all episodes in season")
 
         # reset episode index
         self._specials_index = 1
@@ -131,7 +130,7 @@ class Download:
         absolute_dest_dir = os.path.join(
             self._base_path, episode.relative_destination_dir
         )
-        logging.info(absolute_dest_dir)
+        utils.LOGGER.info(absolute_dest_dir)
         utils.mkdir_if_no(absolute_dest_dir)
 
         if episode.file_exists_locally:
@@ -149,7 +148,7 @@ class Download:
             print("m3u8 Load Error, Stream probably does not exist: " + episode_m3u8)
             return
 
-        # todo: dynamic directory
+        # TODO: dynamic directory
         temp_dir = os.path.join(self._temp_base_path, episode.filename)
         if not os.path.isdir(temp_dir):
             os.mkdir(temp_dir)

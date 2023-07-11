@@ -1,13 +1,9 @@
+import logging
 import os
 import re
 from typing import List
 import cloudscraper
-
-# from MOV import MOV
-# from OLEVOD import OLEVOD
-# from Show import Source
-# from XiaoBao import XiaoBao
-# from YingHua import YingHua
+from dotenv import load_dotenv
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
@@ -16,15 +12,32 @@ SCRAPER = cloudscraper.create_scraper(
     },
 )
 
+LOGGER = logging
+LOGGER.basicConfig(level=logging.DEBUG)
 
-def mkdir_if_no(check_dir: str):
+load_dotenv()
+
+
+TEMP_BASE_PATH = os.getenv("TEMP_PATH")
+BASE_PATH: str = os.getenv("DEST_PATH")
+
+
+def mkdir_if_no(check_dir: str, recursive: bool = True):
     """Creates a directory if it does not exist
 
     Args:
         check_dir (str): Directory to check
     """
     if not os.path.isdir(check_dir):
-        os.mkdir(check_dir)
+        if recursive:
+            os.makedirs(check_dir, exist_ok=True)
+        else:
+            try:
+                os.mkdir(check_dir)
+            except FileNotFoundError:
+                LOGGER.error(
+                    f"Parent directory does not exist, cannot create directory {check_dir}"
+                )
 
 
 def mkdir_from_base(check_dir: str):
@@ -98,13 +111,17 @@ def get_next_specials_index(show_dir: str) -> int:
     return 0
 
 
-def check_dir_mounted(path: str):
-    """
-    Check if a directory exists
-    :param path: Path to check
-    :type path: str
+def check_dir_mounted(path: str) -> bool:
+    """Check if a directory Exists
+
+    Args:
+        path (str): Path to check
+
+    Returns:
+        bool: True if directory exists
     """
 
-    if not (os.path.ismount(path) and os.path.isdir(path + "/TV Series")):
-        print(path, "has not been mounted yet. Exiting...")
-        os.system.exit(1)
+    if os.path.ismount(path) and os.path.isdir(path + "/TV Series"):
+        return True
+    print(path, "has not been mounted yet. Exiting...")
+    return False

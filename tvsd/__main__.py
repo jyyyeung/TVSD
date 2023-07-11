@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
-# from . import quick_start
+from tvsd import cli
 
 
-from tvsd.tvsd import quick_start
+def main():
+    cli.app(prog_name="tvsd")
 
 
 if __name__ == "__main__":
-    quick_start()
+    main()

@@ -1,155 +1,82 @@
-import logging
 import re
-from typing import TYPE_CHECKING, Any, List, Union
-from typing_extensions import Literal
+from typing import Any
 
 from bs4 import BeautifulSoup, ResultSet, Tag
-from tvsd import utils
-from tvsd.source import Source
-from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
-from tvsd.season import Season
 
-if TYPE_CHECKING:
-    from tvsd.show import Show
+from tvsd.source import Source
 
 
 class XiaoBao(Source):
     """XiaoBao class"""
 
-    def query(
-        self, search_query: str
-    ) -> List[Union[Literal["Show"], Literal["Season"]]]:
-        """Searches for a show
+    def __init__(self):
+        super().__init__()  # Call parent constructor
+        self.__status__ = "active"
 
-        Returns:
-            Union(List[Show, Season], []): List of shows or seasons
-        """
-        self._search_url: str = (
+    ### SEARCHING FOR A SHOW ###
+
+    def _search_url(self, search_query: str) -> str:
+        return (
             f"https://xiaoheimi.net/index.php/vod/search.html?wd={search_query}&submit="
         )
-        scraper = self._scraper
-        self._search_result_page = scraper.get(self._search_url).content
 
-        self._query_result_soup: BeautifulSoup = BeautifulSoup(
-            self._search_result_page, "html.parser"
-        )
+    def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
+        return query_result_soup.find_all("li", attrs={"class": "clearfix"})
 
-        self._query_results: ResultSet[Any] = self._query_result_soup.find_all(
-            "li", attrs={"class": "clearfix"}
-        )
-        self._result_list: Union([Show, Season], []) = []
-        self._result_index: int = 1
+    ##### PARSE EPISODE DETAILS FROM URL #####
 
-        for result in self._query_results:
-            show = self.parse_from_query(result)
-            self._result_list.append(show)
-        return self._result_list
+    def _set_season_title(self, soup: BeautifulSoup):
+        return str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
 
-    # @classmethod
-    # def from_json(cls, json_content):
-    #     return cls(json_content)
+    def _set_relative_episode_url(self, soup: Tag) -> str:
+        return soup.find("a", attrs={"class": "btn btn-default"})["href"]
 
-    @classmethod
-    def parse_from_query(cls, query_result: BeautifulSoup) -> "Season":
-        page = query_result.find("a", attrs={"class": "myui-vodlist__thumb"})["href"]
-        source_id = re.search(r"/index.php/vod/detail/id/(\d+).html", page).group(1)
-        logging.info(source_id)
+    ##### PARSE SEASON FROM QUERY RESULT #####
+
+    def _get_result_note(self, query_result: BeautifulSoup) -> str:
         note = query_result.find(
             "span", attrs={"class": "pic-text text-right"}
         ).get_text()
-        details_url: str = (
-            f"https://xiaoheimi.net/index.php/vod/detail/id/{source_id}.html"
-        )
-        details: "SeasonDetailsFromURL" = cls.parse_season_from_details_url(details_url)
+        return note
 
-        season = Season(
-            note=note,
-            details=details,
-            details_url=details_url,
-            fetch_episode_m3u8=cls.fetch_episode_m3u8,
-            episodes=details["episodes"],
-            source=cls,
-        )
+    def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
+        page = query_result.find("a", attrs={"class": "myui-vodlist__thumb"})["href"]
+        source_id = re.search(r"/index.php/vod/detail/id/(\d+).html", page).group(1)
+        return source_id
 
-        return season
+    def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
+        source_id = self._get_result_source_id(query_result=query_result)
+        return f"https://xiaoheimi.net/index.php/vod/detail/id/{source_id}.html"
 
-    @classmethod
-    def parse_episode_details_from_li(cls, soup: Tag) -> "EpisodeDetailsFromURL":
-        """Parses the episode details from the soup
+    #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
-        Args:
-            soup (BeautifulSoup): Soup of the episode details page
+    def _set_episode_title(self, soup: Tag) -> str:
+        return str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
 
-        Returns:
-            Episode: Episode object
-        """
+    def _set_season_description(self, soup: BeautifulSoup):
+        return soup.find(
+            "span", attrs={"class": "data", "style": "display: none;"}
+        ).get_text()
 
-        episode_title = soup.find("a").get_text()
-        logging.info(episode_title)
-        episode_url = soup.find("a", attrs={"class": "btn btn-default"})["href"]
+    def _set_season_episodes(self, soup: BeautifulSoup):
+        return soup.find("ul", attrs={"class": "myui-content__list"}).contents or None
 
-        episode_details = {
-            "title": episode_title,
-            "url": episode_url,
-        }
-        return episode_details
-
-    @classmethod
-    def parse_season_from_details_url(cls, season_url: str) -> "SeasonDetailsFromURL":
-        """Parses the details page for the show
-
-        Args:
-            details_url (str): Details url to the result page
-
-        Returns:
-            dict: Details found on the details page
-        """
-        soup = super().fetch_details_soup(season_url)
-
-        title = str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
-        logging.info(title)
-        description = (
-            soup.find(
-                "span", attrs={"class": "data", "style": "display: none;"}
-            ).get_text()
-            or None
-        )
-        logging.info(description)
-        episodes = (
-            soup.find("ul", attrs={"class": "myui-content__list"}).contents or None
-        )
-        logging.info(episodes)
-        year = (
+    def _set_season_year(self, soup: BeautifulSoup):
+        return (
             str(soup.find("p", attrs={"class": "data"}).contents[-1].get_text()) or None
         )
-        logging.info(year)
 
-        details = {
-            "title": title,
-            "description": description,
-            "episodes": episodes,
-            "year": year,
-        }
+    ######## FETCH EPISODE M3U8 ########
 
-        return SeasonDetailsFromURL(details)
+    def _episode_url(self, relative_episode_url: str) -> str:
+        return f"https://xiaoheimi.net{relative_episode_url}"
 
-    @classmethod
-    def fetch_episode_m3u8(cls, episode_url: str) -> str:
-        """Fetches the m3u8 url for the episode
-
-        Args:
-            episode_url (str): Episode url
-
-        Returns:
-            str: m3u8 url
-        """
-        episode_details_page = utils.SCRAPER.get(
-            f"https://xiaoheimi.net{episode_url}"
-        ).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
-        episode_script: str = str(
+    def _set_episode_script(self, episode_soup: BeautifulSoup) -> str:
+        return str(
             episode_soup.find("div", attrs={"class": "myui-player__box"}).find("script")
         )
+
+    def _set_episode_m3u8(self, episode_script: str) -> str:
         episode_m3u8_format = (
             r"https:\\\/\\\/m3u.haiwaikan.com\\\/xm3u8\\\/[\w\d]+.m3u8"
         )
