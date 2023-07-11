@@ -1,4 +1,4 @@
-COMMIT_MSG_HOOK = '\#!/bin/bash\nMSG_FILE=$$1\ncz check - allow-abort - commit-msg-file $$MSG_FILE'
+COMMIT_MSG_HOOK = '\#!/bin/bash\nMSG_FILE=$$1\ncz check --allow-abort --commit-msg-file $$MSG_FILE'
 
 setup-dev-env:
 	pre-commit install
