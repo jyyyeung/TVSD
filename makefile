@@ -15,10 +15,10 @@ bump-version-patch:
 	cz bump --increment PATCH
 	
 bump-specific-version:
-  cz bump $(VERSION)
+	cz bump $(VERSION)
 
 fetch-tags:
-git fetch --tags
+	git fetch --tags
 
 push-tag: fetch-tags
-    git push --follow-tags origin master
+	git push --follow-tags origin main
