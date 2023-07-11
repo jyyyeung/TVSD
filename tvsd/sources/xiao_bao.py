@@ -4,7 +4,6 @@ from typing import Any
 from bs4 import BeautifulSoup, ResultSet, Tag
 
 from tvsd.source import Source
-from tvsd.utils import LOGGER
 
 
 class XiaoBao(Source):

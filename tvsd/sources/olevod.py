@@ -4,6 +4,7 @@ from typing import Any
 from bs4 import BeautifulSoup, ResultSet, Tag
 
 from tvsd.source import Source
+from tvsd.utils import LOGGER
 
 
 class OLEVOD(Source):
@@ -19,6 +20,8 @@ class OLEVOD(Source):
         return f"https://www.olevod.com/index.php/vod/search.html?wd={search_query}&submit="
 
     def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
+        # TODO: Auto JS Guard
+        LOGGER.debug(query_result_soup)
         return query_result_soup.find_all("li", attrs={"class": "searchlist_item"})
 
     ##### PARSE EPISODE DETAILS FROM URL #####
