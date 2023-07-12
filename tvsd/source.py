@@ -205,7 +205,7 @@ class Source(ABC):
         """
         return ""
 
-    @abstractmethod
+    # @abstractmethod
     def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
         """Gets the result source id
 

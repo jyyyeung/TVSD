@@ -1,1 +1,1 @@
-print()
+__all__ = ["xiao_bao", "olevod", "ssstv"]
