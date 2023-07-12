@@ -1,3 +1,9 @@
+## v1.0.1 (2023-07-12)
+
+### Refactor
+
+- added all sources import in __init__.py and generalized ssstv urls into source_url and relative path
+
 ## v1.0.0 (2023-07-11)
 
 ### Feat
