@@ -1,9 +1,10 @@
 import os
-from typing import List, Callable, TYPE_CHECKING
+from typing import List, Callable, TYPE_CHECKING, Union
 from bs4 import Tag
 
 
 import typer
+from tvsd.config import SPECIALS_DIR
 
 from tvsd.show import Show
 from tvsd.episode import Episode
@@ -62,14 +63,14 @@ class Season:
     def __init__(
         self,
         fetch_episode_m3u8: Callable,
+        episodes: List[Union["Episode", Tag]],
         details: "SeasonDetailsFromURL",
         source: "Source",
         note: str = "",
         details_url: str = "",
-        episodes: List["Episode"] | List[Tag] = [],
     ) -> None:
         season_title = details["title"]
-        self._episodes: List["Episode"] | List[Tag] = episodes
+        self._episodes: List[Union["Episode", Tag]] = episodes
         self._title = season_title
         self._year = details["year"]
         self._description = details["description"]
@@ -93,14 +94,16 @@ class Season:
         """generate episodes for season"""
         episode_objects: List["Episode"] = []
         for episode in self._episodes:
-            episode_object: "Episode" = episode or None
-            if isinstance(episode, Tag):
+            if isinstance(episode, Episode):
+                episode_object: "Episode" = episode
+            else:
                 episode_details = self._source.parse_episode_details_from_li(episode)
                 episode_object = Episode(
                     episode_name=episode_details["title"],
                     season=self,
                     episode_url=episode_details["url"],
                 )
+
             episode_objects.append(episode_object)
         self._episodes = episode_objects
 
@@ -171,7 +174,7 @@ class Season:
         Returns:
             str: relative specials directory
         """
-        return os.path.join(self._show.relative_show_dir, "Specials")
+        return os.path.join(self._show.relative_show_dir, SPECIALS_DIR)
 
     def determine_show_begin_year(self) -> str:
         """Query the begin year of the show
@@ -191,7 +194,7 @@ class Season:
             )
         # self.begin_year = season_year
 
-        return show_year
+        return str(show_year)
 
     @property
     def year(self) -> str:

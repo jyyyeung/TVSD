@@ -1,5 +1,7 @@
 import os
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Literal, List
+
+from tvsd.config import SERIES_DIR
 
 if TYPE_CHECKING:
     from tvsd.source import Source
@@ -9,13 +11,24 @@ if TYPE_CHECKING:
 class Show:
     """Contains a Show"""
 
-    def __init__(self, source: "Source", title: str = None, begin_year: str = None):
+    def __init__(self, source: "Source", title: str = "", begin_year: str = ""):
         self._title = title
         self._source = source
-        self._seasons: Union([Season], []) = []
+        self._seasons: List[Literal["Season"]] = []
         self._begin_year = begin_year
 
         self._prefix = self.generate_show_prefix()
+
+    @property
+    def seasons(self) -> List[Literal["Season"]]:
+        """seasons of the show
+
+
+
+        Returns:
+            List[Season]: seasons of the show
+        """
+        return self._seasons
 
     @property
     def title(self):  # This getter method name is *the* name
@@ -69,7 +82,7 @@ class Show:
         Returns:
             str: source of current Show
         """
-        return self._source
+        return self._source.source_name
 
     @property
     def relative_show_dir(self) -> str:
@@ -80,4 +93,4 @@ class Show:
         """
 
         # relative directory of show in media directory from base path
-        return os.path.join("TV Series/", self._prefix)
+        return os.path.join(SERIES_DIR, self._prefix)

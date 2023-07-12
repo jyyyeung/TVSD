@@ -2,10 +2,8 @@
 # rptodo/config.py
 
 import configparser
-from ctypes.wintypes import SERVICE_STATUS_HANDLE
 import os
 from pathlib import Path
-from re import T
 
 
 import typer
@@ -46,6 +44,7 @@ class Config:
         return SUCCESS
 
     def validate_config_file(self) -> None:
+        """Validate the config file."""
         if not os.path.exists(CONFIG_FILE_PATH):
             self._init_config_file()
         if not config_parser.has_section("General"):
@@ -69,6 +68,11 @@ class Config:
 
     @property
     def temp_base_path(self) -> str:
+        """Get the base path for temporary files.
+
+        Returns:
+            str: Relative path to base path for temporary files
+        """
         try:
             self.validate_config_file()
             return config_parser["General"]["temp_base_path"]
@@ -77,6 +81,11 @@ class Config:
 
     @property
     def base_path(self) -> str:
+        """Get the base path for media files.
+
+        Returns:
+            str: Relative path to base path for media files
+        """
         try:
             self.validate_config_file()
             return config_parser["General"]["base_path"]
@@ -85,6 +94,12 @@ class Config:
 
     @property
     def series_dir(self) -> str:
+        """Get the directory containing TV series.
+
+
+        Returns:
+            str: Relative path to directory containing TV series
+        """
         try:
             self.validate_config_file()
             return config_parser["General"]["series_dir"]
@@ -93,6 +108,11 @@ class Config:
 
     @property
     def specials_dir(self) -> str:
+        """Get the directory containing TV specials.
+
+        Returns:
+            str: Relative path to directory containing TV specials
+        """
         try:
             self.validate_config_file()
             return config_parser["General"]["specials_dir"]
