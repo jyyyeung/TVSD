@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
+from tvsd.config import BASE_PATH, TEMP_BASE_PATH
 
 from tvsd.download import Download
 from tvsd.search import SearchQuery
-from tvsd.utils import BASE_PATH, TEMP_BASE_PATH, check_dir_mounted, LOGGER
+from tvsd.utils import check_dir_mounted, LOGGER
 
 
 def search_media_and_download(query: str):

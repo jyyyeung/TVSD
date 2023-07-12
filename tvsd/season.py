@@ -24,34 +24,36 @@ def check_season_index(show_title: str) -> int:
     Returns:
         int: index of episode identified from title
     """
+    season_index = 1
     print(show_title)
     if "第" in show_title:
         if "第一季" in show_title:
-            return 1
+            season_index = 1
         elif "第二季" in show_title:
-            return 2
+            season_index = 2
         elif "第三季" in show_title:
-            return 3
+            season_index = 3
         elif "第四季" in show_title:
-            return 4
+            season_index = 4
         elif "第五季" in show_title:
-            return 5
+            season_index = 5
         elif "第六季" in show_title:
-            return 6
+            season_index = 6
         elif "第七季" in show_title:
-            return 7
+            season_index = 7
         elif "第八季" in show_title:
-            return 8
+            season_index = 8
         elif "第九季" in show_title:
-            return 9
+            season_index = 9
     elif "Season" in show_title:
-        return int(show_title.lower().split("season")[-1])
+        season_index = int(show_title.lower().split("season")[-1])
     elif "part" in show_title:
-        return 1
+        season_index = 1
     elif typer.prompt("这个节目是否续季？（not S1)", default="").capitalize() == "Y":
-        return typer.prompt(text="这个节目是第几季？", type=int)
+        season_index = typer.prompt(text="这个节目是第几季？", type=int)
     else:
-        return 1
+        season_index = 1
+    return season_index
 
 
 class Season:
@@ -61,9 +63,9 @@ class Season:
         self,
         fetch_episode_m3u8: Callable,
         details: "SeasonDetailsFromURL",
-        note: str = None,
-        details_url: str = None,
-        source: "Source" = None,
+        source: "Source",
+        note: str = "",
+        details_url: str = "",
         episodes: List["Episode"] | List[Tag] = [],
     ) -> None:
         season_title = details["title"]
@@ -77,7 +79,7 @@ class Season:
         # self._source_id = source_id
         self._note = note
         self._source = source
-        self._show: Show = None
+        self._show: Show
 
         self._fetch_episode_m3u8 = fetch_episode_m3u8
 
