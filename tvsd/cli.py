@@ -3,6 +3,7 @@ import shutil
 from typing import Optional
 
 import typer
+from rich import print
 
 from tvsd import __app_name__, __version__
 from tvsd.actions import search_media_and_download

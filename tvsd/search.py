@@ -5,21 +5,24 @@ import pyclbr
 import sys
 from typing import TYPE_CHECKING, Any, Literal, Union, List
 from bs4 import PageElement
+from tvsd.sources import *
+from rich.table import Table
+from rich.console import Console
+
 
 import typer
 
 
 from tvsd import sources
 from tvsd.source import Source
-from tvsd.sources.ssstv import SSSTV
-from tvsd.sources.xiao_bao import XiaoBao
-from tvsd.sources.olevod import OLEVOD
 
 from tvsd.utils import LOGGER
 
 if TYPE_CHECKING:
     from tvsd.season import Season
     from tvsd.show import Show
+
+console = Console()
 
 
 class SearchQuery:
@@ -102,9 +105,14 @@ class SearchQuery:
                         LOGGER.info(f"Searching {cls_name}...")
                         query_results += cls_obj().query_from_source(self._query)
 
-        for result_index, result in enumerate(query_results):
-            print(result_index, result.title, result.source.source_name, result.note)
+        table = Table("index", "Title", "Source", "Note")
 
+        for result_index, result in enumerate(query_results):
+            table.add_row(
+                str(result_index), result.title, result.source.source_name, result.note
+            )
+
+        console.print(table)
         self._chosen_show = query_results[typer.prompt(text="请选择你下载的节目", type=int)]
 
     @property
