@@ -1,15 +1,13 @@
 import json
 import os
-from typing import Any, List, Union
-from typing_extensions import Literal
+from typing import Any, List
 from bs4 import BeautifulSoup, ResultSet, Tag
-from tvsd import utils
 from abc import ABC, abstractmethod
 from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
 
 
-from tvsd.show import Show
 from tvsd.season import Season
+from tvsd.utils import LOGGER, SCRAPER
 
 
 def load_source_details(season_dir: str):
@@ -50,9 +48,9 @@ class Source(ABC):
         self._exists_locally: bool
         self._chosen_show: Season
 
-        self._query_result_soup: BeautifulSoup = None
-        self._result_list: Union[Show, Season] = []
-        self._query_results: ResultSet[Any] = None
+        self._query_result_soup: BeautifulSoup
+        self._result_list: List[Season] = []
+        self._query_results: ResultSet[Any]
 
         self.__status__ = "parent"
 
@@ -62,20 +60,18 @@ class Source(ABC):
 
     ### SEARCHING FOR A SHOW ###
 
-    def query_from_source(
-        self, search_query: str
-    ) -> List[Union[Literal["Show"], Literal["Season"]]]:
+    def query_from_source(self, search_query: str) -> List[Season]:
         """Searches for a show
 
         Returns:
             Union(List[Show, Season], []): List of shows or seasons
         """
         search_url = self._search_url(search_query)
-        utils.LOGGER.debug(f"Searching for {search_query} in {search_url}")
+        LOGGER.debug(f"Searching for {search_query} in {search_url}")
         query_result_soup = self.get_query_result_soup(search_url)
         query_results = self._get_query_results(query_result_soup)
         # Below are same for all
-        self._result_list: Union([Show, Season], []) = []
+        self._result_list: List[Season] = []
 
         for result in query_results:
             show = self.parse_from_query(result)
@@ -115,7 +111,7 @@ class Source(ABC):
         Returns:
             BeautifulSoup: Query result soup
         """
-        search_result_page = utils.SCRAPER.get(search_url).content
+        search_result_page = SCRAPER.get(search_url).content
         query_result_soup: BeautifulSoup = BeautifulSoup(
             search_result_page, "html.parser"
         )
@@ -123,9 +119,7 @@ class Source(ABC):
 
     ##### PARSE EPISODE DETAILS FROM URL #####
 
-    def parse_episode_details_from_li(
-        self, soup: BeautifulSoup
-    ) -> "EpisodeDetailsFromURL":
+    def parse_episode_details_from_li(self, soup: Tag) -> "EpisodeDetailsFromURL":
         """Parses the episode details from the soup
 
         Args:
@@ -258,7 +252,7 @@ class Source(ABC):
             BeautifulSoup: Soup of details page
         """
 
-        show_details_page = utils.SCRAPER.get(details_url).content
+        show_details_page = SCRAPER.get(details_url).content
         soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
         return soup
 
@@ -322,7 +316,7 @@ class Source(ABC):
             str | None: m3u8 url
         """
         episode_url = self._episode_url(relative_episode_url)
-        episode_details_page = utils.SCRAPER.get(episode_url).content
+        episode_details_page = SCRAPER.get(episode_url).content
         episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
         episode_script = self._set_episode_script(episode_soup)
         episode_m3u8 = self._set_episode_m3u8(episode_script)

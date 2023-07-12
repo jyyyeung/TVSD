@@ -1,17 +1,15 @@
 from difflib import SequenceMatcher
 import inspect
 import os
-import pyclbr
 import sys
 from typing import TYPE_CHECKING, Any, Literal, Union, List
 from bs4 import PageElement
+from tvsd.config import SERIES_DIR
 from tvsd.sources import *
 from rich.table import Table
 from rich.console import Console
 
-
 import typer
-
 
 from tvsd import sources
 from tvsd.source import Source
@@ -58,7 +56,7 @@ class SearchQuery:
             base_path (str): Base path to local media directory
         """
         # dir loop check dir
-        for directory in os.listdir(base_path + "/TV Series/"):
+        for directory in os.listdir(os.path.join(base_path, SERIES_DIR)):
             season_title = directory.split(" ")[0]
             similarity_ratio = SequenceMatcher(None, self._query, season_title).ratio()
 
@@ -84,7 +82,7 @@ class SearchQuery:
         # for result in query_results:
         #     result_index += 1
 
-        query_results: List[Literal["Show"], Literal["Season"]] = []
+        query_results: List[Literal["Season"]] = []
         # TODO: Search in db first / or put db results first
 
         LOGGER.debug("Searching for %s", self._query)
@@ -116,7 +114,7 @@ class SearchQuery:
         self._chosen_show = query_results[typer.prompt(text="请选择你下载的节目", type=int)]
 
     @property
-    def chosen_show(self) -> Literal["Show"] | Literal["Season"]:
+    def chosen_show(self) -> Literal["Season"]:
         """Returns the chosen show
 
         Returns:

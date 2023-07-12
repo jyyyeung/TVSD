@@ -1,9 +1,10 @@
 import os
-from typing import List, Callable, TYPE_CHECKING
+from typing import List, Callable, TYPE_CHECKING, Union
 from bs4 import Tag
 
 
 import typer
+from tvsd.config import SPECIALS_DIR
 
 from tvsd.show import Show
 from tvsd.episode import Episode
@@ -24,34 +25,36 @@ def check_season_index(show_title: str) -> int:
     Returns:
         int: index of episode identified from title
     """
+    season_index = 1
     print(show_title)
     if "第" in show_title:
         if "第一季" in show_title:
-            return 1
+            season_index = 1
         elif "第二季" in show_title:
-            return 2
+            season_index = 2
         elif "第三季" in show_title:
-            return 3
+            season_index = 3
         elif "第四季" in show_title:
-            return 4
+            season_index = 4
         elif "第五季" in show_title:
-            return 5
+            season_index = 5
         elif "第六季" in show_title:
-            return 6
+            season_index = 6
         elif "第七季" in show_title:
-            return 7
+            season_index = 7
         elif "第八季" in show_title:
-            return 8
+            season_index = 8
         elif "第九季" in show_title:
-            return 9
+            season_index = 9
     elif "Season" in show_title:
-        return int(show_title.lower().split("season")[-1])
+        season_index = int(show_title.lower().split("season")[-1])
     elif "part" in show_title:
-        return 1
+        season_index = 1
     elif typer.prompt("这个节目是否续季？（not S1)", default="").capitalize() == "Y":
-        return typer.prompt(text="这个节目是第几季？", type=int)
+        season_index = typer.prompt(text="这个节目是第几季？", type=int)
     else:
-        return 1
+        season_index = 1
+    return season_index
 
 
 class Season:
@@ -60,14 +63,14 @@ class Season:
     def __init__(
         self,
         fetch_episode_m3u8: Callable,
+        episodes: List[Union["Episode", Tag]],
         details: "SeasonDetailsFromURL",
-        note: str = None,
-        details_url: str = None,
-        source: "Source" = None,
-        episodes: List["Episode"] | List[Tag] = [],
+        source: "Source",
+        note: str = "",
+        details_url: str = "",
     ) -> None:
         season_title = details["title"]
-        self._episodes: List["Episode"] | List[Tag] = episodes
+        self._episodes: List[Union["Episode", Tag]] = episodes
         self._title = season_title
         self._year = details["year"]
         self._description = details["description"]
@@ -77,7 +80,7 @@ class Season:
         # self._source_id = source_id
         self._note = note
         self._source = source
-        self._show: Show = None
+        self._show: Show
 
         self._fetch_episode_m3u8 = fetch_episode_m3u8
 
@@ -91,14 +94,16 @@ class Season:
         """generate episodes for season"""
         episode_objects: List["Episode"] = []
         for episode in self._episodes:
-            episode_object: "Episode" = episode or None
-            if isinstance(episode, Tag):
+            if isinstance(episode, Episode):
+                episode_object: "Episode" = episode
+            else:
                 episode_details = self._source.parse_episode_details_from_li(episode)
                 episode_object = Episode(
                     episode_name=episode_details["title"],
                     season=self,
                     episode_url=episode_details["url"],
                 )
+
             episode_objects.append(episode_object)
         self._episodes = episode_objects
 
@@ -169,7 +174,7 @@ class Season:
         Returns:
             str: relative specials directory
         """
-        return os.path.join(self._show.relative_show_dir, "Specials")
+        return os.path.join(self._show.relative_show_dir, SPECIALS_DIR)
 
     def determine_show_begin_year(self) -> str:
         """Query the begin year of the show
@@ -189,7 +194,7 @@ class Season:
             )
         # self.begin_year = season_year
 
-        return show_year
+        return str(show_year)
 
     @property
     def year(self) -> str:

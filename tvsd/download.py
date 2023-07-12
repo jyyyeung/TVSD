@@ -4,12 +4,14 @@ from typing import Literal
 
 import m3u8_To_MP4
 import typer
-from tvsd import utils
+
 from multipledispatch import dispatch
+from tvsd.config import BASE_PATH, TEMP_BASE_PATH
 
 from tvsd.show import Show
 from tvsd.season import Season
 from tvsd.episode import Episode
+from tvsd.utils import LOGGER, mkdir_if_no
 
 
 class Download:
@@ -17,13 +19,13 @@ class Download:
 
     def __init__(
         self,
-        target: Literal["Show"] | Literal["Season"] | Literal["Episode"],
-        base_path: str,
-        temp_path: str = None,
+        target: Show | Season | Episode,
+        base_path: str = BASE_PATH,
+        temp_path: str = TEMP_BASE_PATH,
     ):
-        self._target: Literal["Show"] | Literal["Season"] | Literal["Episode"] = target
+        self._target: Show | Season | Episode = target
         self._base_path = base_path
-        self._temp_base_path = temp_path or os.path.join(base_path, ".temp")
+        self._temp_base_path = temp_path
         self._target_path: str
         self._specials_index: int = 1
         self._regular_ep_index: int = 1
@@ -64,16 +66,16 @@ class Download:
                 self.set_ep_index(episode)
 
     @dispatch(Show)
-    def download_all(self, show: Literal["Show"]):
+    def download_all(self, show: Show):
         """Download all episodes in a show"""
-        utils.LOGGER.debug("Downloading all episodes in show")
+        LOGGER.debug("Downloading all episodes in show")
         for season in show.seasons:
             self.download_all(season)
 
     @dispatch(Season)
     def download_all(self, season: Literal["Season"]):
         """Download all episodes in a season"""
-        utils.LOGGER.info("Downloading all episodes in season")
+        LOGGER.info("Downloading all episodes in season")
 
         # reset episode index
         self._specials_index = 1
@@ -130,8 +132,8 @@ class Download:
         absolute_dest_dir = os.path.join(
             self._base_path, episode.relative_destination_dir
         )
-        utils.LOGGER.info(absolute_dest_dir)
-        utils.mkdir_if_no(absolute_dest_dir)
+        LOGGER.info(absolute_dest_dir)
+        mkdir_if_no(absolute_dest_dir)
 
         if episode.file_exists_locally:
             return
@@ -148,10 +150,9 @@ class Download:
             print("m3u8 Load Error, Stream probably does not exist: " + episode_m3u8)
             return
 
-        # TODO: dynamic directory
         temp_dir = os.path.join(self._temp_base_path, episode.filename)
         if not os.path.isdir(temp_dir):
-            os.mkdir(temp_dir)
+            mkdir_if_no(temp_dir)
             m3u8_To_MP4.multithread_uri_download(
                 m3u8_uri=episode_m3u8,
                 mp4_file_name=episode.filename,

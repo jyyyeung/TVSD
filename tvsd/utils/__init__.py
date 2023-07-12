@@ -3,7 +3,8 @@ import os
 import re
 from typing import List
 import cloudscraper
-from dotenv import load_dotenv
+
+from tvsd.config import BASE_PATH, SERIES_DIR, SPECIALS_DIR
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
@@ -14,12 +15,6 @@ SCRAPER = cloudscraper.create_scraper(
 
 LOGGER = logging
 LOGGER.basicConfig(level=logging.DEBUG)
-
-load_dotenv()
-
-
-TEMP_BASE_PATH = os.getenv("TEMP_PATH")
-BASE_PATH: str = os.getenv("DEST_PATH")
 
 
 def mkdir_if_no(check_dir: str, recursive: bool = True):
@@ -46,8 +41,8 @@ def mkdir_from_base(check_dir: str):
     Args:
         check_dir (str): Directory to check
     """
-    base_path: str | None = os.getenv("DEST_PATH")
-    mkdir_if_no(os.path.join(base_path, check_dir))
+
+    mkdir_if_no(os.path.join(BASE_PATH, check_dir))
 
 
 def relative_to_absolute_path(path: str) -> str:
@@ -59,7 +54,7 @@ def relative_to_absolute_path(path: str) -> str:
     Returns:
         str: Absolute path
     """
-    return os.path.join(os.getenv("DEST_PATH"), path)
+    return os.path.join(BASE_PATH, path)
 
 
 def file_exists(file_path: str) -> bool:
@@ -83,7 +78,7 @@ def file_exists_in_base(file_path: str) -> bool:
     Returns:
         bool: True if file exists
     """
-    return file_exists(os.path.join(os.getenv("DEST_PATH"), file_path))
+    return file_exists(os.path.join(BASE_PATH, file_path))
 
 
 def get_next_specials_index(show_dir: str) -> int:
@@ -96,7 +91,7 @@ def get_next_specials_index(show_dir: str) -> int:
         int: Next specials index
     """
     existing_episode_indexes: List[int] = []
-    specials_dir = show_dir + "/Specials"
+    specials_dir = os.path.join(show_dir, SPECIALS_DIR)
     if os.path.exists(specials_dir):
         for existing_special in os.listdir(specials_dir):
             try:
@@ -121,7 +116,7 @@ def check_dir_mounted(path: str) -> bool:
         bool: True if directory exists
     """
 
-    if os.path.ismount(path) and os.path.isdir(path + "/TV Series"):
+    if os.path.ismount(path) and os.path.isdir(os.path.join(path, SERIES_DIR)):
         return True
     print(path, "has not been mounted yet. Exiting...")
     return False

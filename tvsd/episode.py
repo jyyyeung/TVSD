@@ -1,7 +1,8 @@
 import os
 import re
 from typing import TYPE_CHECKING
-from tvsd import utils
+
+from tvsd.utils import file_exists_in_base, relative_to_absolute_path
 
 
 if TYPE_CHECKING:
@@ -17,11 +18,11 @@ class Episode:
         episode_url: str,
         # previous_episode: "Episode" = None,
         # next_episode: "Episode" = None,
-        season=None,
+        season: "Season",
     ):
         self._name = episode_name
         self._url = episode_url
-        self._number: int = None
+        self._number: int
 
         # self._previous_episode = previous_episode
         # self._next_episode = next_episode
@@ -180,13 +181,13 @@ class Episode:
             bool: True if the episode exists locally, False otherwise.
         """
         # Check if file exists already
-        if utils.file_exists_in_base(self.relative_episode_file_path):
+        if file_exists_in_base(self.relative_episode_file_path):
             print(f"{self.filename} already exists in directory, skipping... ")
             return True
 
         # specials exists already
         for existing_episode in os.listdir(
-            utils.relative_to_absolute_path(self.relative_destination_dir)
+            relative_to_absolute_path(self.relative_destination_dir)
         ):
             # print(episode_name, existing_episode)
             if existing_episode.endswith(".mp4") and self.filename in existing_episode:
