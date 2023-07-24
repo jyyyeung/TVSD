@@ -281,9 +281,16 @@ class Source(ABC):
             BeautifulSoup: Soup of details page
         """
 
-        show_details_page = SCRAPER.get(details_url).content
-        soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
-        return soup
+        try:
+            show_details_page = SCRAPER.get(details_url).content
+            soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
+            return soup
+        except ConnectionResetError as error:
+            if error.errno != errno.ECONNRESET:
+                raise  # Not error we are looking for
+            logging.error("Connection reset by peer")
+        except:
+            logging.error("Error in getting season details soup")
 
     @abstractmethod
     def _set_season_title(self, soup: BeautifulSoup) -> str:
@@ -344,12 +351,21 @@ class Source(ABC):
         Returns:
             str | None: m3u8 url
         """
-        episode_url = self._episode_url(relative_episode_url)
-        episode_details_page = SCRAPER.get(episode_url).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
-        episode_script = self._set_episode_script(episode_soup)
-        episode_m3u8 = self._set_episode_m3u8(episode_script)
-        return episode_m3u8
+        try:
+            episode_url = self._episode_url(relative_episode_url)
+            episode_details_page = SCRAPER.get(episode_url).content
+            episode_soup: BeautifulSoup = BeautifulSoup(
+                episode_details_page, "html.parser"
+            )
+            episode_script = self._set_episode_script(episode_soup)
+            episode_m3u8 = self._set_episode_m3u8(episode_script)
+            return episode_m3u8
+        except ConnectionResetError as error:
+            if error.errno != errno.ECONNRESET:
+                raise  # Not error we are looking for
+            logging.error("Connection reset by peer")
+        except:
+            logging.error("Error in getting episode details soup")
 
     @abstractmethod
     def _episode_url(self, relative_episode_url: str) -> str:
