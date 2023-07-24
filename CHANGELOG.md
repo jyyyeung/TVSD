@@ -1,3 +1,10 @@
+## v1.1.2 (2023-07-24)
+
+### Fix
+
+- catch error during download and aport
+- return None if error exists and ignore result
+
 ## v1.1.1 (2023-07-24)
 
 ### Fix
