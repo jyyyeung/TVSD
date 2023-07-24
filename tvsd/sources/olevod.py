@@ -15,6 +15,7 @@ class OLEVOD(Source):
         self.__status__ = "active"
         # self._domains = ["https://olevod.com", "https://olevod1.com"]
         self._domains = ["https://olevod.com"]
+        self._is_simplified = True
 
     ### SEARCHING FOR A SHOW ###
 

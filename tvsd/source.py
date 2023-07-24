@@ -4,6 +4,8 @@ import os
 from typing import Any, List
 from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
+
+import chinese_converter
 from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
 from socket import error as SocketError
 import errno
@@ -60,6 +62,9 @@ class Source(ABC):
         self._domains: List[str] = []
         self._domain_index: int = 0
 
+        self._is_simplified: bool = False
+        self._is_traditional: bool = False
+
     # @classmethod
     # def parse_from_json(cls, json_content):
     #     return cls(json_content)
@@ -72,6 +77,11 @@ class Source(ABC):
         Returns:
             Union(List[Show, Season], []): List of shows or seasons
         """
+        if self._is_simplified:
+            search_query = chinese_converter.to_simplified(search_query)
+        if self._is_traditional:
+            search_query = chinese_converter.to_traditional(search_query)
+
         search_url = self._search_url(search_query)
         logging.debug(f"Searching for {search_query} in {search_url}")
         query_result_soup = self.get_query_result_soup(search_url)

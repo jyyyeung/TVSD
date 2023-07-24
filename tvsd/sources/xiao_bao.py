@@ -13,6 +13,7 @@ class XiaoBao(Source):
         super().__init__()  # Call parent constructor
         self.__status__ = "active"
         self._domains = ["https://xiaoheimi.net"]
+        self._is_simplified = True
 
     ### SEARCHING FOR A SHOW ###
 
