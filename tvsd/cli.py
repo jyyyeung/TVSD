@@ -6,10 +6,19 @@ from typing import Optional
 
 import typer
 from rich import print
+from rich.console import Console
+from rich.table import Table
+
 
 from tvsd import ERRORS, __app_name__, __version__, database, app, state
 from tvsd.actions import search_media_and_download
-from tvsd.config import init_app, TEMP_BASE_PATH, validate_config_file
+from tvsd.config import (
+    BASE_PATH,
+    SERIES_DIR,
+    init_app,
+    TEMP_BASE_PATH,
+    validate_config_file,
+)
 
 
 @app.command()
@@ -103,3 +112,29 @@ def clean_temp():
             logging.info("All files deleted")
     except FileNotFoundError:
         logging.info(f"Temp directory {TEMP_BASE_PATH} does not exist")
+
+
+@app.command()
+def list_shows():
+    """List all shows in the database"""
+    console = Console()
+    table = Table("Name", "Year", "#Seasons", "#Episodes")
+    for show in os.listdir(os.path.join(BASE_PATH, SERIES_DIR)):
+        num_files = 0
+        num_seasons = 0
+        for _first in os.listdir(os.path.join(BASE_PATH, SERIES_DIR, show)):
+            if os.path.isdir(os.path.join(BASE_PATH, SERIES_DIR, show, _first)):
+                num_seasons += 1
+                for _second in os.listdir(
+                    os.path.join(BASE_PATH, SERIES_DIR, show, _first)
+                ):
+                    if os.path.isfile(
+                        os.path.join(BASE_PATH, SERIES_DIR, show, _first, _second)
+                    ) and _second.endswith(".mp4"):
+                        num_files += 1
+
+            table.add_row(
+                show.split(" ")[0], show.split(" ")[1], str(num_seasons), str(num_files)
+            )
+
+    console.print(table)
