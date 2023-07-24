@@ -1,3 +1,13 @@
+## v1.1.1 (2023-07-24)
+
+### Fix
+
+- 777TV year matching regex fix
+
+### Perf
+
+- catch exception upon connection error
+
 ## v1.1.0 (2023-07-24)
 
 ### Feat
