@@ -1,3 +1,15 @@
+## v1.1.0 (2023-07-24)
+
+### Feat
+
+- set source simplified or traditional search_query for automatic translation
+- create general series directory if not exist in base
+- **config**: created basic config setup
+
+### Refactor
+
+- Cleanup code
+
 ## v1.0.1 (2023-07-12)
 
 ### Refactor

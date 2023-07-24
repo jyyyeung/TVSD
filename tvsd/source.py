@@ -81,7 +81,7 @@ class Source(ABC):
             search_query = chinese_converter.to_simplified(search_query)
         if self._is_traditional:
             search_query = chinese_converter.to_traditional(search_query)
-
+        print(search_query)
         search_url = self._search_url(search_query)
         logging.debug(f"Searching for {search_query} in {search_url}")
         query_result_soup = self.get_query_result_soup(search_url)
