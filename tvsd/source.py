@@ -192,7 +192,7 @@ class Source(ABC):
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 
-    def parse_from_query(self, query_result: BeautifulSoup) -> "Season" | None:
+    def parse_from_query(self, query_result: BeautifulSoup) -> "Season | None":
         """Parses the query result
 
         Args:
@@ -262,7 +262,7 @@ class Source(ABC):
 
     def parse_season_from_details_url(
         self, season_url: str
-    ) -> "SeasonDetailsFromURL" | None:
+    ) -> "SeasonDetailsFromURL | None":
         """Parses details from details url
 
         Args:
