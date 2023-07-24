@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from typing import Literal
@@ -11,7 +12,7 @@ from tvsd.config import BASE_PATH, TEMP_BASE_PATH
 from tvsd.show import Show
 from tvsd.season import Season
 from tvsd.episode import Episode
-from tvsd.utils import LOGGER, mkdir_if_no
+from tvsd.utils import mkdir_if_no
 
 
 class Download:
@@ -68,14 +69,14 @@ class Download:
     @dispatch(Show)
     def download_all(self, show: Show):
         """Download all episodes in a show"""
-        LOGGER.debug("Downloading all episodes in show")
+        logging.debug("Downloading all episodes in show")
         for season in show.seasons:
             self.download_all(season)
 
     @dispatch(Season)
     def download_all(self, season: Literal["Season"]):
         """Download all episodes in a season"""
-        LOGGER.info("Downloading all episodes in season")
+        logging.info("Downloading all episodes in season")
 
         # reset episode index
         self._specials_index = 1
@@ -132,7 +133,7 @@ class Download:
         absolute_dest_dir = os.path.join(
             self._base_path, episode.relative_destination_dir
         )
-        LOGGER.info(absolute_dest_dir)
+        logging.info(absolute_dest_dir)
         mkdir_if_no(absolute_dest_dir)
 
         if episode.file_exists_locally:

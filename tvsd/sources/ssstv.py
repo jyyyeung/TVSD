@@ -9,16 +9,15 @@ from tvsd.source import Source
 class SSSTV(Source):
     """777tv class"""
 
-    source_url = "https://777tv.tw"
-
     def __init__(self):
         super().__init__()
         self.__status__ = "active"
+        self._domains = ["https://777tv.tw"]
 
     ### SEARCHING FOR A SHOW ###
 
     def _search_url(self, search_query: str) -> str:
-        return f"{self.source_url}/vodsearch/-------------.html?wd={search_query}"
+        return f"{self._domain}/vodsearch/-------------.html?wd={search_query}"
 
     def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
         return query_result_soup.find_all("div", attrs={"class": "module-search-item"})
@@ -40,7 +39,7 @@ class SSSTV(Source):
     def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
         relative_url = query_result.find("a", attrs={"class": "video-serial"})["href"]
 
-        return f"{self.source_url}{relative_url}"
+        return f"{self._domain}{relative_url}"
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
@@ -73,7 +72,7 @@ class SSSTV(Source):
     ######## FETCH EPISODE M3U8 ########
 
     def _episode_url(self, relative_episode_url: str) -> str:
-        return self.source_url + relative_episode_url
+        return self._domain + relative_episode_url
 
     def _set_episode_script(self, episode_soup: BeautifulSoup) -> str:
         return str(

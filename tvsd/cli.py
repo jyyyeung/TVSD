@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 import shutil
@@ -6,18 +7,9 @@ from typing import Optional
 import typer
 from rich import print
 
-from tvsd import ERRORS, __app_name__, __version__, database
+from tvsd import ERRORS, __app_name__, __version__, database, app, state
 from tvsd.actions import search_media_and_download
 from tvsd.config import init_app, TEMP_BASE_PATH, validate_config_file
-
-
-app = typer.Typer()
-
-
-def _version_callback(value: bool) -> None:
-    if value:
-        typer.echo(f"{__app_name__} v{__version__}")
-        raise typer.Exit()
 
 
 @app.command()
@@ -48,18 +40,33 @@ def init(
         typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"{__app_name__} v{__version__}")
+        raise typer.Exit()
+
+
 @app.callback()
 def main(
-    version: Optional[bool] = typer.Option(
+    _: Optional[bool] = typer.Option(
         None,
         "--version",
         "-v",
         help="Show the application's version and exit.",
         callback=_version_callback,
         is_eager=True,
-    )
+    ),
+    verbose: Optional[bool] = False,
 ) -> None:
-    return
+    """
+    Options to update state of the application.
+    """
+    if verbose:
+        print("Will write verbose output")
+        state["verbose"] = True
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
 
 @app.command()
@@ -93,6 +100,6 @@ def clean_temp():
         if confirm.capitalize() == "Y":
             shutil.rmtree(TEMP_BASE_PATH, ignore_errors=True)
             os.mkdir(TEMP_BASE_PATH)
-            print("All files deleted")
+            logging.info("All files deleted")
     except FileNotFoundError:
-        print(f"Temp directory {TEMP_BASE_PATH} does not exist")
+        logging.info(f"Temp directory {TEMP_BASE_PATH} does not exist")

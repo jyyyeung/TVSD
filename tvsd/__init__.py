@@ -1,6 +1,14 @@
 __app_name__ = "tvsd"
 __version__ = "1.0.0-a.1"
 
+import os
+from typer import Typer
+
+
+app = Typer(name=__app_name__, rich_markup_mode="rich")
+state = {"verbose": False}
+current_dir = os.getcwd()
+
 
 (
     SUCCESS,

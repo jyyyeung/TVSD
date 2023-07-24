@@ -3,18 +3,22 @@ import os
 import re
 from typing import List
 import cloudscraper
+import typer
 
 from tvsd.config import BASE_PATH, SERIES_DIR, SPECIALS_DIR
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
+    # browser={
+    #     "custom": "ScraperBot/1.0",
+    # },
     browser={
-        "custom": "ScraperBot/1.0",
+        "browser": "chrome",
+        "platform": "windows",
+        "desktop": True,
+        "mobile": False,
     },
 )
-
-LOGGER = logging
-LOGGER.basicConfig(level=logging.DEBUG)
 
 
 def mkdir_if_no(check_dir: str, recursive: bool = True):
@@ -30,7 +34,7 @@ def mkdir_if_no(check_dir: str, recursive: bool = True):
             try:
                 os.mkdir(check_dir)
             except FileNotFoundError:
-                LOGGER.error(
+                logging.error(
                     f"Parent directory does not exist, cannot create directory {check_dir}"
                 )
 
@@ -116,7 +120,18 @@ def check_dir_mounted(path: str) -> bool:
         bool: True if directory exists
     """
 
-    if os.path.ismount(path) and os.path.isdir(os.path.join(path, SERIES_DIR)):
-        return True
-    print(path, "has not been mounted yet. Exiting...")
-    return False
+    if not os.path.ismount(path):
+        print(path, "has not been mounted yet. Exiting...")
+        return False
+    if not os.path.isdir(os.path.join(path, SERIES_DIR)):
+        print(f"{path} does not contain a {SERIES_DIR} directory.")
+        if (
+            typer.prompt(
+                "Would you like to create it? [y/n]", default="y", show_default=True
+            ).capitalize()
+            == "Y"
+        ):
+            mkdir_if_no(os.path.join(path, SERIES_DIR))
+        else:
+            return False
+    return True
