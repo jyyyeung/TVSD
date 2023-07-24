@@ -1,5 +1,6 @@
 from difflib import SequenceMatcher
 import inspect
+import logging
 import os
 import sys
 from typing import TYPE_CHECKING, Any, Literal, Union, List
@@ -14,7 +15,6 @@ import typer
 from tvsd import sources
 from tvsd.source import Source
 
-from tvsd.utils import LOGGER
 
 if TYPE_CHECKING:
     from tvsd.season import Season
@@ -85,10 +85,10 @@ class SearchQuery:
         query_results: List[Literal["Season"]] = []
         # TODO: Search in db first / or put db results first
 
-        LOGGER.debug("Searching for %s", self._query)
+        logging.debug("Searching for %s", self._query)
 
         for file in dir(sources):
-            LOGGER.debug(f"Found {file}...")
+            logging.debug(f"Found {file}...")
             if not file.startswith("__"):
                 for cls_name, cls_obj in inspect.getmembers(
                     sys.modules[f"tvsd.sources.{file}"]
@@ -100,7 +100,7 @@ class SearchQuery:
                         and issubclass(cls_obj, Source)
                         and cls_obj().__status__ == "active"
                     ):
-                        LOGGER.info(f"Searching {cls_name}...")
+                        logging.info(f"Searching {cls_name}...")
                         query_results += cls_obj().query_from_source(self._query)
 
         table = Table("index", "Title", "Source", "Note")

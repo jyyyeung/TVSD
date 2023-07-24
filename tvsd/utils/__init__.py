@@ -20,9 +20,6 @@ SCRAPER = cloudscraper.create_scraper(
     },
 )
 
-LOGGER = logging
-LOGGER.basicConfig(level=logging.DEBUG)
-
 
 def mkdir_if_no(check_dir: str, recursive: bool = True):
     """Creates a directory if it does not exist
@@ -37,7 +34,7 @@ def mkdir_if_no(check_dir: str, recursive: bool = True):
             try:
                 os.mkdir(check_dir)
             except FileNotFoundError:
-                LOGGER.error(
+                logging.error(
                     f"Parent directory does not exist, cannot create directory {check_dir}"
                 )
 

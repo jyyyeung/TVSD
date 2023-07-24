@@ -18,6 +18,7 @@ CONFIG_FILE_PATH = CONFIG_DIR_PATH / "config.ini"
 
 class Config:
     def __init__(self):
+        print(CONFIG_FILE_PATH)
         config_parser.read(CONFIG_FILE_PATH)
 
     @classmethod
@@ -50,7 +51,7 @@ class Config:
         if not config_parser.has_section("General"):
             config_parser["General"] = {
                 "base_path": "/Volumes/Viewable",
-                "temp_base_path": "~/Movies/temp-parts",
+                "temp_base_path": f"{os.path.expanduser('~')}/Movies/temp-parts",
                 "series_dir": "TV Series",
                 "specials_dir": "Specials",
             }

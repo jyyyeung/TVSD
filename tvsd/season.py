@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Callable, TYPE_CHECKING, Union
 from bs4 import Tag
@@ -8,7 +9,6 @@ from tvsd.config import SPECIALS_DIR
 
 from tvsd.show import Show
 from tvsd.episode import Episode
-from tvsd.utils import LOGGER
 
 
 if TYPE_CHECKING:
@@ -152,7 +152,7 @@ class Season:
         if self._index is None:
             self.determine_season_index(self._title)
 
-        return self._index
+        return self._index or 1
 
     @property
     def relative_season_dir(self) -> str:
@@ -182,6 +182,7 @@ class Season:
         Returns:
             int: Begin year of the show
         """
+        print(self.year)
         season_year = int(self.year)
         show_year = season_year
 
@@ -203,7 +204,7 @@ class Season:
         Returns:
             str: year of the season
         """
-        LOGGER.info(self)
+        logging.info(self)
         return self._year
 
     @property

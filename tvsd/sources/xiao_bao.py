@@ -12,24 +12,23 @@ class XiaoBao(Source):
     def __init__(self):
         super().__init__()  # Call parent constructor
         self.__status__ = "active"
+        self._domains = ["https://xiaoheimi.net"]
 
     ### SEARCHING FOR A SHOW ###
 
     def _search_url(self, search_query: str) -> str:
-        return (
-            f"https://xiaoheimi.net/index.php/vod/search.html?wd={search_query}&submit="
-        )
+        return f"{self._domain}/index.php/vod/search.html?wd={search_query}&submit="
 
     def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
         return query_result_soup.find_all("li", attrs={"class": "clearfix"})
 
     ##### PARSE EPISODE DETAILS FROM URL #####
 
-    def _set_season_title(self, soup: BeautifulSoup):
-        return str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
+    def _set_episode_title(self, soup: Tag) -> str:
+        return soup.find("a").get_text()
 
     def _set_relative_episode_url(self, soup: Tag) -> str:
-        return soup.find("a", attrs={"class": "btn btn-default"})["href"]
+        return soup.find("a")["href"]
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 
@@ -46,11 +45,11 @@ class XiaoBao(Source):
 
     def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
         source_id = self._get_result_source_id(query_result=query_result)
-        return f"https://xiaoheimi.net/index.php/vod/detail/id/{source_id}.html"
+        return f"{self._domain}/index.php/vod/detail/id/{source_id}.html"
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
-    def _set_episode_title(self, soup: Tag) -> str:
+    def _set_season_title(self, soup: BeautifulSoup) -> str:
         return str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
 
     def _set_season_description(self, soup: BeautifulSoup):
@@ -69,7 +68,7 @@ class XiaoBao(Source):
     ######## FETCH EPISODE M3U8 ########
 
     def _episode_url(self, relative_episode_url: str) -> str:
-        return f"https://xiaoheimi.net{relative_episode_url}"
+        return f"{self._domain}{relative_episode_url}"
 
     def _set_episode_script(self, episode_soup: BeautifulSoup) -> str:
         return str(

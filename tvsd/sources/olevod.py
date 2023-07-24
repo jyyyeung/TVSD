@@ -4,7 +4,7 @@ from typing import Any
 from bs4 import BeautifulSoup, ResultSet, Tag
 
 from tvsd.source import Source
-from tvsd.utils import LOGGER
+import logging
 
 
 class OLEVOD(Source):
@@ -13,15 +13,25 @@ class OLEVOD(Source):
     def __init__(self):
         super().__init__()  # Call parent constructor
         self.__status__ = "active"
+        # self._domains = ["https://olevod.com", "https://olevod1.com"]
+        self._domains = ["https://olevod.com"]
 
     ### SEARCHING FOR A SHOW ###
 
     def _search_url(self, search_query: str) -> str:
-        return f"https://www.olevod.com/index.php/vod/search.html?wd={search_query}&submit="
+        return f"{self._domain}/index.php/vod/search.html?wd={search_query}&submit="
 
     def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
         # TODO: Auto JS Guard
-        LOGGER.debug(query_result_soup)
+        logging.debug(query_result_soup)
+        # query_result = []
+        # query_result += query_result_soup.find_all(
+        #     "li", attrs={"class": "searchlist_item"}
+        # )
+        # query_result += query_result_soup.find_all(
+        #     "li", attrs={"class": "hl-list-item"}
+        # )
+        # return query_result
         return query_result_soup.find_all("li", attrs={"class": "searchlist_item"})
 
     ##### PARSE EPISODE DETAILS FROM URL #####
@@ -31,6 +41,7 @@ class OLEVOD(Source):
 
     def _set_season_title(self, soup: BeautifulSoup):
         return soup.find("h2", attrs={"class": "title"}).get_text()
+        # return soup.find("h2", attrs={"class": "hl-dc-title"}).get_text()
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 

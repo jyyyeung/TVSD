@@ -1,13 +1,16 @@
 import json
+import logging
 import os
 from typing import Any, List
 from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
 from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
-
+from socket import error as SocketError
+import errno
+from tvsd.episode import Episode
 
 from tvsd.season import Season
-from tvsd.utils import LOGGER, SCRAPER
+from tvsd.utils import SCRAPER
 
 
 def load_source_details(season_dir: str):
@@ -54,6 +57,9 @@ class Source(ABC):
 
         self.__status__ = "parent"
 
+        self._domains: List[str] = []
+        self._domain_index: int = 0
+
     # @classmethod
     # def parse_from_json(cls, json_content):
     #     return cls(json_content)
@@ -67,15 +73,21 @@ class Source(ABC):
             Union(List[Show, Season], []): List of shows or seasons
         """
         search_url = self._search_url(search_query)
-        LOGGER.debug(f"Searching for {search_query} in {search_url}")
+        logging.debug(f"Searching for {search_query} in {search_url}")
         query_result_soup = self.get_query_result_soup(search_url)
-        query_results = self._get_query_results(query_result_soup)
-        # Below are same for all
-        self._result_list: List[Season] = []
+        if query_result_soup is not None:
+            query_results = self._get_query_results(query_result_soup)
+            # Below are same for all
+            self._result_list: List[Season] = []
 
-        for result in query_results:
-            show = self.parse_from_query(result)
-            self._result_list.append(show)
+            for result in query_results:
+                show = self.parse_from_query(result)
+                self._result_list.append(show)
+
+        if len(self._result_list) == 0 and len(self._domains) > self._domain_index + 1:
+            self._domain_index += 1
+            return self.query_from_source(search_query)
+
         return self._result_list
 
     @abstractmethod
@@ -111,11 +123,18 @@ class Source(ABC):
         Returns:
             BeautifulSoup: Query result soup
         """
-        search_result_page = SCRAPER.get(search_url).content
-        query_result_soup: BeautifulSoup = BeautifulSoup(
-            search_result_page, "html.parser"
-        )
-        return query_result_soup
+        try:
+            search_result_page = SCRAPER.get(search_url).content
+            query_result_soup: BeautifulSoup = BeautifulSoup(
+                search_result_page, "html.parser"
+            )
+            return query_result_soup
+        except ConnectionResetError as error:
+            if error.errno != errno.ECONNRESET:
+                raise  # Not error we are looking for
+            logging.error("Connection reset by peer")
+        except:
+            logging.error("Error in getting query result soup")
 
     ##### PARSE EPISODE DETAILS FROM URL #####
 
@@ -129,7 +148,7 @@ class Source(ABC):
             Episode: Episode object
         """
 
-        episode_details = {
+        episode_details: EpisodeDetailsFromURL = {
             "title": self._set_episode_title(soup),
             "url": self._set_relative_episode_url(soup),
         }
@@ -212,7 +231,7 @@ class Source(ABC):
         return ""
 
     @abstractmethod
-    def _get_result_details_url(self, query_result: str) -> str:
+    def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
         """Gets the result details url
 
         Args:
@@ -235,7 +254,7 @@ class Source(ABC):
             dict: Details found on the details page
         """
         soup = self.fetch_details_soup(season_url)
-        details = {
+        details: SeasonDetailsFromURL = {
             "title": self._set_season_title(soup),
             "description": self._set_season_description(soup),
             "episodes": self._set_season_episodes(soup),
@@ -368,3 +387,7 @@ class Source(ABC):
             str: Name of the class
         """
         return self.__class__.__name__
+
+    @property
+    def _domain(self):
+        return self._domains[self._domain_index]
