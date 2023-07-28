@@ -84,6 +84,7 @@ def main(
     """
     # initialize the config file before setting instance level
     validate_config_file()
+    apply_config()
 
     if verbose:
         typer.echo("Will write verbose output")
