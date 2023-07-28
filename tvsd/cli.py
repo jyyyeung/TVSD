@@ -14,6 +14,7 @@ from rich import print as rprint
 from tvsd import ERRORS, __app_name__, __version__, database, app, state
 from tvsd.actions import search_media_and_download
 from tvsd.config import (
+    apply_config,
     init_app,
     validate_config_file,
 )
@@ -71,10 +72,19 @@ def main(
         "-sd",
         help="Specify the series directory, overrides config file",
     ),
+    base_path: Optional[str] = typer.Option(
+        None,
+        "--base-path",
+        "-bp",
+        help="Specify the base path, overrides config file",
+    ),
 ) -> None:
     """
     Options to update state of the application.
     """
+    # initialize the config file before setting instance level
+    validate_config_file()
+
     if verbose:
         typer.echo("Will write verbose output")
         state["verbose"] = True
@@ -85,6 +95,10 @@ def main(
     if series_dir:
         state["series_dir"] = series_dir
         logging.info(f"Series directory set to {series_dir}")
+
+    if base_path:
+        state["base_path"] = base_path
+        logging.info(f"Base path set to {base_path}")
 
 
 @app.command()

@@ -124,10 +124,15 @@ class Config:
 
 config = Config()
 
-state["base_path"] = config.base_path
-state["temp_base_path"] = config.temp_base_path
-state["series_dir"] = config.series_dir
-state["specials_dir"] = config.specials_dir
+
+def apply_config() -> None:
+    """Apply the config to the state."""
+
+    state["base_path"] = config.base_path
+    state["temp_base_path"] = config.temp_base_path
+    state["series_dir"] = config.series_dir
+    state["specials_dir"] = config.specials_dir
+
 
 validate_config_file = config.validate_config_file
 init_app = config.init_app
