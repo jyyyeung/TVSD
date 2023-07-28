@@ -150,3 +150,12 @@ def remove_show():
             break
 
         typer.echo("Option out of range, please try again")
+
+
+@app.command()
+def print_state():
+    """Prints the state of the application"""
+    validate_config_file()
+
+    for key, value in state.items():
+        typer.echo(f"{key}: {value}")
