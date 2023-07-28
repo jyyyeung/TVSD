@@ -1,7 +1,6 @@
 import os
 from typing import TYPE_CHECKING, Literal, List
-
-from tvsd.config import SERIES_DIR
+from tvsd._variables import SERIES_DIR
 
 if TYPE_CHECKING:
     from tvsd.source import Source

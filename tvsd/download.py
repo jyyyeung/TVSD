@@ -6,8 +6,9 @@ from typing import Literal
 import m3u8_To_MP4
 import typer
 
+from tvsd._variables import BASE_PATH, TEMP_BASE_PATH
 from multipledispatch import dispatch
-from tvsd.config import BASE_PATH, TEMP_BASE_PATH
+
 
 from tvsd.show import Show
 from tvsd.season import Season

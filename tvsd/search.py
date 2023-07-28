@@ -5,10 +5,11 @@ import os
 import sys
 from typing import TYPE_CHECKING, Any, Literal, Union, List
 from bs4 import PageElement
-from tvsd.config import SERIES_DIR
 from tvsd.sources import *
 from rich.table import Table
 from rich.console import Console
+from tvsd._variables import SERIES_DIR
+
 
 import typer
 

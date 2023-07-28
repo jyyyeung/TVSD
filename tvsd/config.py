@@ -1,14 +1,13 @@
-"""This module provides the RP To-Do config functionality."""
-# rptodo/config.py
+"""This module provides the TVSD config functionality."""
+# tvsd/config.py
 
 import configparser
 import os
 from pathlib import Path
 
-
 import typer
 
-from tvsd import DB_WRITE_ERROR, DIR_ERROR, FILE_ERROR, SUCCESS, __app_name__
+from tvsd import DB_WRITE_ERROR, DIR_ERROR, FILE_ERROR, SUCCESS, __app_name__, state
 
 config_parser = configparser.ConfigParser()
 
@@ -17,8 +16,10 @@ CONFIG_FILE_PATH = CONFIG_DIR_PATH / "config.ini"
 
 
 class Config:
+    """Config class"""
+
     def __init__(self):
-        print(CONFIG_FILE_PATH)
+        typer.echo("Config file location: " + str(CONFIG_FILE_PATH))
         config_parser.read(CONFIG_FILE_PATH)
 
     @classmethod
@@ -122,9 +123,11 @@ class Config:
 
 
 config = Config()
-BASE_PATH = config.base_path
-TEMP_BASE_PATH = config.temp_base_path
+
+state["base_path"] = config.base_path
+state["temp_base_path"] = config.temp_base_path
+state["series_dir"] = config.series_dir
+state["specials_dir"] = config.specials_dir
+
 validate_config_file = config.validate_config_file
-SERIES_DIR = config.series_dir
-SPECIALS_DIR = config.specials_dir
 init_app = config.init_app

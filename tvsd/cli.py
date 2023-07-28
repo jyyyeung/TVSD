@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 import shutil
 from typing import Optional
+from tvsd._variables import BASE_PATH, TEMP_BASE_PATH, SERIES_DIR
+from tvsd import state
 
 
 import typer
@@ -12,10 +14,7 @@ from rich import print as rprint
 from tvsd import ERRORS, __app_name__, __version__, database, app, state
 from tvsd.actions import search_media_and_download
 from tvsd.config import (
-    BASE_PATH,
-    SERIES_DIR,
     init_app,
-    TEMP_BASE_PATH,
     validate_config_file,
 )
 from tvsd.actions import list_shows_as_table
@@ -66,6 +65,12 @@ def main(
         is_eager=True,
     ),
     verbose: Optional[bool] = False,
+    series_dir: Optional[str] = typer.Option(
+        None,
+        "--series-dir",
+        "-sd",
+        help="Specify the series directory, overrides config file",
+    ),
 ) -> None:
     """
     Options to update state of the application.
@@ -76,6 +81,10 @@ def main(
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+
+    if series_dir:
+        state["series_dir"] = series_dir
+        logging.info(f"Series directory set to {series_dir}")
 
 
 @app.command()
@@ -123,6 +132,7 @@ def list_shows():
 @app.command()
 def remove_show():
     """List shows and remove selected show"""
+
     shows, num_rows = list_shows_as_table(show_index=True)
 
     while True:

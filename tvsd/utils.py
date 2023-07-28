@@ -4,8 +4,10 @@ import re
 from typing import List
 import cloudscraper
 import typer
+from tvsd import state
 
-from tvsd.config import BASE_PATH, SERIES_DIR, SPECIALS_DIR
+# from tvsd.config import BASE_PATH, SPECIALS_DIR
+
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,

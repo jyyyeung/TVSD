@@ -6,9 +6,14 @@ from typer import Typer
 
 
 app = Typer(name=__app_name__, rich_markup_mode="rich")
-state = {"verbose": False}
+state = {
+    "verbose": False,
+    "series_dir": "TV Series",
+    "specials_dir": "Specials",
+    "base_path": "/Volumes/Viewable",
+    "temp_base_path": "/Volumes/Viewable/temp",
+}
 current_dir = os.getcwd()
-
 
 (
     SUCCESS,

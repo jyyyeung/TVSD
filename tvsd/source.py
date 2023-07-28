@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
 
 import chinese_converter
-from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
+from tvsd._types import EpisodeDetailsFromURL, SeasonDetailsFromURL
 from socket import error as SocketError
 import errno
 from tvsd.episode import Episode

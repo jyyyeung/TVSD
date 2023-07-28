@@ -3,7 +3,8 @@ import logging
 import os
 import sys
 from typing import List, Tuple
-from tvsd.config import BASE_PATH, SERIES_DIR, TEMP_BASE_PATH
+from tvsd._variables import BASE_PATH, TEMP_BASE_PATH, SERIES_DIR
+from tvsd import state
 
 from tvsd.download import Download
 from tvsd.search import SearchQuery
