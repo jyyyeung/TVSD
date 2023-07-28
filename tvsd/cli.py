@@ -4,10 +4,9 @@ from pathlib import Path
 import shutil
 from typing import Optional
 
+
 import typer
-from rich import print
-from rich.console import Console
-from rich.table import Table
+from rich import print as rprint
 
 
 from tvsd import ERRORS, __app_name__, __version__, database, app, state
@@ -19,6 +18,7 @@ from tvsd.config import (
     TEMP_BASE_PATH,
     validate_config_file,
 )
+from tvsd.actions import list_shows_as_table
 
 
 @app.command()
@@ -71,7 +71,7 @@ def main(
     Options to update state of the application.
     """
     if verbose:
-        print("Will write verbose output")
+        typer.echo("Will write verbose output")
         state["verbose"] = True
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -97,9 +97,9 @@ def clean_temp():
         dir_content = os.listdir(TEMP_BASE_PATH)
         if len(dir_content) == 0:
             raise (FileNotFoundError)
-        print(f"{TEMP_BASE_PATH} contents: ")
+        rprint(f"{TEMP_BASE_PATH} contents: ")
         for item in dir_content:
-            print(f"  {item}")
+            rprint(f"  {item}")
 
         confirm = typer.prompt(
             text="Do you want to delete all files in temp directory?",
@@ -117,24 +117,26 @@ def clean_temp():
 @app.command()
 def list_shows():
     """List all shows in the database"""
-    console = Console()
-    table = Table("Name", "Year", "#Seasons", "#Episodes")
-    for show in os.listdir(os.path.join(BASE_PATH, SERIES_DIR)):
-        num_files = 0
-        num_seasons = 0
-        for _first in os.listdir(os.path.join(BASE_PATH, SERIES_DIR, show)):
-            if os.path.isdir(os.path.join(BASE_PATH, SERIES_DIR, show, _first)):
-                num_seasons += 1
-                for _second in os.listdir(
-                    os.path.join(BASE_PATH, SERIES_DIR, show, _first)
-                ):
-                    if os.path.isfile(
-                        os.path.join(BASE_PATH, SERIES_DIR, show, _first, _second)
-                    ) and _second.endswith(".mp4"):
-                        num_files += 1
+    list_shows_as_table(show_index=False)
 
-            table.add_row(
-                show.split(" ")[0], show.split(" ")[1], str(num_seasons), str(num_files)
-            )
 
-    console.print(table)
+@app.command()
+def remove_show():
+    """List shows and remove selected show"""
+    shows, num_rows = list_shows_as_table(show_index=True)
+
+    while True:
+        choice = typer.prompt(
+            "Select show index to remove", type=int, default=-1, show_default=False
+        )
+        if choice == -1:
+            typer.echo("No input received, exiting...")
+            raise typer.Abort()
+        if choice < num_rows:
+            if typer.confirm(f"Will remove {shows[choice]}. Are you sure?", abort=True):
+                typer.echo("Removing show: " + shows[choice])
+                shutil.rmtree(os.path.join(BASE_PATH, SERIES_DIR, shows[choice]))
+                typer.echo("Show removed")
+            break
+
+        typer.echo("Option out of range, please try again")
