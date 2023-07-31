@@ -19,6 +19,7 @@ from tvsd.config import (
     validate_config_file,
 )
 from tvsd.actions import list_shows_as_table
+from tvsd.utils import is_video, video_in_dir
 
 
 @app.command()
@@ -174,3 +175,62 @@ def print_state():
 
     for key, value in state.items():
         typer.echo(f"{key}: {value}")
+
+
+@app.command()
+def clean_base(
+    interactive: Optional[bool] = typer.Option(
+        False,
+        "--interactive",
+        "-i",
+        help="Interactive mode",
+    ),
+    greedy: Optional[bool] = typer.Option(
+        False,
+        "--greedy",
+        "-g",
+        help="Remove directories without videos",
+    ),
+    target: Optional[str] = typer.Option(
+        os.path.join(BASE_PATH, SERIES_DIR),
+        help="Target directory",
+    ),
+    _no_confirm: Optional[bool] = typer.Option(
+        False,
+        "--no-confirm",
+    ),
+):
+    """Remove empty directories in base path"""
+    validate_config_file()
+    if greedy and not _no_confirm:
+        typer.confirm(
+            "Greedy mode will remove directories without videos, even if they contain other content",
+            abort=True,
+        )
+
+    for root, dirs, _ in os.walk(target, topdown=False):
+        for name in dirs:
+            path = os.path.join(root, name)
+            if not os.listdir(path) and (
+                not interactive
+                or typer.confirm(f"Found Empty Directory, Remove {path}?")
+            ):
+                # empty dir
+                logging.info(f"Empty Directory, Removing {path}")
+                shutil.rmtree(path)
+            elif (
+                greedy
+                and not video_in_dir(path)
+                and (
+                    not interactive
+                    or typer.confirm(
+                        f"Found Directory w/o videos and sub-dir, Remove {path}?"
+                    )
+                )
+            ):
+                # clean_base(interactive, greedy, target, _no_confirm=True)
+                # # not empty dir and no video, remove
+                logging.info(
+                    f"Directory without video and and sub-dir, Removing {path}"
+                )
+                shutil.rmtree(path)

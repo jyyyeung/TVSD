@@ -8,7 +8,7 @@ from tvsd import state
 
 from tvsd.download import Download
 from tvsd.search import SearchQuery
-from tvsd.utils import check_dir_mounted
+from tvsd.utils import check_dir_mounted, is_video
 
 from rich.console import Console
 from rich.table import Table
@@ -72,7 +72,7 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
                 ):
                     if os.path.isfile(
                         os.path.join(BASE_PATH, SERIES_DIR, show, _first, _second)
-                    ) and _second.endswith(".mp4"):
+                    ) and is_video(_second):
                         num_files += 1
 
         # Only add show if it has at least one season
