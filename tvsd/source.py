@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
 
 import chinese_converter
-from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
+from tvsd._types import EpisodeDetailsFromURL, SeasonDetailsFromURL
 from socket import error as SocketError
 import errno
 from tvsd.episode import Episode
@@ -161,7 +161,7 @@ class Source(ABC):
         """
 
         episode_details: EpisodeDetailsFromURL = {
-            "title": self._set_episode_title(soup),
+            "title": chinese_converter.to_simplified(self._set_episode_title(soup)),
             "url": self._set_relative_episode_url(soup),
         }
         return EpisodeDetailsFromURL(episode_details)
@@ -275,7 +275,7 @@ class Source(ABC):
         if soup is None:
             return None
         details: SeasonDetailsFromURL = {
-            "title": self._set_season_title(soup),
+            "title": chinese_converter.to_simplified(self._set_season_title(soup)),
             "description": self._set_season_description(soup),
             "episodes": self._set_season_episodes(soup),
             "year": self._set_season_year(soup),

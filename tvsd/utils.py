@@ -4,8 +4,11 @@ import re
 from typing import List
 import cloudscraper
 import typer
+import mimetypes
+from tvsd._variables import BASE_PATH, SPECIALS_DIR, SERIES_DIR
 
-from tvsd.config import BASE_PATH, SERIES_DIR, SPECIALS_DIR
+# from tvsd.config import BASE_PATH, SPECIALS_DIR
+
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
@@ -135,3 +138,51 @@ def check_dir_mounted(path: str) -> bool:
         else:
             return False
     return True
+
+
+def _detect_video_mimetype(video_path: str) -> str:
+    """Detects the mimetype of a video
+
+    Args:
+        video_path (str): Path to video
+
+    Returns:
+        str: Mimetype of video
+    """
+    mimetypes.init()
+    mimestart = mimetypes.guess_type(video_path)[0]
+
+    if mimestart != None:
+        mimestart = mimestart.split("/")[0]
+        return mimestart
+    return ""
+
+
+def is_video(video_path: str) -> bool:
+    """Checks if a file is a video
+
+    Args:
+        video_path (str): Path to video
+
+    Returns:
+        bool: True if video
+    """
+    return _detect_video_mimetype(video_path) == "video"
+
+
+def video_in_dir(dir_path: str, recursive: bool = True) -> bool:
+    """Checks if a directory contains a video
+
+    Args:
+        dir_path (str): Path to directory
+
+    Returns:
+        bool: True if directory contains a video
+    """
+    for file in os.listdir(dir_path):
+        if is_video(os.path.join(dir_path, file)):
+            return True
+        if os.path.isdir(os.path.join(dir_path, file)) and recursive:
+            if video_in_dir(os.path.join(dir_path, file)):
+                return True
+    return False

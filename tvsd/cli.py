@@ -3,13 +3,23 @@ import os
 from pathlib import Path
 import shutil
 from typing import Optional
+from tvsd._variables import BASE_PATH, TEMP_BASE_PATH, SERIES_DIR
+from tvsd import state
+
 
 import typer
-from rich import print
+from rich import print as rprint
+
 
 from tvsd import ERRORS, __app_name__, __version__, database, app, state
 from tvsd.actions import search_media_and_download
-from tvsd.config import init_app, TEMP_BASE_PATH, validate_config_file
+from tvsd.config import (
+    apply_config,
+    init_app,
+    validate_config_file,
+)
+from tvsd.actions import list_shows_as_table
+from tvsd.utils import is_video, video_in_dir
 
 
 @app.command()
@@ -57,16 +67,40 @@ def main(
         is_eager=True,
     ),
     verbose: Optional[bool] = False,
+    series_dir: Optional[str] = typer.Option(
+        None,
+        "--series-dir",
+        "-sd",
+        help="Specify the series directory, overrides config file",
+    ),
+    base_path: Optional[str] = typer.Option(
+        None,
+        "--base-path",
+        "-bp",
+        help="Specify the base path, overrides config file",
+    ),
 ) -> None:
     """
     Options to update state of the application.
     """
+    # initialize the config file before setting instance level
+    validate_config_file()
+    apply_config()
+
     if verbose:
-        print("Will write verbose output")
+        typer.echo("Will write verbose output")
         state["verbose"] = True
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+
+    if series_dir:
+        state["series_dir"] = series_dir
+        logging.info(f"Series directory set to {series_dir}")
+
+    if base_path:
+        state["base_path"] = base_path
+        logging.info(f"Base path set to {base_path}")
 
 
 @app.command()
@@ -88,9 +122,9 @@ def clean_temp():
         dir_content = os.listdir(TEMP_BASE_PATH)
         if len(dir_content) == 0:
             raise (FileNotFoundError)
-        print(f"{TEMP_BASE_PATH} contents: ")
+        rprint(f"{TEMP_BASE_PATH} contents: ")
         for item in dir_content:
-            print(f"  {item}")
+            rprint(f"  {item}")
 
         confirm = typer.prompt(
             text="Do you want to delete all files in temp directory?",
@@ -103,3 +137,100 @@ def clean_temp():
             logging.info("All files deleted")
     except FileNotFoundError:
         logging.info(f"Temp directory {TEMP_BASE_PATH} does not exist")
+
+
+@app.command()
+def list_shows():
+    """List all shows in the database"""
+    list_shows_as_table(show_index=False)
+
+
+@app.command()
+def remove_show():
+    """List shows and remove selected show"""
+
+    shows, num_rows = list_shows_as_table(show_index=True)
+
+    while True:
+        choice = typer.prompt(
+            "Select show index to remove", type=int, default=-1, show_default=False
+        )
+        if choice == -1:
+            typer.echo("No input received, exiting...")
+            raise typer.Abort()
+        if choice < num_rows:
+            if typer.confirm(f"Will remove {shows[choice]}. Are you sure?", abort=True):
+                typer.echo("Removing show: " + shows[choice])
+                shutil.rmtree(os.path.join(BASE_PATH, SERIES_DIR, shows[choice]))
+                typer.echo("Show removed")
+            break
+
+        typer.echo("Option out of range, please try again")
+
+
+@app.command()
+def print_state():
+    """Prints the state of the application"""
+    validate_config_file()
+
+    for key, value in state.items():
+        typer.echo(f"{key}: {value}")
+
+
+@app.command()
+def clean_base(
+    interactive: Optional[bool] = typer.Option(
+        False,
+        "--interactive",
+        "-i",
+        help="Interactive mode",
+    ),
+    greedy: Optional[bool] = typer.Option(
+        False,
+        "--greedy",
+        "-g",
+        help="Remove directories without videos",
+    ),
+    target: Optional[str] = typer.Option(
+        os.path.join(BASE_PATH, SERIES_DIR),
+        help="Target directory",
+    ),
+    _no_confirm: Optional[bool] = typer.Option(
+        False,
+        "--no-confirm",
+    ),
+):
+    """Remove empty directories in base path"""
+    validate_config_file()
+    if greedy and not _no_confirm:
+        typer.confirm(
+            "Greedy mode will remove directories without videos, even if they contain other content",
+            abort=True,
+        )
+
+    for root, dirs, _ in os.walk(target, topdown=False):
+        for name in dirs:
+            path = os.path.join(root, name)
+            if not os.listdir(path) and (
+                not interactive
+                or typer.confirm(f"Found Empty Directory, Remove {path}?")
+            ):
+                # empty dir
+                logging.info(f"Empty Directory, Removing {path}")
+                shutil.rmtree(path)
+            elif (
+                greedy
+                and not video_in_dir(path)
+                and (
+                    not interactive
+                    or typer.confirm(
+                        f"Found Directory w/o videos and sub-dir, Remove {path}?"
+                    )
+                )
+            ):
+                # clean_base(interactive, greedy, target, _no_confirm=True)
+                # # not empty dir and no video, remove
+                logging.info(
+                    f"Directory without video and and sub-dir, Removing {path}"
+                )
+                shutil.rmtree(path)

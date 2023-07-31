@@ -1,3 +1,26 @@
+## v1.2.0 (2023-07-31)
+
+### Feat
+
+- **cli**: New cmd to clean empty directories
+- **flag**: Allow specifying base path in cli
+- **cli**: Added new CLI feature to print current State
+- **cli**: Added new CLI function to remove show
+- new command to list all existing shows
+- convert all folder names to simplified
+
+### Fix
+
+- **cli**: consider case when show does not have year
+
+### Refactor
+
+- Separate instance state and user config
+
+### Perf
+
+- apply config before setting local state
+
 ## v1.1.3 (2023-07-24)
 
 ### Fix
