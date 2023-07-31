@@ -6,7 +6,6 @@ from typing import Optional
 from tvsd._variables import BASE_PATH, TEMP_BASE_PATH, SERIES_DIR
 from tvsd import state
 
-
 import typer
 from rich import print as rprint
 
@@ -104,13 +103,21 @@ def main(
 
 
 @app.command()
-def search(query: str):
+def search(
+    query: str,
+    specials_only: Optional[bool] = typer.Option(
+        False,
+        "--specials",
+        "-s",
+        help="Download Specials Only",
+    ),
+):
     """Search for media and download
 
     Args:
         query (str): query string
     """
-    search_media_and_download(query=query)
+    search_media_and_download(query=query, specials_only=specials_only)
 
 
 @app.command()

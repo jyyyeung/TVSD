@@ -14,7 +14,7 @@ from rich.console import Console
 from rich.table import Table
 
 
-def search_media_and_download(query: str):
+def search_media_and_download(query: str, specials_only: bool = False):
     """Search for media and download
 
     Args:
@@ -35,6 +35,7 @@ def search_media_and_download(query: str):
         target=query_instance.chosen_show,
         base_path=BASE_PATH,
         temp_path=TEMP_BASE_PATH,
+        specials_only=specials_only,
     )
     logging.info(f"Starting {query_instance.chosen_show.title} guided download...")
     download_instance.guided_download()
