@@ -59,6 +59,9 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
     for show in os.listdir(os.path.join(BASE_PATH, SERIES_DIR)):
         num_files = 0
         num_seasons = 0
+        if not os.path.isdir(os.path.join(BASE_PATH, SERIES_DIR, show)):
+            # Skip if not a directory
+            continue
         # Iterate through seasons
         for _first in os.listdir(os.path.join(BASE_PATH, SERIES_DIR, show)):
             if os.path.isdir(os.path.join(BASE_PATH, SERIES_DIR, show, _first)):
@@ -75,19 +78,28 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
         # Only add show if it has at least one season
         if num_seasons > 0:
             shows.append(show)
+            show_split = show.split(" ")
+
+            if len(show_split) > 1:  # If show name has year
+                name = " ".join(show_split[:-1])
+                year = show_split[-1]
+            else:
+                name = show_split[0]
+                year = "N/A"
+
             # Add show to table
             if show_index:
                 table.add_row(
                     str(num_shows),
-                    show.split(" ")[0],
-                    show.split(" ")[1],
+                    name,
+                    year,
                     str(num_seasons),
                     str(num_files),
                 )
             else:
                 table.add_row(
-                    show.split(" ")[0],
-                    show.split(" ")[1],
+                    name,
+                    year,
                     str(num_seasons),
                     str(num_files),
                 )
