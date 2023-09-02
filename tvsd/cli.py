@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import shutil
 from typing import Optional
-from tvsd._variables import BASE_PATH, TEMP_BASE_PATH, SERIES_DIR
+from tvsd._variables import state_base_path, state_temp_base_path, state_series_dir
 from tvsd import state
 
 import typer
@@ -117,6 +117,7 @@ def search(
     Args:
         query (str): query string
     """
+    validate_config_file()
     search_media_and_download(query=query, specials_only=specials_only)
 
 
@@ -126,10 +127,10 @@ def clean_temp():
     validate_config_file()
 
     try:
-        dir_content = os.listdir(TEMP_BASE_PATH)
+        dir_content = os.listdir(state_temp_base_path())
         if len(dir_content) == 0:
             raise (FileNotFoundError)
-        rprint(f"{TEMP_BASE_PATH} contents: ")
+        rprint(f"{state_temp_base_path()} contents: ")
         for item in dir_content:
             rprint(f"  {item}")
 
@@ -139,11 +140,11 @@ def clean_temp():
             default="n",
         )
         if confirm.capitalize() == "Y":
-            shutil.rmtree(TEMP_BASE_PATH, ignore_errors=True)
-            os.mkdir(TEMP_BASE_PATH)
+            shutil.rmtree(state_temp_base_path(), ignore_errors=True)
+            os.mkdir(state_temp_base_path())
             logging.info("All files deleted")
     except FileNotFoundError:
-        logging.info(f"Temp directory {TEMP_BASE_PATH} does not exist")
+        logging.info(f"Temp directory {state_temp_base_path()} does not exist")
 
 
 @app.command()
@@ -168,7 +169,9 @@ def remove_show():
         if choice < num_rows:
             if typer.confirm(f"Will remove {shows[choice]}. Are you sure?", abort=True):
                 typer.echo("Removing show: " + shows[choice])
-                shutil.rmtree(os.path.join(BASE_PATH, SERIES_DIR, shows[choice]))
+                shutil.rmtree(
+                    os.path.join(state_base_path(), state_series_dir(), shows[choice])
+                )
                 typer.echo("Show removed")
             break
 
@@ -199,7 +202,7 @@ def clean_base(
         help="Remove directories without videos",
     ),
     target: Optional[str] = typer.Option(
-        os.path.join(BASE_PATH, SERIES_DIR),
+        os.path.join(state_base_path(), state_series_dir()),
         help="Target directory",
     ),
     _no_confirm: Optional[bool] = typer.Option(

@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from typing import List, Tuple
-from tvsd._variables import BASE_PATH, TEMP_BASE_PATH, SERIES_DIR
+from tvsd._variables import state_base_path, state_temp_base_path, state_series_dir
 from tvsd import state
 
 from tvsd.download import Download
@@ -20,21 +20,21 @@ def search_media_and_download(query: str, specials_only: bool = False):
     Args:
         query (str): query string
     """
-    logging.info(f"Checking if {BASE_PATH} is mounted...")
-    if not check_dir_mounted(path=BASE_PATH):
+    logging.info(f"Checking if {state_base_path()} is mounted...")
+    if not check_dir_mounted(path=state_base_path()):
         sys.exit()
-    logging.debug("Base path: %s", BASE_PATH)
+    logging.debug("Base path: %s", state_base_path())
 
     # Search
     query_instance = SearchQuery(query)
     logging.info(f"Searching for {query}...")
-    query_instance.find_show(BASE_PATH)
+    query_instance.find_show(state_base_path())
 
     # Download
     download_instance = Download(
         target=query_instance.chosen_show,
-        base_path=BASE_PATH,
-        temp_path=TEMP_BASE_PATH,
+        base_path=state_base_path(),
+        temp_path=state_temp_base_path(),
         specials_only=specials_only,
     )
     logging.info(f"Starting {query_instance.chosen_show.title} guided download...")
@@ -50,6 +50,12 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
     Returns:
         Tuple[List[str], int]: List of shows and number of shows
     """
+    dir = os.path.join(state_base_path(), state_series_dir())
+    logging.info(f"Checking if {dir} exists...")
+    if not os.path.isdir(dir):
+        logging.error(f"{dir} does not exist! Nothing to list. Exiting...")
+        sys.exit()
+
     console = Console()
     table = Table("Name", "Year", "#Seasons", "#Episodes")
     shows = []
@@ -57,22 +63,28 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
     if show_index:
         table = Table("#", "Name", "Year", "#Seasons", "#Episodes")
 
-    for show in os.listdir(os.path.join(BASE_PATH, SERIES_DIR)):
+    for show in os.listdir(os.path.join(state_base_path(), state_series_dir())):
         num_files = 0
         num_seasons = 0
-        if not os.path.isdir(os.path.join(BASE_PATH, SERIES_DIR, show)):
+        if not os.path.isdir(os.path.join(state_base_path(), state_series_dir(), show)):
             # Skip if not a directory
             continue
         # Iterate through seasons
-        for _first in os.listdir(os.path.join(BASE_PATH, SERIES_DIR, show)):
-            if os.path.isdir(os.path.join(BASE_PATH, SERIES_DIR, show, _first)):
+        for _first in os.listdir(
+            os.path.join(state_base_path(), state_series_dir(), show)
+        ):
+            if os.path.isdir(
+                os.path.join(state_base_path(), state_series_dir(), show, _first)
+            ):
                 num_seasons += 1
                 # Iterate through episodes
                 for _second in os.listdir(
-                    os.path.join(BASE_PATH, SERIES_DIR, show, _first)
+                    os.path.join(state_base_path(), state_series_dir(), show, _first)
                 ):
                     if os.path.isfile(
-                        os.path.join(BASE_PATH, SERIES_DIR, show, _first, _second)
+                        os.path.join(
+                            state_base_path(), state_series_dir(), show, _first, _second
+                        )
                     ) and is_video(_second):
                         num_files += 1
 

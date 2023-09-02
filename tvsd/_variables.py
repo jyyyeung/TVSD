@@ -1,6 +1,17 @@
 from tvsd import state
 
-BASE_PATH = state["base_path"]
-TEMP_BASE_PATH = state["temp_base_path"]
-SERIES_DIR = state["series_dir"]
-SPECIALS_DIR = state["specials_dir"]
+
+def state_base_path():
+    return state["base_path"]
+
+
+def state_temp_base_path():
+    return state["temp_base_path"]
+
+
+def state_series_dir():
+    return state["series_dir"]
+
+
+def state_specials_dir():
+    return state["specials_dir"]

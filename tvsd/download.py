@@ -6,7 +6,7 @@ from typing import Literal
 import m3u8_To_MP4
 import typer
 
-from tvsd._variables import BASE_PATH, TEMP_BASE_PATH
+from tvsd._variables import state_base_path, state_temp_base_path
 from multipledispatch import dispatch
 
 
@@ -22,8 +22,8 @@ class Download:
     def __init__(
         self,
         target: Show | Season | Episode,
-        base_path: str = BASE_PATH,
-        temp_path: str = TEMP_BASE_PATH,
+        base_path: str = state_base_path(),
+        temp_path: str = state_temp_base_path(),
         specials_only: bool = False,
     ):
         self._target: Show | Season | Episode = target
