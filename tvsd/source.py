@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
 
 import chinese_converter
-from tvsd.custom_types import EpisodeDetailsFromURL, SeasonDetailsFromURL
+from tvsd._types import EpisodeDetailsFromURL, SeasonDetailsFromURL
 from socket import error as SocketError
 import errno
 from tvsd.episode import Episode
@@ -92,7 +92,8 @@ class Source(ABC):
 
             for result in query_results:
                 show = self.parse_from_query(result)
-                self._result_list.append(show)
+                if show is not None:
+                    self._result_list.append(show)
 
         if len(self._result_list) == 0 and len(self._domains) > self._domain_index + 1:
             self._domain_index += 1
@@ -124,7 +125,7 @@ class Source(ABC):
         """
         pass
 
-    def get_query_result_soup(self, search_url: str) -> BeautifulSoup:
+    def get_query_result_soup(self, search_url: str) -> BeautifulSoup | None:
         """Returns the query result soup
 
         Args:
@@ -145,6 +146,7 @@ class Source(ABC):
             logging.error("Connection reset by peer")
         except:
             logging.error("Error in getting query result soup")
+        return None
 
     ##### PARSE EPISODE DETAILS FROM URL #####
 
@@ -159,7 +161,7 @@ class Source(ABC):
         """
 
         episode_details: EpisodeDetailsFromURL = {
-            "title": self._set_episode_title(soup),
+            "title": chinese_converter.to_simplified(self._set_episode_title(soup)),
             "url": self._set_relative_episode_url(soup),
         }
         return EpisodeDetailsFromURL(episode_details)
@@ -190,7 +192,7 @@ class Source(ABC):
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 
-    def parse_from_query(self, query_result: BeautifulSoup) -> "Season":
+    def parse_from_query(self, query_result: BeautifulSoup) -> "Season | None":
         """Parses the query result
 
         Args:
@@ -201,11 +203,15 @@ class Source(ABC):
         """
 
         details_url = self._get_result_details_url(query_result)
+        if details_url is None:
+            return None
 
         note = self._get_result_note(query_result)
         details: "SeasonDetailsFromURL" = self.parse_season_from_details_url(
             details_url
         )
+        if details is None:
+            return None
         season = Season(
             note=note,
             details=details,
@@ -254,7 +260,9 @@ class Source(ABC):
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
-    def parse_season_from_details_url(self, season_url: str) -> "SeasonDetailsFromURL":
+    def parse_season_from_details_url(
+        self, season_url: str
+    ) -> "SeasonDetailsFromURL | None":
         """Parses details from details url
 
         Args:
@@ -264,8 +272,10 @@ class Source(ABC):
             dict: Details found on the details page
         """
         soup = self.fetch_details_soup(season_url)
+        if soup is None:
+            return None
         details: SeasonDetailsFromURL = {
-            "title": self._set_season_title(soup),
+            "title": chinese_converter.to_simplified(self._set_season_title(soup)),
             "description": self._set_season_description(soup),
             "episodes": self._set_season_episodes(soup),
             "year": self._set_season_year(soup),
@@ -274,16 +284,24 @@ class Source(ABC):
         # print("Method for finding details from this source is undefined...")
         return SeasonDetailsFromURL(details)
 
-    def fetch_details_soup(self, details_url: str) -> BeautifulSoup:
+    def fetch_details_soup(self, details_url: str) -> BeautifulSoup | None:
         """Grabs the details page soup
 
         Returns:
             BeautifulSoup: Soup of details page
         """
 
-        show_details_page = SCRAPER.get(details_url).content
-        soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
-        return soup
+        try:
+            show_details_page = SCRAPER.get(details_url).content
+            soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
+            return soup
+        except ConnectionResetError as error:
+            if error.errno != errno.ECONNRESET:
+                raise  # Not error we are looking for
+            logging.error("Connection reset by peer")
+        except:
+            logging.error("Error in getting season details soup")
+        return None
 
     @abstractmethod
     def _set_season_title(self, soup: BeautifulSoup) -> str:
@@ -335,7 +353,7 @@ class Source(ABC):
 
     ######## FETCH EPISODE M3U8 ########
 
-    def fetch_episode_m3u8(self, relative_episode_url: str) -> str:
+    def fetch_episode_m3u8(self, relative_episode_url: str) -> str | None:
         """Fetches the m3u8 url for the episode
 
         Args:
@@ -344,12 +362,22 @@ class Source(ABC):
         Returns:
             str | None: m3u8 url
         """
-        episode_url = self._episode_url(relative_episode_url)
-        episode_details_page = SCRAPER.get(episode_url).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
-        episode_script = self._set_episode_script(episode_soup)
-        episode_m3u8 = self._set_episode_m3u8(episode_script)
-        return episode_m3u8
+        try:
+            episode_url = self._episode_url(relative_episode_url)
+            episode_details_page = SCRAPER.get(episode_url).content
+            episode_soup: BeautifulSoup = BeautifulSoup(
+                episode_details_page, "html.parser"
+            )
+            episode_script = self._set_episode_script(episode_soup)
+            episode_m3u8 = self._set_episode_m3u8(episode_script)
+            return episode_m3u8
+        except ConnectionResetError as error:
+            if error.errno != errno.ECONNRESET:
+                raise  # Not error we are looking for
+            logging.error("Connection reset by peer")
+        except:
+            logging.error("Error in getting episode details soup")
+        return None
 
     @abstractmethod
     def _episode_url(self, relative_episode_url: str) -> str:

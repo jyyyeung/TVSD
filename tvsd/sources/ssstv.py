@@ -65,7 +65,7 @@ class SSSTV(Source):
             "a",
             {
                 "class": "tag-link",
-                "href": re.compile(r"/vodshow/\d{2}-+\d{4}.html"),
+                "href": re.compile(r"/vodshow/\d+-+\d{4}.html"),
             },
         ).get_text()
 

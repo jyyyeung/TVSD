@@ -6,8 +6,9 @@ from typing import Literal
 import m3u8_To_MP4
 import typer
 
+from tvsd._variables import state_base_path, state_temp_base_path
 from multipledispatch import dispatch
-from tvsd.config import BASE_PATH, TEMP_BASE_PATH
+
 
 from tvsd.show import Show
 from tvsd.season import Season
@@ -21,8 +22,9 @@ class Download:
     def __init__(
         self,
         target: Show | Season | Episode,
-        base_path: str = BASE_PATH,
-        temp_path: str = TEMP_BASE_PATH,
+        base_path: str = state_base_path(),
+        temp_path: str = state_temp_base_path(),
+        specials_only: bool = False,
     ):
         self._target: Show | Season | Episode = target
         self._base_path = base_path
@@ -30,6 +32,7 @@ class Download:
         self._target_path: str
         self._specials_index: int = 1
         self._regular_ep_index: int = 1
+        self._specials_only = specials_only
 
     def guided_download(self):
         """Guided download of show"""
@@ -127,6 +130,9 @@ class Download:
         Args:
             episode (Episode): Episode to download
         """
+        if self._specials_only and not episode.is_specials:
+            logging.info("Skipping regular episode (--specials-only)")
+            return
 
         self.set_ep_index(episode)
 
@@ -154,13 +160,17 @@ class Download:
         temp_dir = os.path.join(self._temp_base_path, episode.filename)
         if not os.path.isdir(temp_dir):
             mkdir_if_no(temp_dir)
-            m3u8_To_MP4.multithread_uri_download(
-                m3u8_uri=episode_m3u8,
-                mp4_file_name=episode.filename,
-                mp4_file_dir=absolute_dest_dir,
-                tmpdir=temp_dir,
-            )
-            print("Completed downloading, removing temp dir...")
+            try:
+                m3u8_To_MP4.multithread_uri_download(
+                    m3u8_uri=episode_m3u8,
+                    mp4_file_name=episode.filename,
+                    mp4_file_dir=absolute_dest_dir,
+                    tmpdir=temp_dir,
+                )
+                print("Completed downloading, removing temp dir...")
+            except Exception as error:
+                print("Error downloading episode: " + str(error))
+                print("Removing temp dir...")
             shutil.rmtree(temp_dir, ignore_errors=True)
         else:
             print("Temp Dir for this episode exists, should be already downloading")

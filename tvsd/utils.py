@@ -4,8 +4,11 @@ import re
 from typing import List
 import cloudscraper
 import typer
+import mimetypes
+from tvsd._variables import state_base_path, state_specials_dir, state_series_dir
 
-from tvsd.config import BASE_PATH, SERIES_DIR, SPECIALS_DIR
+# from tvsd.config import BASE_PATH, SPECIALS_DIR
+
 
 SCRAPER = cloudscraper.create_scraper(
     delay=10,
@@ -46,7 +49,7 @@ def mkdir_from_base(check_dir: str):
         check_dir (str): Directory to check
     """
 
-    mkdir_if_no(os.path.join(BASE_PATH, check_dir))
+    mkdir_if_no(os.path.join(state_base_path(), check_dir))
 
 
 def relative_to_absolute_path(path: str) -> str:
@@ -58,7 +61,7 @@ def relative_to_absolute_path(path: str) -> str:
     Returns:
         str: Absolute path
     """
-    return os.path.join(BASE_PATH, path)
+    return os.path.join(state_base_path(), path)
 
 
 def file_exists(file_path: str) -> bool:
@@ -82,7 +85,7 @@ def file_exists_in_base(file_path: str) -> bool:
     Returns:
         bool: True if file exists
     """
-    return file_exists(os.path.join(BASE_PATH, file_path))
+    return file_exists(os.path.join(state_base_path(), file_path))
 
 
 def get_next_specials_index(show_dir: str) -> int:
@@ -95,7 +98,7 @@ def get_next_specials_index(show_dir: str) -> int:
         int: Next specials index
     """
     existing_episode_indexes: List[int] = []
-    specials_dir = os.path.join(show_dir, SPECIALS_DIR)
+    specials_dir = os.path.join(show_dir, state_specials_dir())
     if os.path.exists(specials_dir):
         for existing_special in os.listdir(specials_dir):
             try:
@@ -123,15 +126,63 @@ def check_dir_mounted(path: str) -> bool:
     if not os.path.ismount(path):
         print(path, "has not been mounted yet. Exiting...")
         return False
-    if not os.path.isdir(os.path.join(path, SERIES_DIR)):
-        print(f"{path} does not contain a {SERIES_DIR} directory.")
+    if not os.path.isdir(os.path.join(path, state_series_dir())):
+        print(f"{path} does not contain a {state_series_dir()} directory.")
         if (
             typer.prompt(
                 "Would you like to create it? [y/n]", default="y", show_default=True
             ).capitalize()
             == "Y"
         ):
-            mkdir_if_no(os.path.join(path, SERIES_DIR))
+            mkdir_if_no(os.path.join(path, state_series_dir()))
         else:
             return False
     return True
+
+
+def _detect_video_mimetype(video_path: str) -> str:
+    """Detects the mimetype of a video
+
+    Args:
+        video_path (str): Path to video
+
+    Returns:
+        str: Mimetype of video
+    """
+    mimetypes.init()
+    mimestart = mimetypes.guess_type(video_path)[0]
+
+    if mimestart != None:
+        mimestart = mimestart.split("/")[0]
+        return mimestart
+    return ""
+
+
+def is_video(video_path: str) -> bool:
+    """Checks if a file is a video
+
+    Args:
+        video_path (str): Path to video
+
+    Returns:
+        bool: True if video
+    """
+    return _detect_video_mimetype(video_path) == "video"
+
+
+def video_in_dir(dir_path: str, recursive: bool = True) -> bool:
+    """Checks if a directory contains a video
+
+    Args:
+        dir_path (str): Path to directory
+
+    Returns:
+        bool: True if directory contains a video
+    """
+    for file in os.listdir(dir_path):
+        if is_video(os.path.join(dir_path, file)):
+            return True
+        if os.path.isdir(os.path.join(dir_path, file)) and recursive:
+            if video_in_dir(os.path.join(dir_path, file)):
+                return True
+    return False
