@@ -1,3 +1,13 @@
+## v1.2.1 (2023-09-02)
+
+### Feat
+
+- **download**: flag to download specials only
+
+### Fix
+
+- _variables were created as const, didn't update according to config state
+
 ## v1.2.0 (2023-07-31)
 
 ### Feat

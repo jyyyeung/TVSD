@@ -71,7 +71,7 @@ class Episode:
         Returns:
             bool: True if the episode is a special episode, False otherwise.
         """
-        specials_regex = r"^[0-9]{8}$|^[0-9]{8}[（(]*第([0-9]+)[期集][(（上中下)）]*[)）]?$|^([0-9]{1,3})$|^第([0-9]+)[期集][上中下]*$"
+        specials_regex = r"^[0-9]{8}[(（上中下)）]*$|^[0-9]{8}[（(]*第([0-9]+)[期集][(（上中下)）]*[)）]?$|^([0-9]{1,3})$|^第([0-9]+)[期集][上中下]*$"
         not_specials = re.match(specials_regex, self._name)
         self._not_specials = not_specials
         return not not_specials

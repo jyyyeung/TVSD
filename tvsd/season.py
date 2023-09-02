@@ -5,7 +5,7 @@ from bs4 import Tag
 
 
 import typer
-from tvsd._variables import SPECIALS_DIR
+from tvsd._variables import state_specials_dir
 
 from tvsd.show import Show
 from tvsd.episode import Episode
@@ -174,7 +174,7 @@ class Season:
         Returns:
             str: relative specials directory
         """
-        return os.path.join(self._show.relative_show_dir, SPECIALS_DIR)
+        return os.path.join(self._show.relative_show_dir, state_specials_dir())
 
     def determine_show_begin_year(self) -> str:
         """Query the begin year of the show

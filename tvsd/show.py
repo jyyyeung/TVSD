@@ -1,6 +1,6 @@
 import os
 from typing import TYPE_CHECKING, Literal, List
-from tvsd._variables import SERIES_DIR
+from tvsd._variables import state_series_dir
 
 if TYPE_CHECKING:
     from tvsd.source import Source
@@ -92,4 +92,4 @@ class Show:
         """
 
         # relative directory of show in media directory from base path
-        return os.path.join(SERIES_DIR, self._prefix)
+        return os.path.join(state_series_dir(), self._prefix)

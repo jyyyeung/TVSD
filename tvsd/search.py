@@ -8,7 +8,7 @@ from bs4 import PageElement
 from tvsd.sources import *
 from rich.table import Table
 from rich.console import Console
-from tvsd._variables import SERIES_DIR
+from tvsd._variables import state_series_dir
 
 
 import typer
@@ -57,7 +57,7 @@ class SearchQuery:
             base_path (str): Base path to local media directory
         """
         # dir loop check dir
-        for directory in os.listdir(os.path.join(base_path, SERIES_DIR)):
+        for directory in os.listdir(os.path.join(base_path, state_series_dir())):
             season_title = directory.split(" ")[0]
             similarity_ratio = SequenceMatcher(None, self._query, season_title).ratio()
 

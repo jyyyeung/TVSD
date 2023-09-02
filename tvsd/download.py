@@ -6,7 +6,7 @@ from typing import Literal
 import m3u8_To_MP4
 import typer
 
-from tvsd._variables import BASE_PATH, TEMP_BASE_PATH
+from tvsd._variables import state_base_path, state_temp_base_path
 from multipledispatch import dispatch
 
 
@@ -22,8 +22,9 @@ class Download:
     def __init__(
         self,
         target: Show | Season | Episode,
-        base_path: str = BASE_PATH,
-        temp_path: str = TEMP_BASE_PATH,
+        base_path: str = state_base_path(),
+        temp_path: str = state_temp_base_path(),
+        specials_only: bool = False,
     ):
         self._target: Show | Season | Episode = target
         self._base_path = base_path
@@ -31,6 +32,7 @@ class Download:
         self._target_path: str
         self._specials_index: int = 1
         self._regular_ep_index: int = 1
+        self._specials_only = specials_only
 
     def guided_download(self):
         """Guided download of show"""
@@ -128,6 +130,9 @@ class Download:
         Args:
             episode (Episode): Episode to download
         """
+        if self._specials_only and not episode.is_specials:
+            logging.info("Skipping regular episode (--specials-only)")
+            return
 
         self.set_ep_index(episode)
 
