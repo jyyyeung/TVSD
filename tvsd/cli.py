@@ -39,8 +39,8 @@ def init(
             fg=typer.colors.RED,
         )
         raise typer.Exit(1)
-    else:
-        typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
+
+    typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
 
 
 def _version_callback(value: bool) -> None:
