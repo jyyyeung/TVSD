@@ -1,12 +1,12 @@
+""" 
+TVSD init module
+"""
 import importlib.metadata
 import os
 
 from typer import Typer
 
 _DISTRIBUTION_METADATA = importlib.metadata.metadata("tvsd")
-
-# author = _DISTRIBUTION_METADATA["Author"]
-# project = _DISTRIBUTION_METADATA["Name"]
 __version__ = _DISTRIBUTION_METADATA["Version"]
 __app_name__ = "tvsd"
 

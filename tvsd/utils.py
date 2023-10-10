@@ -1,7 +1,14 @@
+"""
+TVSD Utilities, contains useful functions 
+"""
+
+import importlib
 import logging
 import mimetypes
 import os
+import pkgutil
 import re
+import sys
 from typing import List
 
 import cloudscraper
@@ -40,7 +47,8 @@ def mkdir_if_no(check_dir: str, recursive: bool = True):
                 os.mkdir(check_dir)
             except FileNotFoundError:
                 logging.error(
-                    f"Parent directory does not exist, cannot create directory {check_dir}"
+                    "Parent directory does not exist, cannot create directory %s",
+                    {check_dir},
                 )
 
 
@@ -125,7 +133,7 @@ def check_dir_mounted(path: str) -> bool:
         bool: True if directory exists
     """
 
-    if not os.path.ismount(path):
+    if not os.path.ismount(path) and not os.path.isdir(path):
         print(path, "has not been mounted yet. Exiting...")
         return False
     if not os.path.isdir(os.path.join(path, state_series_dir())):

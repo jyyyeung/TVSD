@@ -8,9 +8,9 @@ import typer
 from multipledispatch import dispatch
 
 from tvsd._variables import state_base_path, state_temp_base_path
-from tvsd.episode import Episode
-from tvsd.season import Season
-from tvsd.show import Show
+from tvsd.types.episode import Episode
+from tvsd.types.season import Season
+from tvsd.types.show import Show
 from tvsd.utils import mkdir_if_no
 
 

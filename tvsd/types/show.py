@@ -1,10 +1,15 @@
+"""
+TYSD Show Class, parent of Seasons
+Currently not used a lot, will consider removing
+"""
 import os
-from typing import TYPE_CHECKING, Literal, List
+from typing import TYPE_CHECKING, List, Literal
+
 from tvsd._variables import state_series_dir
 
 if TYPE_CHECKING:
-    from tvsd.source import Source
-    from tvsd.season import Season
+    from tvsd.sources.base import Source
+    from tvsd.types.season import Season
 
 
 class Show:

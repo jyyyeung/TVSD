@@ -137,7 +137,7 @@ def clean_temp():
             os.mkdir(state_temp_base_path())
             logging.info("All files deleted")
     except FileNotFoundError:
-        logging.info(f"Temp directory {state_temp_base_path()} does not exist")
+        logging.info("Temp directory %s does not exist", state_temp_base_path())
 
 
 @app.command()
@@ -234,6 +234,6 @@ def clean_base(
                 # clean_base(interactive, greedy, target, _no_confirm=True)
                 # # not empty dir and no video, remove
                 logging.info(
-                    f"Directory without video and and sub-dir, Removing {path}"
+                    "Directory without video and and sub-dir, Removing %s", {path}
                 )
                 shutil.rmtree(path)

@@ -1,10 +1,10 @@
+import logging
 import re
 from typing import Any
 
 from bs4 import BeautifulSoup, ResultSet, Tag
 
-from tvsd.source import Source
-import logging
+from tvsd.sources.base import Source
 
 
 class OLEVOD(Source):
