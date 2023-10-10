@@ -38,22 +38,24 @@ class OLEVOD(Source):
     ##### PARSE EPISODE DETAILS FROM URL #####
 
     def _set_relative_episode_url(self, soup: Tag) -> str:
-        return soup.find("a")["href"]
+        return soup.find("a").get("href", "")
 
-    def _set_season_title(self, soup: BeautifulSoup):
-        return soup.find("h2", attrs={"class": "title"}).get_text()
-        # return soup.find("h2", attrs={"class": "hl-dc-title"}).get_text()
+    def _set_season_title(self, soup: BeautifulSoup) -> str:
+        title = soup.find("h2", attrs={"class": "title"})
+        if title:
+            return title.get_text(strip=True)
+        return ""
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 
     def _get_result_note(self, query_result: BeautifulSoup) -> str:
         try:
-            note = query_result.find(
-                "span", attrs={"class": "pic_text text_right"}
-            ).get_text()
+            note = query_result.find("span", attrs={"class": "pic_text text_right"})
+            if note:
+                return note.get_text(strip=True)
         except AttributeError:
-            note = ""
-        return note
+            pass
+        return ""
 
     def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
         page = query_result.find("a", attrs={"class": "vodlist_thumb"})["href"]

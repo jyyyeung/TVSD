@@ -1,3 +1,4 @@
+"""TVSD CLI entry point, main app module."""
 import logging
 import os
 import shutil
@@ -11,7 +12,7 @@ from tvsd import ERRORS, __app_name__, __version__, app, database, state
 from tvsd._variables import state_base_path, state_series_dir, state_temp_base_path
 from tvsd.actions import list_shows_as_table, search_media_and_download
 from tvsd.config import apply_config, init_app, validate_config_file
-from tvsd.utils import is_video, video_in_dir
+from tvsd.utils import video_in_dir
 
 
 @app.command()
@@ -88,17 +89,17 @@ def main(
 
     if series_dir:
         state["series_dir"] = series_dir
-        logging.info(f"Series directory set to {series_dir}")
+        logging.info("Series directory set to %s", series_dir)
 
     if base_path:
         state["base_path"] = base_path
-        logging.info(f"Base path set to {base_path}")
+        logging.info("Base path set to %s", base_path)
 
 
 @app.command()
 def search(
     query: str,
-    specials_only: Optional[bool] = typer.Option(
+    specials_only: bool = typer.Option(
         False,
         "--specials",
         "-s",
@@ -111,7 +112,7 @@ def search(
         query (str): query string
     """
     validate_config_file()
-    search_media_and_download(query=query, specials_only=specials_only)
+    search_media_and_download(query, specials_only)
 
 
 @app.command()
@@ -122,7 +123,8 @@ def clean_temp():
     try:
         dir_content = os.listdir(state_temp_base_path())
         if len(dir_content) == 0:
-            raise (FileNotFoundError)
+            raise FileNotFoundError
+
         rprint(f"{state_temp_base_path()} contents: ")
         for item in dir_content:
             rprint(f"  {item}")
@@ -136,6 +138,7 @@ def clean_temp():
             shutil.rmtree(state_temp_base_path(), ignore_errors=True)
             os.mkdir(state_temp_base_path())
             logging.info("All files deleted")
+
     except FileNotFoundError:
         logging.info("Temp directory %s does not exist", state_temp_base_path())
 
@@ -182,23 +185,23 @@ def print_state():
 
 @app.command()
 def clean_base(
-    interactive: Optional[bool] = typer.Option(
+    interactive: bool = typer.Option(
         False,
         "--interactive",
         "-i",
         help="Interactive mode",
     ),
-    greedy: Optional[bool] = typer.Option(
+    greedy: bool = typer.Option(
         False,
         "--greedy",
         "-g",
         help="Remove directories without videos",
     ),
-    target: Optional[str] = typer.Option(
+    target: str = typer.Option(
         os.path.join(state_base_path(), state_series_dir()),
         help="Target directory",
     ),
-    _no_confirm: Optional[bool] = typer.Option(
+    _no_confirm: bool = typer.Option(
         False,
         "--no-confirm",
     ),
@@ -219,7 +222,7 @@ def clean_base(
                 or typer.confirm(f"Found Empty Directory, Remove {path}?")
             ):
                 # empty dir
-                logging.info(f"Empty Directory, Removing {path}")
+                logging.info("Empty Directory, Removing %s", path)
                 shutil.rmtree(path)
             elif (
                 greedy

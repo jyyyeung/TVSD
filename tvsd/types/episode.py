@@ -51,16 +51,24 @@ class Episode:
             episode_number_identifying_regex = r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$"
             episode_number_match = re.match(
                 episode_number_identifying_regex, self._name
-            ).groups()
+            )
 
-            # Filter out all None matches
-            identified_number = [i for i in episode_number_match if i is not None][0]
+            if episode_number_match is not None:
+                episode_number_groups = episode_number_match.groups()
 
-            print(f"episode_number: {identified_number}")
-            # episode_index = int(re.findall(r'\d*', episode_number)[0])
-            resulting_index = int(re.findall(r"^\d{1,3}$", identified_number)[0])
+                # Filter out all None matches
+                identified_number = [i for i in episode_number_groups if i is not None][
+                    0
+                ]
 
-            # print(episode_number)
+                print(f"episode_number: {identified_number}")
+                # episode_index = int(re.findall(r'\d*', episode_number)[0])
+                resulting_index = int(re.findall(r"^\d{1,3}$", identified_number)[0])
+
+                # print(episode_number)
+            else:
+                resulting_index = 1
+
         except AttributeError:
             resulting_index = 1
 
