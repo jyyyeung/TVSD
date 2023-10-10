@@ -1,8 +1,13 @@
-__app_name__ = "tvsd"
-__version__ = "1.0.0-a.1"
-
 import os
 from typer import Typer
+import importlib.metadata
+
+_DISTRIBUTION_METADATA = importlib.metadata.metadata("tvsd")
+
+# author = _DISTRIBUTION_METADATA["Author"]
+# project = _DISTRIBUTION_METADATA["Name"]
+__version__ = _DISTRIBUTION_METADATA["Version"]
+__app_name__ = "tvsd"
 
 
 app = Typer(name=__app_name__, rich_markup_mode="rich")
