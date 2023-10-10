@@ -1,11 +1,13 @@
 import logging
+import mimetypes
 import os
 import re
 from typing import List
+
 import cloudscraper
 import typer
-import mimetypes
-from tvsd._variables import state_base_path, state_specials_dir, state_series_dir
+
+from tvsd._variables import state_base_path, state_series_dir, state_specials_dir
 
 # from tvsd.config import BASE_PATH, SPECIALS_DIR
 

@@ -1,23 +1,16 @@
 import logging
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 from typing import Optional
-from tvsd._variables import state_base_path, state_temp_base_path, state_series_dir
-from tvsd import state
 
 import typer
 from rich import print as rprint
 
-
-from tvsd import ERRORS, __app_name__, __version__, database, app, state
-from tvsd.actions import search_media_and_download
-from tvsd.config import (
-    apply_config,
-    init_app,
-    validate_config_file,
-)
-from tvsd.actions import list_shows_as_table
+from tvsd import ERRORS, __app_name__, __version__, app, database, state
+from tvsd._variables import state_base_path, state_series_dir, state_temp_base_path
+from tvsd.actions import list_shows_as_table, search_media_and_download
+from tvsd.config import apply_config, init_app, validate_config_file
 from tvsd.utils import is_video, video_in_dir
 
 

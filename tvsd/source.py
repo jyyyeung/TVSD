@@ -1,16 +1,16 @@
+import errno
 import json
 import logging
 import os
-from typing import Any, List
-from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
+from socket import error as SocketError
+from typing import Any, List
 
 import chinese_converter
-from tvsd._types import EpisodeDetailsFromURL, SeasonDetailsFromURL
-from socket import error as SocketError
-import errno
-from tvsd.episode import Episode
+from bs4 import BeautifulSoup, ResultSet, Tag
 
+from tvsd._types import EpisodeDetailsFromURL, SeasonDetailsFromURL
+from tvsd.episode import Episode
 from tvsd.season import Season
 from tvsd.utils import SCRAPER
 

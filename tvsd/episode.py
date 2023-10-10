@@ -48,7 +48,7 @@ class Episode:
             episode_number_identifying_regex = r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$"
             episode_number_match = re.match(
                 episode_number_identifying_regex, self._name
-            ).groups()
+            ).groups() 
 
             # Filter out all None matches
             identified_number = [i for i in episode_number_match if i is not None][0]

@@ -5,14 +5,12 @@ from typing import Literal
 
 import m3u8_To_MP4
 import typer
-
-from tvsd._variables import state_base_path, state_temp_base_path
 from multipledispatch import dispatch
 
-
-from tvsd.show import Show
-from tvsd.season import Season
+from tvsd._variables import state_base_path, state_temp_base_path
 from tvsd.episode import Episode
+from tvsd.season import Season
+from tvsd.show import Show
 from tvsd.utils import mkdir_if_no
 
 

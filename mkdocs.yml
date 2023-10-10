@@ -1,7 +1,18 @@
-site_name: TVSeries Download
+site_name: TVSD
 plugins:
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+      python:
+        options:
+          docstring_options:
+            ignore_init_summary: yes
+          merge_init_into_class: yes
+          show_submodules: no
   - search
-  # - mkdocs-typer
+
 theme:
   name: "material"
+  features:
+    - content.code.annotate
+    - toc.integrate
+    - navigation.top

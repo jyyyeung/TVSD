@@ -1,6 +1,7 @@
-import os
-from typer import Typer
 import importlib.metadata
+import os
+
+from typer import Typer
 
 _DISTRIBUTION_METADATA = importlib.metadata.metadata("tvsd")
 
@@ -10,7 +11,7 @@ __version__ = _DISTRIBUTION_METADATA["Version"]
 __app_name__ = "tvsd"
 
 
-app = Typer(name=__app_name__, rich_markup_mode="rich")
+app = Typer(name=__name__, rich_markup_mode="rich")
 state = {
     "verbose": False,
     "series_dir": "TV Series",

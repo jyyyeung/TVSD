@@ -1,21 +1,19 @@
-from difflib import SequenceMatcher
 import inspect
 import logging
 import os
 import sys
-from typing import TYPE_CHECKING, Any, Literal, Union, List
-from bs4 import PageElement
-from tvsd.sources import *
-from rich.table import Table
-from rich.console import Console
-from tvsd._variables import state_series_dir
-
+from difflib import SequenceMatcher
+from typing import TYPE_CHECKING, Any, List, Literal, Union
 
 import typer
+from bs4 import PageElement
+from rich.console import Console
+from rich.table import Table
 
 from tvsd import sources
+from tvsd._variables import state_series_dir
 from tvsd.source import Source
-
+from tvsd.sources import *
 
 if TYPE_CHECKING:
     from tvsd.season import Season
