@@ -5,10 +5,9 @@ import os
 import pkgutil
 import sys
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING, Any, List, Literal, Union
+from typing import TYPE_CHECKING, List
 
 import typer
-from bs4 import PageElement
 from rich.console import Console
 from rich.table import Table
 
