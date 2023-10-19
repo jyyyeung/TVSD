@@ -6,6 +6,7 @@ import os
 import re
 from typing import TYPE_CHECKING
 
+from tvsd._variables import state_base_path, state_temp_base_path
 from tvsd.utils import file_exists_in_base, relative_to_absolute_path
 
 if TYPE_CHECKING:
@@ -196,12 +197,22 @@ class Episode:
             print(f"{self.filename} already exists in directory, skipping... ")
             return True
 
+        episode_title = self.filename.split(" - ")[-1]
+        for file in os.listdir(
+            os.path.join(state_base_path(), self._season.relative_season_dir)
+        ):
+            if episode_title in file:
+                print(f"{self.filename} probably exist as {file}, skipping...")
+                return True
+
+        # file_exists(os.path.join(state_base_path(), self.relative_episode_file_path))
+
         # specials exists already
         for existing_episode in os.listdir(
             relative_to_absolute_path(self.relative_destination_dir)
         ):
             # print(episode_name, existing_episode)
-            if existing_episode.endswith(".mp4") and self.filename in existing_episode:
+            if existing_episode.endswith(".mp4") and episode_title in existing_episode:
                 print(
                     f"{self.filename} probably exist as {existing_episode}, skipping..."
                 )

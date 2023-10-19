@@ -138,15 +138,21 @@ class Download:
 
         self.set_ep_index(episode)
 
+        if episode.file_exists_locally:
+            print(f"{episode.filename} already exists in directory, skipping... ")
+            number = int(episode.filename.split(" - ")[1].split("E")[1])
+            if episode.is_specials:
+                self._specials_index = number + 1
+            else:
+                self._regular_ep_index = number + 1
+
+            return
+
         absolute_dest_dir = os.path.join(
             self._base_path, episode.relative_destination_dir
         )
         logging.info(absolute_dest_dir)
         mkdir_if_no(absolute_dest_dir)
-
-        if episode.file_exists_locally:
-            print(f"{episode.filename} already exists in directory, skipping... ")
-            return
 
         print(f"Downloading to file {episode.filename}")
 
@@ -165,6 +171,7 @@ class Download:
         temp_dir = os.path.join(self._temp_base_path, episode.filename)
         if not os.path.isdir(temp_dir):
             mkdir_if_no(temp_dir)
+            print(f"Downloading {episode.filename} to {absolute_dest_dir}...")
             try:
                 m3u8_To_MP4.multithread_uri_download(
                     m3u8_uri=episode_m3u8,

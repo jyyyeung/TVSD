@@ -77,7 +77,10 @@ class Config:
         """
         try:
             self.validate_config_file()
-            return config_parser["General"]["temp_base_path"]
+            return (
+                config_parser["General"]["temp_base_path"]
+                or config_parser["General"]["downloads_path"]
+            )
         except KeyError:
             return "~/Movies/temp-parts"
 
