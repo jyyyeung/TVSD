@@ -14,33 +14,32 @@ from tvsd.actions import list_shows_as_table, search_media_and_download
 from tvsd.config import apply_config, init_app, validate_config_file
 from tvsd.utils import video_in_dir
 
+# @app.command()
+# def init(
+#     db_path: str = typer.Option(
+#         str(database.DEFAULT_DB_FILE_PATH),
+#         "--db-path",
+#         "-db",
+#         prompt="TVSD database location?",
+#     ),
+# ) -> None:
+#     """Initialize the to-do database."""
+#     app_init_error = init_app(db_path)
+#     if app_init_error:
+#         typer.secho(
+#             f'Creating config file failed with "{ERRORS[app_init_error]}"',
+#             fg=typer.colors.RED,
+#         )
+#         raise typer.Exit(1)
+#     db_init_error = database.init_database(Path(db_path))
+#     if db_init_error:
+#         typer.secho(
+#             f'Creating database failed with "{ERRORS[db_init_error]}"',
+#             fg=typer.colors.RED,
+#         )
+#         raise typer.Exit(1)
 
-@app.command()
-def init(
-    db_path: str = typer.Option(
-        str(database.DEFAULT_DB_FILE_PATH),
-        "--db-path",
-        "-db",
-        prompt="TVSD database location?",
-    ),
-) -> None:
-    """Initialize the to-do database."""
-    app_init_error = init_app(db_path)
-    if app_init_error:
-        typer.secho(
-            f'Creating config file failed with "{ERRORS[app_init_error]}"',
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(1)
-    db_init_error = database.init_database(Path(db_path))
-    if db_init_error:
-        typer.secho(
-            f'Creating database failed with "{ERRORS[db_init_error]}"',
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(1)
-
-    typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
+#     typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
 
 
 def _version_callback(value: bool) -> None:
