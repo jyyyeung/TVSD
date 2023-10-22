@@ -35,7 +35,7 @@ class Show:
         return self._seasons
 
     @property
-    def title(self):  # This getter method name is *the* name
+    def title(self) -> str:  # This getter method name is *the* name
         """Get the title of the show
 
         Returns:

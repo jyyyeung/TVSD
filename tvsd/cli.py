@@ -2,44 +2,16 @@
 import logging
 import os
 import shutil
-from pathlib import Path
 from typing import Optional
 
 import typer
 from rich import print as rprint
 
-from tvsd import ERRORS, __app_name__, __version__, app, database, state
+from tvsd import __app_name__, __version__, app, state
 from tvsd._variables import state_base_path, state_series_dir, state_temp_base_path
 from tvsd.actions import list_shows_as_table, search_media_and_download
-from tvsd.config import apply_config, init_app, validate_config_file
+from tvsd.config import apply_config, validate_config_file
 from tvsd.utils import video_in_dir
-
-# @app.command()
-# def init(
-#     db_path: str = typer.Option(
-#         str(database.DEFAULT_DB_FILE_PATH),
-#         "--db-path",
-#         "-db",
-#         prompt="TVSD database location?",
-#     ),
-# ) -> None:
-#     """Initialize the to-do database."""
-#     app_init_error = init_app(db_path)
-#     if app_init_error:
-#         typer.secho(
-#             f'Creating config file failed with "{ERRORS[app_init_error]}"',
-#             fg=typer.colors.RED,
-#         )
-#         raise typer.Exit(1)
-#     db_init_error = database.init_database(Path(db_path))
-#     if db_init_error:
-#         typer.secho(
-#             f'Creating database failed with "{ERRORS[db_init_error]}"',
-#             fg=typer.colors.RED,
-#         )
-#         raise typer.Exit(1)
-
-#     typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
 
 
 def _version_callback(value: bool) -> None:
@@ -74,6 +46,12 @@ def main(
 ) -> None:
     """
     Options to update state of the application.
+
+    Args:
+        _: Optional[bool]: Show the application's version and exit.
+        verbose (Optional[bool], optional): Show verbose output. Defaults to False.
+        series_dir (Optional[str], optional): Specify the series directory, overrides config file. Defaults to None.
+        base_path (Optional[str], optional): Specify the base path, overrides config file. Defaults to None.
     """
     # initialize the config file before setting instance level
     validate_config_file()
@@ -108,6 +86,7 @@ def search(
     """Search for media and download
 
     Args:
+        specials_only (Optional[bool], optional): Download only specials episode
         query (str): query string
     """
     validate_config_file()
@@ -116,7 +95,12 @@ def search(
 
 @app.command()
 def clean_temp():
-    """Cleans the temp directory"""
+    """
+    clean_temp Cleans the temp directory
+
+    Raises:
+        FileNotFoundError: If temp directory does not exist
+    """
     validate_config_file()
 
     try:
@@ -175,7 +159,9 @@ def remove_show():
 
 @app.command()
 def print_state():
-    """Prints the state of the application"""
+    """
+    print_state Prints the state of the application
+    """
     validate_config_file()
 
     for key, value in state.items():
@@ -205,7 +191,15 @@ def clean_base(
         "--no-confirm",
     ),
 ):
-    """Remove empty directories in base path"""
+    """
+    clean_base Remove empty directories in the base path
+
+    Args:
+        interactive (bool, optional): Whether to run in interactive mode. Defaults to False
+        greedy (bool, optional): Remove all directories without videos, even it they are not empty. Defaults to False.
+        target (str, optional): Target directory. Defaults to os.path.join(state_base_path(), state_series_dir()).
+        _no_confirm (bool, optional): Don't show prompt to confirm actions. Defaults to False.
+    """
     validate_config_file()
     if greedy and not _no_confirm:
         typer.confirm(

@@ -71,10 +71,14 @@ class Source(ABC):
     ### SEARCHING FOR A SHOW ###
 
     def query_from_source(self, search_query: str) -> List[Season]:
-        """Searches for a show
+        """
+        query_from_source Searches for a show
+
+        Args:
+            search_query (str): Query to search for
 
         Returns:
-            Union(List[Show, Season], []): List of shows or seasons
+            List[Season]: List of shows
         """
         if self._is_simplified:
             search_query = chinese_converter.to_simplified(search_query)

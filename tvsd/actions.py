@@ -18,6 +18,7 @@ def search_media_and_download(query: str, specials_only: bool = False):
 
     Args:
         query (str): query string
+        specials_only (bool): Download only specials episode. Defaults to False.
     """
     logging.info("Checking if %s is mounted...", state_base_path())
     if not check_dir_mounted(path=state_base_path()):
@@ -49,10 +50,10 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
     Returns:
         Tuple[List[str], int]: List of shows and number of shows
     """
-    dir = os.path.join(state_base_path(), state_series_dir())
-    logging.info("Checking if %s exists...", dir)
-    if not os.path.isdir(dir):
-        logging.error("%s does not exist! Nothing to list. Exiting...", dir)
+    series_dir = os.path.join(state_base_path(), state_series_dir())
+    logging.info("Checking if %s exists...", series_dir)
+    if not os.path.isdir(series_dir):
+        logging.error("%s does not exist! Nothing to list. Exiting...", series_dir)
         sys.exit()
 
     console = Console()

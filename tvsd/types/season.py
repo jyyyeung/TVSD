@@ -3,10 +3,9 @@ TVSD Season class, parent of Episodes
 """
 import logging
 import os
-from typing import TYPE_CHECKING, Callable, List, Union
+from typing import TYPE_CHECKING, Callable, List
 
 import typer
-from bs4 import Tag
 
 from tvsd._variables import state_specials_dir
 from tvsd.types.episode import Episode
@@ -64,14 +63,14 @@ class Season:
     def __init__(
         self,
         fetch_episode_m3u8: Callable,
-        episodes: List[Union["Episode", Tag]],
+        episodes: List["Episode"],
         details: "SeasonDetailsFromURL",
         source: "Source",
         note: str = "",
         details_url: str = "",
     ) -> None:
         season_title = details["title"]
-        self._episodes: List[Union["Episode", Tag]] = episodes
+        self._episodes: List["Episode"] = episodes
         self._title = season_title
         self._year = details["year"]
         self._description = details["description"]

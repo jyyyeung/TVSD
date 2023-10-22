@@ -117,10 +117,14 @@ class SearchQuery:
 
     @property
     def chosen_show(self) -> "Season":
-        """Returns the chosen show
+        """
+        chosen_show Returns the chosen show
+
+        Raises:
+            ValueError: If no show is chosen
 
         Returns:
-            Union["Show", "Season"]: Chosen show
+            Season: Chosen show
         """
         if self._chosen_show is None:
             raise ValueError("No show chosen")

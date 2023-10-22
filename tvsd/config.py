@@ -7,7 +7,7 @@ from pathlib import Path
 
 import typer
 
-from tvsd import DB_WRITE_ERROR, DIR_ERROR, FILE_ERROR, SUCCESS, state
+from tvsd import DIR_ERROR, FILE_ERROR, SUCCESS, state
 
 config_parser = configparser.ConfigParser()
 
@@ -28,9 +28,6 @@ class Config:
         config_code = cls._init_config_file()
         if config_code != SUCCESS:
             return config_code
-        database_code = cls._create_database(db_path)
-        if database_code != SUCCESS:
-            return database_code
         return SUCCESS
 
     @classmethod
@@ -56,17 +53,6 @@ class Config:
                 "series_dir": "TV Series",
                 "specials_dir": "Specials",
             }
-
-    @classmethod
-    def _create_database(cls, db_path: str) -> int:
-        # config_parser = configparser.ConfigParser()
-        config_parser["General"] = {"database": db_path}
-        try:
-            with CONFIG_FILE_PATH.open("w") as file:
-                config_parser.write(file)
-        except OSError:
-            return DB_WRITE_ERROR
-        return SUCCESS
 
     @property
     def temp_base_path(self) -> str:

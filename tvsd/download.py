@@ -2,7 +2,6 @@
 import logging
 import os
 import shutil
-from typing import Union
 
 import m3u8_To_MP4
 import typer
@@ -34,7 +33,9 @@ class Download:
         self._specials_only = specials_only
 
     def guided_download(self):
-        """Guided download of show"""
+        """
+        guided_download Guided download of show
+        """
 
         # TODO: Check monitor file in directory, check files not downloaded
         #  IDEA: it is known that hash is unique for a
@@ -55,7 +56,12 @@ class Download:
             self.choose_download(self._target)
 
     def choose_download(self, season: "Season"):
-        """Choose download of show"""
+        """
+        choose_download Choose Episodes in Season to download
+
+        Args:
+            season (Season): Season to choose episodes from
+        """
         for episode in season.episodes:
             if (
                 typer.prompt(
@@ -69,8 +75,16 @@ class Download:
             else:
                 self.set_ep_index(episode)
 
-    def download_all(self, target: Union["Season", "Show", "Episode"]):
-        """Download all episodes under the specified Season/Show/Episode"""
+    def download_all(self, target: "Season| Show| Episode"):
+        """
+        download_all Download all episodes under the specified Season/Show/Episode
+
+        Args:
+            target (Season| Show| Episode): Season/Show/Episode to download
+
+        Raises:
+            TypeError: Target must be Show, Season or Episode
+        """
         if isinstance(target, Show):
             # Target is Show, download all seasons
             logging.debug("Downloading all episodes in show")
@@ -119,7 +133,7 @@ class Download:
 
         Args:
             episode (Episode): Episode to set index for
-            index (int): Index to set
+            index (int): Index to set as episode number
         """
         if episode.is_specials:
             self.set_special_ep_index(episode)
@@ -131,6 +145,9 @@ class Download:
 
         Args:
             episode (Episode): Episode to download
+
+        Raises:
+            ValueError: m3u8 not found in episode url, Stream probably does not exist
         """
         if self._specials_only and not episode.is_specials:
             logging.info("Skipping regular episode (--specials-only)")
@@ -160,8 +177,6 @@ class Download:
 
         # TODO: Background download
 
-        # m3u8_To_MP4.multithread_uri_download(m3u8_uri=episode_m3u8,
-        # mp4_file_name=episode_filename, mp4_file_dir=show_dir)
         if "m3u8" not in episode_m3u8:
             logging.debug("m3u8 Load Error: %s", episode_m3u8)
             raise ValueError(
