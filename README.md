@@ -25,6 +25,12 @@ pip install tvsd
 tvsd --help # Show available commands
 ```
 
+### Update 
+
+```bash
+pip install tvsd -U
+```
+
 ### Usage
 
 ```bash
