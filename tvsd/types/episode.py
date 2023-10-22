@@ -186,16 +186,16 @@ class Episode:
         return f"{self._season.relative_season_dir}/{self.filename}.mp4"
 
     @property
-    def file_exists_locally(self) -> bool:
+    def file_exists_locally(self) -> str:
         """Returns True if the episode exists locally, False otherwise.
 
         Returns:
-            bool: True if the episode exists locally, False otherwise.
+            filename(str): Name of existing file if the episode exists locally, Empty String otherwise.
         """
         # Check if file exists already
         if file_exists_in_base(self.relative_episode_file_path):
             print(f"{self.filename} already exists in directory, skipping... ")
-            return True
+            return self.filename
 
         episode_title = self.filename.split(" - ")[-1]
         for file in os.listdir(
@@ -203,7 +203,7 @@ class Episode:
         ):
             if episode_title in file:
                 print(f"{self.filename} probably exist as {file}, skipping...")
-                return True
+                return file
 
         # file_exists(os.path.join(state_base_path(), self.relative_episode_file_path))
 
@@ -216,8 +216,8 @@ class Episode:
                 print(
                     f"{self.filename} probably exist as {existing_episode}, skipping..."
                 )
-                return True
-        return False
+                return existing_episode
+        return ""
 
     @property
     def season(self) -> "Season":

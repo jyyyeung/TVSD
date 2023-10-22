@@ -161,9 +161,11 @@ class Download:
 
         self.set_ep_index(episode)
 
-        if episode.file_exists_locally:
+        existing_file = episode.file_exists_locally
+
+        if existing_file != "":
             print(f"{episode.name} already exists in directory, skipping... ")
-            number = int(episode.filename.split(" - ")[1].split("E")[1])
+            number = int(existing_file.split(" - ")[1].split("E")[1])
             if episode.is_specials:
                 self._specials_index = number + 1
             else:
