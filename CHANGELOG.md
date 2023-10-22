@@ -1,3 +1,18 @@
+## v1.3.1 (2023-10-23)
+
+### Fix
+
+- Get episode number from existing episode for calculation
+- create Season Directory before checking local files
+
+### Refactor
+
+- remove unused variable
+
+### Perf
+
+- remove unused init command
+
 ## v1.3.0 (2023-10-22)
 
 ### Feat
