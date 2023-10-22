@@ -153,6 +153,12 @@ class Download:
             logging.info("Skipping regular episode (--specials-only)")
             return
 
+        absolute_dest_dir = os.path.join(
+            self._base_path, episode.relative_destination_dir
+        )
+        logging.info(absolute_dest_dir)
+        mkdir_if_no(absolute_dest_dir)
+
         self.set_ep_index(episode)
 
         if episode.file_exists_locally:
@@ -164,12 +170,6 @@ class Download:
                 self._regular_ep_index = number + 1
 
             return
-
-        absolute_dest_dir = os.path.join(
-            self._base_path, episode.relative_destination_dir
-        )
-        logging.info(absolute_dest_dir)
-        mkdir_if_no(absolute_dest_dir)
 
         print(f"Downloading to file {episode.filename}")
 
