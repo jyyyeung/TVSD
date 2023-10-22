@@ -1,11 +1,16 @@
-__app_name__ = "tvsd"
-__version__ = "1.0.0-a.1"
+""" 
+TVSD init module
+"""
+import importlib.metadata
 
-import os
 from typer import Typer
 
+_DISTRIBUTION_METADATA = importlib.metadata.metadata("tvsd")
+__version__ = _DISTRIBUTION_METADATA["Version"]
+__app_name__ = "tvsd"
 
-app = Typer(name=__app_name__, rich_markup_mode="rich")
+
+app = Typer(name=__name__, rich_markup_mode="rich")
 state = {
     "verbose": False,
     "series_dir": "TV Series",
@@ -13,7 +18,7 @@ state = {
     "base_path": "/Volumes/Viewable",
     "temp_base_path": "/Volumes/Viewable/temp",
 }
-current_dir = os.getcwd()
+
 
 (
     SUCCESS,
@@ -28,7 +33,7 @@ current_dir = os.getcwd()
 ERRORS = {
     DIR_ERROR: "config directory error",
     FILE_ERROR: "config file error",
-    DB_READ_ERROR: "database read error",
-    DB_WRITE_ERROR: "database write error",
-    ID_ERROR: "to-do id error",
+    # DB_READ_ERROR: "database read error",
+    # DB_WRITE_ERROR: "database write error",
+    # ID_ERROR: "to-do id error",
 }

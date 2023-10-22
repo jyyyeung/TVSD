@@ -7,11 +7,11 @@ from pathlib import Path
 
 import typer
 
-from tvsd import DB_WRITE_ERROR, DIR_ERROR, FILE_ERROR, SUCCESS, __app_name__, state
+from tvsd import DB_WRITE_ERROR, DIR_ERROR, FILE_ERROR, SUCCESS, state
 
 config_parser = configparser.ConfigParser()
 
-CONFIG_DIR_PATH = Path(typer.get_app_dir(__app_name__))
+CONFIG_DIR_PATH = Path(typer.get_app_dir(__name__))
 CONFIG_FILE_PATH = CONFIG_DIR_PATH / "config.ini"
 
 
@@ -77,7 +77,10 @@ class Config:
         """
         try:
             self.validate_config_file()
-            return config_parser["General"]["temp_base_path"]
+            return (
+                config_parser["General"]["temp_base_path"]
+                or config_parser["General"]["downloads_path"]
+            )
         except KeyError:
             return "~/Movies/temp-parts"
 

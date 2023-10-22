@@ -1,8 +1,14 @@
 """Custom types for TVSD """
 from typing import TYPE_CHECKING, List, TypedDict
 
-if TYPE_CHECKING:
-    from tvsd.episode import Episode
+from tvsd.types.episode import Episode
+from tvsd.types.season import Season
+from tvsd.types.show import Show
+
+# if TYPE_CHECKING:
+#     from tvsd.types.episode import Episode
+
+__all__ = ["Episode", "Season", "Show", "SeasonDetailsFromURL", "EpisodeDetailsFromURL"]
 
 
 class SeasonDetailsFromURL(TypedDict):

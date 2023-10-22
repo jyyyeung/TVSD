@@ -5,7 +5,6 @@ from urllib.parse import unquote
 import cloudscraper
 from bs4 import BeautifulSoup, ResultSet
 from requests_html import HTMLSession
-
 from Show import Show, Source
 
 

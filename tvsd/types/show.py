@@ -1,10 +1,15 @@
+"""
+TYSD Show Class, parent of Seasons
+Currently not used a lot, will consider removing
+"""
 import os
-from typing import TYPE_CHECKING, Literal, List
+from typing import TYPE_CHECKING, List
+
 from tvsd._variables import state_series_dir
 
 if TYPE_CHECKING:
-    from tvsd.source import Source
-    from tvsd.season import Season
+    from tvsd.sources.base import Source
+    from tvsd.types.season import Season
 
 
 class Show:
@@ -13,13 +18,13 @@ class Show:
     def __init__(self, source: "Source", title: str = "", begin_year: str = ""):
         self._title = title
         self._source = source
-        self._seasons: List[Literal["Season"]] = []
+        self._seasons: List["Season"] = []
         self._begin_year = begin_year
 
         self._prefix = self.generate_show_prefix()
 
     @property
-    def seasons(self) -> List[Literal["Season"]]:
+    def seasons(self) -> List["Season"]:
         """seasons of the show
 
 

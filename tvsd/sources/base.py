@@ -1,17 +1,16 @@
+"""Base file for Sources"""
+import errno
 import json
 import logging
 import os
-from typing import Any, List
-from bs4 import BeautifulSoup, ResultSet, Tag
 from abc import ABC, abstractmethod
+from typing import Any, List
 
 import chinese_converter
-from tvsd._types import EpisodeDetailsFromURL, SeasonDetailsFromURL
-from socket import error as SocketError
-import errno
-from tvsd.episode import Episode
+from bs4 import BeautifulSoup, ResultSet, Tag
 
-from tvsd.season import Season
+from tvsd.types import EpisodeDetailsFromURL, SeasonDetailsFromURL
+from tvsd.types.season import Season
 from tvsd.utils import SCRAPER
 
 
@@ -81,9 +80,12 @@ class Source(ABC):
             search_query = chinese_converter.to_simplified(search_query)
         if self._is_traditional:
             search_query = chinese_converter.to_traditional(search_query)
-        print(search_query)
+
         search_url = self._search_url(search_query)
-        logging.debug(f"Searching for {search_query} in {search_url}")
+
+        logging.info("Searching %s...", {search_query})
+        logging.debug("Searching for %s in %s", search_query, search_url)
+
         query_result_soup = self.get_query_result_soup(search_url)
         if query_result_soup is not None:
             query_results = self._get_query_results(query_result_soup)
@@ -111,7 +113,7 @@ class Source(ABC):
         Returns:
             str: Search url
         """
-        return ""
+        raise NotImplementedError
 
     @abstractmethod
     def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
@@ -123,7 +125,7 @@ class Source(ABC):
         Returns:
             ResultSet[Any]: Query results
         """
-        pass
+        raise NotImplementedError
 
     def get_query_result_soup(self, search_url: str) -> BeautifulSoup | None:
         """Returns the query result soup
@@ -144,8 +146,8 @@ class Source(ABC):
             if error.errno != errno.ECONNRESET:
                 raise  # Not error we are looking for
             logging.error("Connection reset by peer")
-        except:
-            logging.error("Error in getting query result soup")
+        except Exception as error:
+            logging.error("Error in getting query result soup %s", error)
         return None
 
     ##### PARSE EPISODE DETAILS FROM URL #####
@@ -176,7 +178,7 @@ class Source(ABC):
         Returns:
             str: Episode title
         """
-        return ""
+        raise NotImplementedError
 
     @abstractmethod
     def _set_relative_episode_url(self, soup: Tag) -> str:
@@ -188,7 +190,7 @@ class Source(ABC):
         Returns:
             str: Relative episode url
         """
-        return ""
+        raise NotImplementedError
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 
@@ -232,7 +234,7 @@ class Source(ABC):
         Returns:
             str: Result note
         """
-        return ""
+        raise NotImplementedError
 
     # @abstractmethod
     def _get_result_source_id(self, query_result: BeautifulSoup) -> str:
@@ -244,7 +246,7 @@ class Source(ABC):
         Returns:
             str: Result source id
         """
-        return ""
+        raise NotImplementedError
 
     @abstractmethod
     def _get_result_details_url(self, query_result: BeautifulSoup) -> str:
@@ -256,7 +258,7 @@ class Source(ABC):
         Returns:
             str: Result details url
         """
-        return ""
+        raise NotImplementedError
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
@@ -299,8 +301,8 @@ class Source(ABC):
             if error.errno != errno.ECONNRESET:
                 raise  # Not error we are looking for
             logging.error("Connection reset by peer")
-        except:
-            logging.error("Error in getting season details soup")
+        except Exception as error:
+            logging.error("Error in getting season details soup: %s", error)
         return None
 
     @abstractmethod
@@ -313,7 +315,7 @@ class Source(ABC):
         Returns:
             str: Season title
         """
-        return ""
+        raise NotImplementedError
 
     @abstractmethod
     def _set_season_description(self, soup: BeautifulSoup) -> str:
@@ -325,7 +327,7 @@ class Source(ABC):
         Returns:
             str: Season description
         """
-        return ""
+        raise NotImplementedError
 
     @abstractmethod
     def _set_season_episodes(self, soup: BeautifulSoup) -> List[str]:
@@ -337,7 +339,7 @@ class Source(ABC):
         Returns:
             List[str]: Season episodes
         """
-        return []
+        raise NotImplementedError
 
     @abstractmethod
     def _set_season_year(self, soup: BeautifulSoup) -> str:
@@ -349,7 +351,7 @@ class Source(ABC):
         Returns:
             str: Season year
         """
-        return ""
+        raise NotImplementedError
 
     ######## FETCH EPISODE M3U8 ########
 
@@ -375,8 +377,8 @@ class Source(ABC):
             if error.errno != errno.ECONNRESET:
                 raise  # Not error we are looking for
             logging.error("Connection reset by peer")
-        except:
-            logging.error("Error in getting episode details soup")
+        except Exception as error:
+            logging.error("Error in getting episode details soup: %s", error)
         return None
 
     @abstractmethod
@@ -401,7 +403,7 @@ class Source(ABC):
         Returns:
             str: Episode script
         """
-        return ""
+        raise NotImplementedError
 
     @abstractmethod
     def _set_episode_m3u8(self, episode_script: str) -> str:
@@ -413,7 +415,7 @@ class Source(ABC):
         Returns:
             str: Episode m3u8
         """
-        return ""
+        raise NotImplementedError
 
     ################
 

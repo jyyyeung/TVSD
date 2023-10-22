@@ -3,15 +3,14 @@ import logging
 import os
 import sys
 from typing import List, Tuple
-from tvsd._variables import state_base_path, state_temp_base_path, state_series_dir
-from tvsd import state
-
-from tvsd.download import Download
-from tvsd.search import SearchQuery
-from tvsd.utils import check_dir_mounted, is_video
 
 from rich.console import Console
 from rich.table import Table
+
+from tvsd._variables import state_base_path, state_series_dir, state_temp_base_path
+from tvsd.download import Download
+from tvsd.search import SearchQuery
+from tvsd.utils import check_dir_mounted, is_video
 
 
 def search_media_and_download(query: str, specials_only: bool = False):
@@ -20,14 +19,14 @@ def search_media_and_download(query: str, specials_only: bool = False):
     Args:
         query (str): query string
     """
-    logging.info(f"Checking if {state_base_path()} is mounted...")
+    logging.info("Checking if %s is mounted...", state_base_path())
     if not check_dir_mounted(path=state_base_path()):
         sys.exit()
     logging.debug("Base path: %s", state_base_path())
 
     # Search
     query_instance = SearchQuery(query)
-    logging.info(f"Searching for {query}...")
+    logging.info("Searching for %s...", query)
     query_instance.find_show(state_base_path())
 
     # Download
@@ -37,7 +36,7 @@ def search_media_and_download(query: str, specials_only: bool = False):
         temp_path=state_temp_base_path(),
         specials_only=specials_only,
     )
-    logging.info(f"Starting {query_instance.chosen_show.title} guided download...")
+    logging.info("Starting %s guided download...", query_instance.chosen_show.title)
     download_instance.guided_download()
 
 
@@ -51,9 +50,9 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
         Tuple[List[str], int]: List of shows and number of shows
     """
     dir = os.path.join(state_base_path(), state_series_dir())
-    logging.info(f"Checking if {dir} exists...")
+    logging.info("Checking if %s exists...", dir)
     if not os.path.isdir(dir):
-        logging.error(f"{dir} does not exist! Nothing to list. Exiting...")
+        logging.error("%s does not exist! Nothing to list. Exiting...", dir)
         sys.exit()
 
     console = Console()

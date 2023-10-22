@@ -1,19 +1,20 @@
+"""
+TVSD Season class, parent of Episodes
+"""
 import logging
 import os
-from typing import List, Callable, TYPE_CHECKING, Union
-from bs4 import Tag
-
+from typing import TYPE_CHECKING, Callable, List, Union
 
 import typer
+from bs4 import Tag
+
 from tvsd._variables import state_specials_dir
-
-from tvsd.show import Show
-from tvsd.episode import Episode
-
+from tvsd.types.episode import Episode
+from tvsd.types.show import Show
 
 if TYPE_CHECKING:
-    from tvsd.source import Source
-    from tvsd._types import SeasonDetailsFromURL
+    from tvsd.sources.base import Source
+    from tvsd.types import SeasonDetailsFromURL
 
 
 def check_season_index(show_title: str) -> int:

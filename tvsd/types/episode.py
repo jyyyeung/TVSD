@@ -1,12 +1,16 @@
+"""
+Episode class.
+"""
+
 import os
 import re
 from typing import TYPE_CHECKING
 
+from tvsd._variables import state_base_path, state_temp_base_path
 from tvsd.utils import file_exists_in_base, relative_to_absolute_path
 
-
 if TYPE_CHECKING:
-    from tvsd.season import Season
+    from tvsd.types.season import Season
 
 
 class Episode:
@@ -48,16 +52,24 @@ class Episode:
             episode_number_identifying_regex = r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$"
             episode_number_match = re.match(
                 episode_number_identifying_regex, self._name
-            ).groups()
+            )
 
-            # Filter out all None matches
-            identified_number = [i for i in episode_number_match if i is not None][0]
+            if episode_number_match is not None:
+                episode_number_groups = episode_number_match.groups()
 
-            print(f"episode_number: {identified_number}")
-            # episode_index = int(re.findall(r'\d*', episode_number)[0])
-            resulting_index = int(re.findall(r"^\d{1,3}$", identified_number)[0])
+                # Filter out all None matches
+                identified_number = [i for i in episode_number_groups if i is not None][
+                    0
+                ]
 
-            # print(episode_number)
+                print(f"episode_number: {identified_number}")
+                # episode_index = int(re.findall(r'\d*', episode_number)[0])
+                resulting_index = int(re.findall(r"^\d{1,3}$", identified_number)[0])
+
+                # print(episode_number)
+            else:
+                resulting_index = 1
+
         except AttributeError:
             resulting_index = 1
 
@@ -185,12 +197,22 @@ class Episode:
             print(f"{self.filename} already exists in directory, skipping... ")
             return True
 
+        episode_title = self.filename.split(" - ")[-1]
+        for file in os.listdir(
+            os.path.join(state_base_path(), self._season.relative_season_dir)
+        ):
+            if episode_title in file:
+                print(f"{self.filename} probably exist as {file}, skipping...")
+                return True
+
+        # file_exists(os.path.join(state_base_path(), self.relative_episode_file_path))
+
         # specials exists already
         for existing_episode in os.listdir(
             relative_to_absolute_path(self.relative_destination_dir)
         ):
             # print(episode_name, existing_episode)
-            if existing_episode.endswith(".mp4") and self.filename in existing_episode:
+            if existing_episode.endswith(".mp4") and episode_title in existing_episode:
                 print(
                     f"{self.filename} probably exist as {existing_episode}, skipping..."
                 )
