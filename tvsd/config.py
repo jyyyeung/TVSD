@@ -23,7 +23,7 @@ class Config:
         config_parser.read(CONFIG_FILE_PATH)
 
     @classmethod
-    def init_app(cls, db_path: str) -> int:
+    def init_app(cls) -> int:
         """Initialize the application."""
         config_code = cls._init_config_file()
         if config_code != SUCCESS:
