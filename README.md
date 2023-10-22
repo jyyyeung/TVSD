@@ -14,6 +14,8 @@ in mind that the copyright of all videos downloaded by this program belongs to t
 
 ### Setup and installation
 
+NOTE: Not not updated
+
 ```bash
 git clone https://github.com/SheepYY039/tv-series-download.git
 cd tv-series-download
@@ -25,8 +27,8 @@ cp .env.example .env # update .env according to your environment
 ### Usage
 
 ```bash
-python3 -m tvsd search <your-search-query> # Search query for media from sources and downloads if available
-python3 -m tvsd clean-temp # Removes everything in temp downloading directory, useful after app crashed or aborted
+poetry run tvsd search <your-search-query> # Search query for media from sources and downloads if available
+poetry run tvsd clean-temp # Removes everything in temp downloading directory, useful after app crashed or aborted
 
 ```
 
