@@ -14,7 +14,17 @@ from tvsd.utils import mkdir_if_no
 
 
 class Download:
-    """Download class"""
+    """
+    A class for downloading TV show episodes.
+
+    Attributes:
+        _target (Show|Season|Episode): The target show, season or episode to download.
+        _base_path (str): The base path for the downloaded files.
+        _temp_base_path (str): The temporary base path for the downloaded files.
+        _specials_index (int): The index for special episodes.
+        _regular_ep_index (int): The index for regular episodes.
+        _specials_only (bool): Whether to download only special episodes.
+    """
 
     def __init__(
         self,
@@ -23,6 +33,15 @@ class Download:
         temp_path: str = state_temp_base_path(),
         specials_only: bool = False,
     ):
+        """
+        Initializes a new instance of the Download class.
+
+        Args:
+            target (Show|Season|Episode): The target show, season or episode to download.
+            base_path (str, optional): The base path for the downloaded files. Defaults to state_base_path().
+            temp_path (str, optional): The temporary base path for the downloaded files. Defaults to state_temp_base_path().
+            specials_only (bool, optional): Whether to download only special episodes. Defaults to False.
+        """
         self._target: Show | Season | Episode = target
         self._base_path = base_path
         self._temp_base_path = temp_path
@@ -34,9 +53,12 @@ class Download:
 
     def guided_download(self):
         """
-        guided_download Guided download of show
-        """
+        Guided download of show.
 
+        This method prompts the user to choose whether to download all episodes of a show or a specific season.
+        If the user chooses to download all episodes, the `download_all` method is called with the target show as the argument.
+        If the user chooses to download a specific season, the `choose_download` method is called with the target season as the argument.
+        """
         # TODO: Check monitor file in directory, check files not downloaded
         #  IDEA: it is known that hash is unique for a
         #  video, if so, hash can be matched to ensure there are no additional ads embedded in videos
@@ -57,10 +79,10 @@ class Download:
 
     def choose_download(self, season: "Season"):
         """
-        choose_download Choose Episodes in Season to download
+        Choose which episodes in a season to download.
 
         Args:
-            season (Season): Season to choose episodes from
+            season (Season): The season to choose episodes from.
         """
         for episode in season.episodes:
             if (
@@ -77,13 +99,13 @@ class Download:
 
     def download_all(self, target: "Season| Show| Episode"):
         """
-        download_all Download all episodes under the specified Season/Show/Episode
+        Download all episodes under the specified Season/Show/Episode.
 
         Args:
-            target (Season| Show| Episode): Season/Show/Episode to download
+            target (Season| Show| Episode): The Season, Show or Episode to download.
 
         Raises:
-            TypeError: Target must be Show, Season or Episode
+            TypeError: If the target is not a Show, Season or Episode.
         """
         if isinstance(target, Show):
             # Target is Show, download all seasons
@@ -111,19 +133,21 @@ class Download:
             raise TypeError("Target must be Show, Season or Episode")
 
     def set_special_ep_index(self, episode: "Episode"):
-        """Set index for special episode
+        """
+        Set the index for a special episode.
 
         Args:
-            episode (Episode): Episode to set index for
+            episode (Episode): The episode to set the index for.
         """
         episode.episode_number = self._specials_index
         self._specials_index += 1
 
     def set_regular_ep_index(self, episode: "Episode"):
-        """Set index for regular episode
+        """
+        Set the index for a regular episode.
 
         Args:
-            episode (Episode): Episode to set index for
+            episode (Episode): The episode to set the index for.
         """
         episode.episode_number = self._regular_ep_index
         self._regular_ep_index += 1
@@ -131,9 +155,11 @@ class Download:
     def set_ep_index(self, episode: "Episode"):
         """Set index for episode
 
+        This method sets the index for a given episode. If the episode is a special episode, it calls the
+        `set_special_ep_index` method, otherwise it calls the `set_regular_ep_index` method.
+
         Args:
             episode (Episode): Episode to set index for
-            index (int): Index to set as episode number
         """
         if episode.is_specials:
             self.set_special_ep_index(episode)
@@ -148,6 +174,9 @@ class Download:
 
         Raises:
             ValueError: m3u8 not found in episode url, Stream probably does not exist
+
+        Downloads an episode by fetching its m3u8 url and converting it to an mp4 file.
+        If the episode already exists in the destination directory, it skips the download.
         """
         if self._specials_only and not episode.is_specials:
             logging.info("Skipping regular episode (--specials-only)")
