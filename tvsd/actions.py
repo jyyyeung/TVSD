@@ -16,6 +16,11 @@ from tvsd.utils import check_dir_mounted, is_video
 def search_media_and_download(query: str, specials_only: bool = False):
     """Search for media and download
 
+    This function searches for media based on the given query string and downloads it.
+    It first checks if the base path is mounted and exits if it is not.
+    Then it searches for the given query and finds the show.
+    Finally, it starts a guided download of the chosen show.
+
     Args:
         query (str): query string
         specials_only (bool): Download only specials episode. Defaults to False.

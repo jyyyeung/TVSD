@@ -15,6 +15,15 @@ from tvsd.utils import video_in_dir
 
 
 def _version_callback(value: bool) -> None:
+    """
+    Print the current version of the application and exit.
+
+    Args:
+        value (bool): A boolean value indicating whether to print the version or not.
+
+    Returns:
+        None
+    """
     if value:
         typer.echo(f"{__app_name__} v{__version__}")
         raise typer.Exit()
@@ -45,7 +54,10 @@ def main(
     ),
 ) -> None:
     """
-    Options to update state of the application.
+    Entry point for the TVSD CLI application.
+
+    This function initializes the config file before setting instance level.
+    It applies the config and sets the state of the application based on the provided options.
 
     Args:
         _: Optional[bool]: Show the application's version and exit.
@@ -96,7 +108,11 @@ def search(
 @app.command()
 def clean_temp():
     """
-    clean_temp Cleans the temp directory
+    Cleans the temp directory.
+
+    This function validates the config file and then prompts the user to confirm
+    whether they want to delete all files in the temp directory. If the user confirms,
+    all files in the temp directory are deleted and a new empty directory is created.
 
     Raises:
         FileNotFoundError: If temp directory does not exist
@@ -128,14 +144,25 @@ def clean_temp():
 
 @app.command()
 def list_shows():
-    """List all shows in the database"""
+    """
+    List all shows in the database.
+
+    This function retrieves a list of all shows in the database and displays them in a table format.
+    """
     list_shows_as_table(show_index=False)
 
 
 @app.command()
 def remove_show():
-    """List shows and remove selected show"""
+    """List shows and remove selected show.
 
+    This function lists all the shows and their indices, prompts the user to select a show index to remove,
+    and then removes the selected show. If the user selects an invalid index or cancels the prompt, the function
+    aborts and raises a typer.Abort() exception.
+
+    Returns:
+        None
+    """
     shows, num_rows = list_shows_as_table(show_index=True)
 
     while True:
@@ -160,7 +187,12 @@ def remove_show():
 @app.command()
 def print_state():
     """
-    print_state Prints the state of the application
+    Print the current state of the application.
+
+    This function prints the current state of the application, including all key-value pairs in the `state` dictionary.
+
+    Raises:
+        ConfigFileError: If the configuration file is invalid or missing.
     """
     validate_config_file()
 
@@ -192,7 +224,7 @@ def clean_base(
     ),
 ):
     """
-    clean_base Remove empty directories in the base path
+    Remove empty directories in the base path
 
     Args:
         interactive (bool, optional): Whether to run in interactive mode. Defaults to False

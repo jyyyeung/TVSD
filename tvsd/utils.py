@@ -2,13 +2,10 @@
 TVSD Utilities, contains useful functions 
 """
 
-import importlib
 import logging
 import mimetypes
 import os
-import pkgutil
 import re
-import sys
 from typing import List
 
 import cloudscraper
@@ -53,12 +50,12 @@ def mkdir_if_no(check_dir: str, recursive: bool = True):
 
 
 def mkdir_from_base(check_dir: str):
-    """Creates a directory from the base path
+    """
+    Creates a directory from the base path.
 
     Args:
-        check_dir (str): Directory to check
+        check_dir (str): Directory to check.
     """
-
     mkdir_if_no(os.path.join(state_base_path(), check_dir))
 
 
@@ -99,40 +96,38 @@ def file_exists_in_base(file_path: str) -> bool:
 
 
 def get_next_specials_index(show_dir: str) -> int:
-    """Gets the next specials index
+    """
+    Gets the next specials index.
 
     Args:
-        show_dir (str): Path to show directory
+        show_dir (str): Path to show directory.
 
     Returns:
-        int: Next specials index
+        int: Next specials index.
     """
     existing_episode_indexes: List[int] = []
     specials_dir = os.path.join(show_dir, state_specials_dir())
     if os.path.exists(specials_dir):
         for existing_special in os.listdir(specials_dir):
-            try:
-                existing_episode_indexes += re.search(
-                    r"S00E(\d{2})", existing_special
-                ).groups()
-            except AttributeError:
-                print("No Existing Specials")
+            match = re.search(r"S00E(\d{2})", existing_special)
+            if match:
+                existing_episode_indexes.append(int(match.group(1)))
         existing_episode_indexes.sort()
-        if len(existing_episode_indexes) > 0:
-            return int(existing_episode_indexes[-1])
+        if existing_episode_indexes:
+            return existing_episode_indexes[-1]
     return 0
 
 
 def check_dir_mounted(path: str) -> bool:
-    """Check if a directory Exists
+    """
+    Check if a directory is mounted and exists.
 
     Args:
-        path (str): Path to check
+        path (str): The path to check.
 
     Returns:
-        bool: True if directory exists
+        bool: True if the directory exists and is mounted, False otherwise.
     """
-
     if not os.path.ismount(path) and not os.path.isdir(path):
         print(path, "has not been mounted yet. Exiting...")
         return False
@@ -151,13 +146,14 @@ def check_dir_mounted(path: str) -> bool:
 
 
 def _detect_video_mimetype(video_path: str) -> str:
-    """Detects the mimetype of a video
+    """
+    Detects the mimetype of a video file.
 
     Args:
-        video_path (str): Path to video
+        video_path (str): The path to the video file.
 
     Returns:
-        str: Mimetype of video
+        str: The mimetype of the video file.
     """
     mimetypes.init()
     mimestart = mimetypes.guess_type(video_path)[0]
@@ -169,13 +165,14 @@ def _detect_video_mimetype(video_path: str) -> str:
 
 
 def is_video(video_path: str) -> bool:
-    """Checks if a file is a video
+    """
+    Checks if a file is a video.
 
     Args:
-        video_path (str): Path to video
+        video_path (str): Path to video file.
 
     Returns:
-        bool: True if video
+        bool: True if the file is a video, False otherwise.
     """
     return _detect_video_mimetype(video_path) == "video"
 
@@ -185,6 +182,7 @@ def video_in_dir(dir_path: str, recursive: bool = True) -> bool:
 
     Args:
         dir_path (str): Path to directory
+        recursive (bool, optional): Whether to search recursively. Defaults to True.
 
     Returns:
         bool: True if directory contains a video

@@ -33,10 +33,16 @@ class SearchQuery:
         self._chosen_show = None
 
     def find_show(self, base_path: str):
-        """Finds show information locally or online
+        """Finds show information either locally or online.
+
+        If the show information is not found locally or if no show has been chosen, the method will attempt to find the
+        show online. If no show is found, a ValueError will be raised.
 
         Args:
             base_path (str): Base path to local media directory
+
+        Returns:
+            The chosen show object with its details fetched.
         """
         # if False:
         # self.check_local_shows(base_path)
@@ -52,11 +58,14 @@ class SearchQuery:
 
         return self._chosen_show
 
-    def check_local_shows(self, base_path: str):
-        """Checks if show exists locally in directory
+    def check_local_shows(self, base_path: str) -> None:
+        """Checks if a TV show exists locally in the specified directory.
 
         Args:
-            base_path (str): Base path to local media directory
+            base_path (str): The base path to the local media directory.
+
+        Returns:
+            None
         """
         # dir loop check dir
         for directory in os.listdir(os.path.join(base_path, state_series_dir())):
@@ -79,8 +88,12 @@ class SearchQuery:
                     # )
 
     def find_shows_online(self):
-        """Searches for shows online and returns a list of shows"""
+        """
+        Searches for shows online and returns a list of shows.
 
+        Returns:
+            List[Season]: A list of Season objects representing the search results.
+        """
         query_results: List[Season] = []
         # TODO: Search in db first / or put db results first
 
@@ -118,13 +131,13 @@ class SearchQuery:
     @property
     def chosen_show(self) -> "Season":
         """
-        chosen_show Returns the chosen show
+        Returns the chosen show.
 
         Raises:
-            ValueError: If no show is chosen
+            ValueError: If no show is chosen.
 
         Returns:
-            Season: Chosen show
+            Season: The chosen show.
         """
         if self._chosen_show is None:
             raise ValueError("No show chosen")

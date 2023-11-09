@@ -83,6 +83,9 @@ class Download:
 
         Args:
             season (Season): The season to choose episodes from.
+
+        Returns:
+            None
         """
         for episode in season.episodes:
             if (

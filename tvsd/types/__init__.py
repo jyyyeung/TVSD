@@ -13,6 +13,12 @@ class SeasonDetailsFromURL(TypedDict):
 
     Args:
         TypedDict (TypedDict): TypedDict from typings package
+
+    Attributes:
+        title (str): The title of the season.
+        description (str): The description of the season.
+        episodes (List[Episode]): A list of Episode objects representing the episodes in the season.
+        year (str): The year the season was released.
     """
 
     title: str
@@ -26,6 +32,10 @@ class EpisodeDetailsFromURL(TypedDict):
 
     Args:
         TypedDict (TypedDict): TypedDict from typings package
+
+    Attributes:
+        title (str): The title of the episode
+        url (str): The URL of the episode
     """
 
     title: str
