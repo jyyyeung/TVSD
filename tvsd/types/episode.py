@@ -46,7 +46,7 @@ class Episode:
 
         self._not_specials = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the Episode object.
 
@@ -210,9 +210,6 @@ class Episode:
         """Gets the episode url from the episode object.
 
         This method returns the url of the episode object.
-
-        Args:
-            None
 
         Returns:
             str: The episode url.

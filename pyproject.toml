@@ -29,7 +29,7 @@ classifiers = [
     # Environment
     "Environment :: Console",
 ]
-repository = "https://github.com/sheepyy039/tv-series-download.git"
+repository = "https://github.com/sheepyy039/TVSD.git"
 
 
 packages = [
@@ -39,8 +39,8 @@ exclude = [".venv"]
 
 [tool.poetry.urls]
 # # Homepage = "https://example.com"
-# # Documentation = "https://readthedocs.org"
-Changelog = "https://github.com/sheepyy039/tv-series-download/blob/main/CHANGELOG.md"
+Documentation = "https://sheepyy039.github.io/TVSD"
+Changelog = "https://github.com/sheepyy039/TVSD/blob/main/CHANGELOG.md"
 
 [tool.poetry.scripts]
 tvsd = "tvsd.__main__:main"
@@ -78,6 +78,7 @@ mkdocstrings = "^0.23.0"
 mkdocstrings-python = "^1.7.3"
 mkdocs-typer = "^0.0.3"
 pytkdocs = { version = "^0.16.1", extras = ["google-style"] }
+mkdocs-homepage-copier = "^1.0.0"
 
 
 [tool.isort]

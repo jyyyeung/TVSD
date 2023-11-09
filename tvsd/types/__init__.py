@@ -11,9 +11,6 @@ __all__ = ["Episode", "Season", "Show", "SeasonDetailsFromURL", "EpisodeDetailsF
 class SeasonDetailsFromURL(TypedDict):
     """DetailsFromURL type object
 
-    Args:
-        TypedDict (TypedDict): TypedDict from typings package
-
     Attributes:
         title (str): The title of the season.
         description (str): The description of the season.
@@ -29,9 +26,6 @@ class SeasonDetailsFromURL(TypedDict):
 
 class EpisodeDetailsFromURL(TypedDict):
     """DetailsFromURL type object
-
-    Args:
-        TypedDict (TypedDict): TypedDict from typings package
 
     Attributes:
         title (str): The title of the episode

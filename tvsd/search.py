@@ -32,7 +32,7 @@ class SearchQuery:
         self._exists_locally = False
         self._chosen_show = None
 
-    def find_show(self, base_path: str):
+    def find_show(self, base_path: str) -> "Season":
         """Finds show information either locally or online.
 
         If the show information is not found locally or if no show has been chosen, the method will attempt to find the
@@ -64,8 +64,6 @@ class SearchQuery:
         Args:
             base_path (str): The base path to the local media directory.
 
-        Returns:
-            None
         """
         # dir loop check dir
         for directory in os.listdir(os.path.join(base_path, state_series_dir())):
@@ -87,12 +85,11 @@ class SearchQuery:
                     #     base_path + "/TV Series/" + directory
                     # )
 
-    def find_shows_online(self):
+    def find_shows_online(self) -> None:
         """
-        Searches for shows online and returns a list of shows.
-
-        Returns:
-            List[Season]: A list of Season objects representing the search results.
+        Searches for TV shows online using the specified query and displays the results in a table.
+        The user is prompted to choose a show from the table, and the chosen show is stored in the
+        `_chosen_show` attribute of the `TVShowDownloader` instance.
         """
         query_results: List[Season] = []
         # TODO: Search in db first / or put db results first

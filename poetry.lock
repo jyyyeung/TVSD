@@ -660,6 +660,19 @@ Markdown = ">=3.3"
 mkdocs = ">=1.1"
 
 [[package]]
+name = "mkdocs-homepage-copier"
+version = "1.0.0"
+description = "Reuse the README.md file by copying it into the docs/ directory as the docs/index.md file"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mkdocs_homepage_copier-1.0.0-py3-none-any.whl", hash = "sha256:4d97d530320fa6f1dc1ec3df066da51763dd0e21d9d8882978f7289559942220"},
+]
+
+[package.dependencies]
+mkdocs = "*"
+
+[[package]]
 name = "mkdocs-material"
 version = "9.4.6"
 description = "Documentation that simply works"
@@ -1429,4 +1442,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d03d22d7fd6ea0e7ad4127caebb7be9c95cc711f6d8f09a6df7abb559e6a5f17"
+content-hash = "c33737bd899d6e4f62e9890e9b71692084472b458f7c5e8cb293588fa9fabf06"

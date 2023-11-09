@@ -25,6 +25,7 @@ plugins:
           # show_source: no
 
   - search
+  - mkdocs-homepage-copier
 
 watch:
   - tvsd
