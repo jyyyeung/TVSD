@@ -1,3 +1,13 @@
+## v1.3.2 (2023-11-09)
+
+### Fix
+
+- File Exists function checks non-existent directory
+
+### Refactor
+
+- Clean up episode.py
+
 ## v1.3.1 (2023-10-23)
 
 ### Fix
