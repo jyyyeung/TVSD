@@ -22,6 +22,9 @@ jobs:
   Build:
     runs-on: ubuntu-latest
     steps:
+      - name: downcase PROJECT_NAME
+        run: |
+          echo "PROJECT_NAME=${PROJECT_NAME,,}" >>${GITHUB_ENV}
       -
         name: Checkout
         uses: actions/checkout@v3
