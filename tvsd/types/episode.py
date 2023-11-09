@@ -2,6 +2,7 @@
 Episode class.
 """
 
+import logging
 import os
 import re
 from typing import TYPE_CHECKING
@@ -198,12 +199,18 @@ class Episode:
             return self.filename
 
         episode_title = self.filename.split(" - ")[-1]
-        for file in os.listdir(
-            os.path.join(state_base_path(), self._season.relative_season_dir)
-        ):
-            if episode_title in file:
-                print(f"{self.filename} probably exist as {file}, skipping...")
-                return file
+        try:
+            for file in os.listdir(
+                os.path.join(state_base_path(), self._season.relative_season_dir)
+            ):
+                if episode_title in file:
+                    print(f"{self.filename} probably exist as {file}, skipping...")
+                    return file
+        except FileNotFoundError:
+            logging.debug(
+                "%s does not exist, skipping file check in this directory...",
+                self._season.relative_season_dir,
+            )
 
         # file_exists(os.path.join(state_base_path(), self.relative_episode_file_path))
 
