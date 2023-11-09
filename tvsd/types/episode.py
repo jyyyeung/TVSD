@@ -7,7 +7,7 @@ import os
 import re
 from typing import TYPE_CHECKING
 
-from tvsd._variables import state_base_path, state_temp_base_path
+from tvsd._variables import state_base_path
 from tvsd.utils import file_exists_in_base, relative_to_absolute_path
 
 if TYPE_CHECKING:
@@ -21,16 +21,12 @@ class Episode:
         self,
         episode_name: str,
         episode_url: str,
-        # previous_episode: "Episode" = None,
-        # next_episode: "Episode" = None,
         season: "Season",
     ):
         self._name = episode_name
         self._url = episode_url
         self._number: int
 
-        # self._previous_episode = previous_episode
-        # self._next_episode = next_episode
         self._season: "Season" = season
 
         self._not_specials = True
@@ -120,7 +116,12 @@ class Episode:
 
     @episode_number.setter
     def episode_number(self, episode_number: int):
-        """Sets the episode number."""
+        """
+        Sets the episode number.
+
+        Args:
+            episode_number (int): The episode number to set.
+        """
         self._number = episode_number
 
     @property
@@ -242,7 +243,10 @@ class Episode:
         Returns:
             str: The m3u8 url of the episode.
         """
-        return self.season.source.fetch_episode_m3u8(relative_episode_url=self._url)
+        m3u8_url = self.season.source.fetch_episode_m3u8(relative_episode_url=self._url)
+        if m3u8_url is None:
+            return ""
+        return m3u8_url
 
     @property
     def relative_destination_dir(self) -> str:
