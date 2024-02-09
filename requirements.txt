@@ -27,7 +27,7 @@ griffe==0.31.0
 identify==2.5.24
 idna==3.4
 importlib-metadata==6.8.0
-iso8601==2.0.0
+iso8601==2.1.0
 Jinja2==3.1.2
 lxml==4.9.3
 m3u8==3.5.0
