@@ -1,7 +1,86 @@
-site_name: TVSeries Download
+# Project information
+site_name: TVSD
+site_url: https://SheepYY039.github.io/tvsd
+site_author: JYYYEUNG
+
+# Repository
+repo_name: SheepYY039/TVSD
+repo_url: https://github.com/SheepYY039/tvsd
+# edit_uri: edit/master/[YOU-DOCUMENTATION-FOLDER]
+docs_dir: "docs"
+
 plugins:
-  - mkdocstrings
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          selection:
+            docstring_style: "google"
+          # options:
+          #   docstring_options:
+          #     ignore_init_summary: yes
+          #   merge_init_into_class: yes
+          #   show_submodules: no
+          # show_source: no
+
   - search
-  # - mkdocs-typer
+  - mkdocs-homepage-copier
+
+watch:
+  - tvsd
+
 theme:
   name: "material"
+  palette:
+    accent: teal
+  # primary: black
+  # accent: teal
+  # features:
+  #   - content.code.annotate
+  #   - toc.integrate
+  #   - navigation.top
+
+# Extensions
+markdown_extensions:
+  - mkdocs-typer
+  - markdown.extensions.codehilite:
+      guess_lang: false
+
+  - codehilite
+  # - extra
+
+  # - abbr
+  # - admonition
+  # - attr_list
+  # - def_list
+  # - footnotes
+  # - meta
+  - toc:
+      permalink: true
+  # - pymdownx.arithmatex:
+  #     generic: true
+  # - pymdownx.betterem:
+  #     smart_enable: all
+  # - pymdownx.caret
+  # - pymdownx.critic
+  # - pymdownx.details
+  # - pymdownx.emoji:
+  #     emoji_index: !!python/name:materialx.emoji.twemoji
+  #     emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  # - pymdownx.keys
+  # - pymdownx.mark
+  # - pymdownx.smartsymbols
+  # - pymdownx.snippets:
+  #     check_paths: true
+  # - pymdownx.superfences:
+  #     custom_fences:
+  #       - name: mermaid
+  #         class: mermaid
+  #         format: !!python/name:pymdownx.superfences.fence_code_format
+  # - pymdownx.tabbed
+  # - pymdownx.tasklist:
+  #     custom_checkbox: true
+  # - pymdownx.tilde

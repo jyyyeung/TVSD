@@ -1,29 +1,30 @@
+"""
+TVSD Season class, parent of Episodes
+"""
 import logging
 import os
-from typing import List, Callable, TYPE_CHECKING, Union
-from bs4 import Tag
-
+from typing import TYPE_CHECKING, Callable, List
 
 import typer
+
 from tvsd._variables import state_specials_dir
-
-from tvsd.show import Show
-from tvsd.episode import Episode
-
+from tvsd.types.episode import Episode
+from tvsd.types.show import Show
 
 if TYPE_CHECKING:
-    from tvsd.source import Source
-    from tvsd._types import SeasonDetailsFromURL
+    from tvsd.sources.base import Source
+    from tvsd.types import SeasonDetailsFromURL
 
 
 def check_season_index(show_title: str) -> int:
-    """Checks if season number for a particular show
+    """
+    Checks the season number for a particular show based on the show title.
 
     Args:
-        show_title (str): Title of show to check
+        show_title (str): The title of the show to check.
 
     Returns:
-        int: index of episode identified from title
+        int: The index of the season identified from the title.
     """
     season_index = 1
     print(show_title)
@@ -58,19 +59,39 @@ def check_season_index(show_title: str) -> int:
 
 
 class Season:
-    """Season class"""
+    """Represents a season of a TV show.
+
+    Attributes:
+        fetch_episode_m3u8 (Callable): A function that fetches the m3u8 file for an episode.
+        episodes (List[Episode]): A list of episodes in the season.
+        details (SeasonDetailsFromURL): Details about the season.
+        source (Source): The source of the season.
+        note (str): A note about the season.
+        details_url (str): The URL for the details of the season.
+    """
 
     def __init__(
         self,
         fetch_episode_m3u8: Callable,
-        episodes: List[Union["Episode", Tag]],
+        episodes: List["Episode"],
         details: "SeasonDetailsFromURL",
         source: "Source",
         note: str = "",
         details_url: str = "",
     ) -> None:
+        """
+        Initializes a Season object.
+
+        Args:
+            fetch_episode_m3u8 (Callable): A callable function that fetches the m3u8 file for an episode.
+            episodes (List[Episode]): A list of Episode objects.
+            details (SeasonDetailsFromURL): A dictionary containing details about the season.
+            source (Source): A Source object representing the source of the season.
+            note (str, optional): A note about the season. Defaults to "".
+            details_url (str, optional): The URL of the page containing details about the season. Defaults to "".
+        """
         season_title = details["title"]
-        self._episodes: List[Union["Episode", Tag]] = episodes
+        self._episodes: List["Episode"] = episodes
         self._title = season_title
         self._year = details["year"]
         self._description = details["description"]
@@ -85,13 +106,27 @@ class Season:
         self._fetch_episode_m3u8 = fetch_episode_m3u8
 
     def fetch_details(self) -> None:
-        """Fetch details for season for download"""
+        """Fetch details for season for download.
+
+        This method creates a show, generates episodes, and fetches details for the season
+        to prepare for download.
+        """
         self.create_show()
         # self.determine_season_index(self._title)
         self.generate_episodes()
 
     def generate_episodes(self) -> None:
-        """generate episodes for season"""
+        """Generate Episode objects for the season.
+
+        This method generates Episode objects for the season based on the list of episodes
+        associated with the season. If an episode in the list is already an Episode object,
+        it is added to the list of generated Episode objects. If an episode in the list is
+        not an Episode object, its details are parsed from the source and a new Episode
+        object is created and added to the list of generated Episode objects.
+
+        Returns:
+            None
+        """
         episode_objects: List["Episode"] = []
         for episode in self._episodes:
             if isinstance(episode, Episode):
@@ -109,18 +144,23 @@ class Season:
 
     @property
     def episodes(self) -> List["Episode"]:
-        """Returns the episodes of the season
+        """
+        Returns the list of episodes in the season.
 
         Returns:
-            List[Episode]: episodes of the season
+            List[Episode]: A list of Episode objects representing the episodes in the season.
         """
         return self._episodes
 
     def create_show(self) -> "Show":
-        """Create a parent show for this season
+        """
+        Create a parent show for this season.
+
+        This method creates a parent show for the current season object. The parent show is created using the
+        source type, title, and beginning year of the current season. The created show is then returned.
 
         Returns:
-            Show: created parent show
+            Show: The created parent show.
         """
         show = Show(type(self._source), self._title, self.determine_show_begin_year())
         self._show = show
@@ -146,6 +186,10 @@ class Season:
     def season_index(self) -> int:
         """Returns the season index
 
+        This method returns the index of the season. If the index has not been set yet, it will be determined
+        based on the title of the season. If the title does not contain a season index, the default index of 1
+        will be returned.
+
         Returns:
             int: season index
         """
@@ -156,10 +200,13 @@ class Season:
 
     @property
     def relative_season_dir(self) -> str:
-        """Returns the relative season directory
+        """Returns the relative directory for the current season.
+
+        If the season index is 0, the relative specials directory is returned.
+        Otherwise, the relative directory for the current season is returned.
 
         Returns:
-            str: relative season directory
+            str: The relative directory for the current season.
         """
         if self.season_index == 0:
             return self.relative_specials_dir
@@ -171,6 +218,8 @@ class Season:
     def relative_specials_dir(self) -> str:
         """Returns the relative specials directory
 
+        This method returns the relative directory for the specials of the season.
+
         Returns:
             str: relative specials directory
         """
@@ -179,8 +228,11 @@ class Season:
     def determine_show_begin_year(self) -> str:
         """Query the begin year of the show
 
+        This method determines the begin year of the show based on the season's year and index.
+        If the season index is greater than 1, it prompts the user to input the year of the first season.
+
         Returns:
-            int: Begin year of the show
+            str: Begin year of the show as a string
         """
         print(self.year)
         season_year = int(self.year)
@@ -208,8 +260,10 @@ class Season:
         return self._year
 
     @property
-    def note(self) -> str:  # This getter method name is *the* name
+    def note(self) -> str:
         """Get the note of the show
+
+        This method returns the note of the show.
 
         Returns:
             str: Note of the show

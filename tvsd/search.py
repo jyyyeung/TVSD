@@ -1,25 +1,25 @@
-from difflib import SequenceMatcher
+import importlib
 import inspect
 import logging
 import os
+import pkgutil
 import sys
-from typing import TYPE_CHECKING, Any, Literal, Union, List
-from bs4 import PageElement
-from tvsd.sources import *
-from rich.table import Table
-from rich.console import Console
-from tvsd._variables import state_series_dir
-
+from difflib import SequenceMatcher
+from typing import TYPE_CHECKING, List
 
 import typer
+from rich.console import Console
+from rich.table import Table
 
 from tvsd import sources
-from tvsd.source import Source
+from tvsd._variables import state_series_dir
 
+# from tvsd.sources import *
+from tvsd.sources.base import Source
 
 if TYPE_CHECKING:
-    from tvsd.season import Season
-    from tvsd.show import Show
+    from tvsd.types.season import Season
+    from tvsd.types.show import Show
 
 console = Console()
 
@@ -29,32 +29,41 @@ class SearchQuery:
 
     def __init__(self, query: str):
         self._query: str = query
-        self._results = []
         self._exists_locally = False
         self._chosen_show = None
 
-    def find_show(self, base_path: str):
-        """Finds show information locally or online
+    def find_show(self, base_path: str) -> "Season":
+        """Finds show information either locally or online.
+
+        If the show information is not found locally or if no show has been chosen, the method will attempt to find the
+        show online. If no show is found, a ValueError will be raised.
 
         Args:
             base_path (str): Base path to local media directory
+
+        Returns:
+            The chosen show object with its details fetched.
         """
-        if False:
-            self.check_local_shows(base_path)
+        # if False:
+        # self.check_local_shows(base_path)
 
         if not self._exists_locally or self._chosen_show is None:
             self.find_shows_online()
+
+        if self._chosen_show is None:
+            raise ValueError("No show found")
 
         # TODO: if searched result is from database, get source from db
         self._chosen_show.fetch_details()
 
         return self._chosen_show
 
-    def check_local_shows(self, base_path: str):
-        """Checks if show exists locally in directory
+    def check_local_shows(self, base_path: str) -> None:
+        """Checks if a TV show exists locally in the specified directory.
 
         Args:
-            base_path (str): Base path to local media directory
+            base_path (str): The base path to the local media directory.
+
         """
         # dir loop check dir
         for directory in os.listdir(os.path.join(base_path, state_series_dir())):
@@ -76,49 +85,57 @@ class SearchQuery:
                     #     base_path + "/TV Series/" + directory
                     # )
 
-    def find_shows_online(self):
-        """Searches for shows online and returns a list of shows"""
-
-        result: Union[PageElement, Any]
-        # for result in query_results:
-        #     result_index += 1
-
-        query_results: List[Literal["Season"]] = []
+    def find_shows_online(self) -> None:
+        """
+        Searches for TV shows online using the specified query and displays the results in a table.
+        The user is prompted to choose a show from the table, and the chosen show is stored in the
+        `_chosen_show` attribute of the `TVShowDownloader` instance.
+        """
+        query_results: List[Season] = []
         # TODO: Search in db first / or put db results first
 
         logging.debug("Searching for %s", self._query)
 
-        for file in dir(sources):
-            logging.debug(f"Found {file}...")
-            if not file.startswith("__"):
-                for cls_name, cls_obj in inspect.getmembers(
-                    sys.modules[f"tvsd.sources.{file}"]
-                ):
-                    if cls_name == "Source":
-                        continue
-                    if (
-                        inspect.isclass(cls_obj)
-                        and issubclass(cls_obj, Source)
-                        and cls_obj().__status__ == "active"
-                    ):
-                        logging.info(f"Searching {cls_name}...")
-                        query_results += cls_obj().query_from_source(self._query)
+        for _, module_name, __ in pkgutil.walk_packages(sources.__path__):
+            logging.debug("Found %s...", module_name)
+            # Ignore template files
+            if module_name.startswith("_"):
+                continue
+            importlib.import_module(f"tvsd.sources.{module_name}")
+            for cls_name, cls_obj in inspect.getmembers(
+                sys.modules[f"tvsd.sources.{module_name}"]
+            ):
+                # Identify module class is not base class and is a class
+                if cls_name == "Source" or not inspect.isclass(cls_obj):
+                    continue
+                # Source is active
+                if issubclass(cls_obj, Source) and cls_obj().__status__ == "active":
+                    query_results += cls_obj().query_from_source(self._query)
 
         table = Table("index", "Title", "Source", "Note")
 
         for result_index, result in enumerate(query_results):
             table.add_row(
-                str(result_index), result.title, result.source.source_name, result.note
+                str(result_index),
+                result.title,
+                result.source.source_name,
+                result.note,
             )
 
         console.print(table)
         self._chosen_show = query_results[typer.prompt(text="请选择你下载的节目", type=int)]
 
     @property
-    def chosen_show(self) -> Literal["Season"]:
-        """Returns the chosen show
+    def chosen_show(self) -> "Season":
+        """
+        Returns the chosen show.
+
+        Raises:
+            ValueError: If no show is chosen.
 
         Returns:
-            Union["Show", "Season"]: Chosen show
+            Season: The chosen show.
         """
+        if self._chosen_show is None:
+            raise ValueError("No show chosen")
         return self._chosen_show

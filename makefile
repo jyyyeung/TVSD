@@ -5,6 +5,9 @@ setup-dev-env:
 	echo $(COMMIT_MSG_HOOK) > .git/hooks/commit-msg
 	chmod +x .git/hooks/commit-msg
 
+bump:
+	cz bump
+
 bump-version-minor:
 	cz bump --increment MINOR
 

@@ -1,55 +1,29 @@
+"""TVSD CLI entry point, main app module."""
 import logging
 import os
-from pathlib import Path
 import shutil
 from typing import Optional
-from tvsd._variables import state_base_path, state_temp_base_path, state_series_dir
-from tvsd import state
 
 import typer
 from rich import print as rprint
 
-
-from tvsd import ERRORS, __app_name__, __version__, database, app, state
-from tvsd.actions import search_media_and_download
-from tvsd.config import (
-    apply_config,
-    init_app,
-    validate_config_file,
-)
-from tvsd.actions import list_shows_as_table
-from tvsd.utils import is_video, video_in_dir
-
-
-@app.command()
-def init(
-    db_path: str = typer.Option(
-        str(database.DEFAULT_DB_FILE_PATH),
-        "--db-path",
-        "-db",
-        prompt="TVSD database location?",
-    ),
-) -> None:
-    """Initialize the to-do database."""
-    app_init_error = init_app(db_path)
-    if app_init_error:
-        typer.secho(
-            f'Creating config file failed with "{ERRORS[app_init_error]}"',
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(1)
-    db_init_error = database.init_database(Path(db_path))
-    if db_init_error:
-        typer.secho(
-            f'Creating database failed with "{ERRORS[db_init_error]}"',
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(1)
-    else:
-        typer.secho(f"The TVSD database is {db_path}", fg=typer.colors.GREEN)
+from tvsd import __app_name__, __version__, app, state
+from tvsd._variables import state_base_path, state_series_dir, state_temp_base_path
+from tvsd.actions import list_shows_as_table, search_media_and_download
+from tvsd.config import apply_config, validate_config_file
+from tvsd.utils import video_in_dir
 
 
 def _version_callback(value: bool) -> None:
+    """
+    Print the current version of the application and exit.
+
+    Args:
+        value (bool): A boolean value indicating whether to print the version or not.
+
+    Returns:
+        None
+    """
     if value:
         typer.echo(f"{__app_name__} v{__version__}")
         raise typer.Exit()
@@ -80,7 +54,16 @@ def main(
     ),
 ) -> None:
     """
-    Options to update state of the application.
+    Entry point for the TVSD CLI application.
+
+    This function initializes the config file before setting instance level.
+    It applies the config and sets the state of the application based on the provided options.
+
+    Args:
+        _: Optional[bool]: Show the application's version and exit.
+        verbose (Optional[bool], optional): Show verbose output. Defaults to False.
+        series_dir (Optional[str], optional): Specify the series directory, overrides config file. Defaults to None.
+        base_path (Optional[str], optional): Specify the base path, overrides config file. Defaults to None.
     """
     # initialize the config file before setting instance level
     validate_config_file()
@@ -95,17 +78,17 @@ def main(
 
     if series_dir:
         state["series_dir"] = series_dir
-        logging.info(f"Series directory set to {series_dir}")
+        logging.info("Series directory set to %s", series_dir)
 
     if base_path:
         state["base_path"] = base_path
-        logging.info(f"Base path set to {base_path}")
+        logging.info("Base path set to %s", base_path)
 
 
 @app.command()
 def search(
     query: str,
-    specials_only: Optional[bool] = typer.Option(
+    specials_only: bool = typer.Option(
         False,
         "--specials",
         "-s",
@@ -115,21 +98,32 @@ def search(
     """Search for media and download
 
     Args:
+        specials_only (Optional[bool], optional): Download only specials episode
         query (str): query string
     """
     validate_config_file()
-    search_media_and_download(query=query, specials_only=specials_only)
+    search_media_and_download(query, specials_only)
 
 
 @app.command()
 def clean_temp():
-    """Cleans the temp directory"""
+    """
+    Cleans the temp directory.
+
+    This function validates the config file and then prompts the user to confirm
+    whether they want to delete all files in the temp directory. If the user confirms,
+    all files in the temp directory are deleted and a new empty directory is created.
+
+    Raises:
+        FileNotFoundError: If temp directory does not exist
+    """
     validate_config_file()
 
     try:
         dir_content = os.listdir(state_temp_base_path())
         if len(dir_content) == 0:
-            raise (FileNotFoundError)
+            raise FileNotFoundError
+
         rprint(f"{state_temp_base_path()} contents: ")
         for item in dir_content:
             rprint(f"  {item}")
@@ -143,20 +137,32 @@ def clean_temp():
             shutil.rmtree(state_temp_base_path(), ignore_errors=True)
             os.mkdir(state_temp_base_path())
             logging.info("All files deleted")
+
     except FileNotFoundError:
-        logging.info(f"Temp directory {state_temp_base_path()} does not exist")
+        logging.info("Temp directory %s does not exist", state_temp_base_path())
 
 
 @app.command()
 def list_shows():
-    """List all shows in the database"""
+    """
+    List all shows in the database.
+
+    This function retrieves a list of all shows in the database and displays them in a table format.
+    """
     list_shows_as_table(show_index=False)
 
 
 @app.command()
 def remove_show():
-    """List shows and remove selected show"""
+    """List shows and remove selected show.
 
+    This function lists all the shows and their indices, prompts the user to select a show index to remove,
+    and then removes the selected show. If the user selects an invalid index or cancels the prompt, the function
+    aborts and raises a typer.Abort() exception.
+
+    Returns:
+        None
+    """
     shows, num_rows = list_shows_as_table(show_index=True)
 
     while True:
@@ -180,7 +186,14 @@ def remove_show():
 
 @app.command()
 def print_state():
-    """Prints the state of the application"""
+    """
+    Print the current state of the application.
+
+    This function prints the current state of the application, including all key-value pairs in the `state` dictionary.
+
+    Raises:
+        ConfigFileError: If the configuration file is invalid or missing.
+    """
     validate_config_file()
 
     for key, value in state.items():
@@ -189,28 +202,36 @@ def print_state():
 
 @app.command()
 def clean_base(
-    interactive: Optional[bool] = typer.Option(
+    interactive: bool = typer.Option(
         False,
         "--interactive",
         "-i",
         help="Interactive mode",
     ),
-    greedy: Optional[bool] = typer.Option(
+    greedy: bool = typer.Option(
         False,
         "--greedy",
         "-g",
         help="Remove directories without videos",
     ),
-    target: Optional[str] = typer.Option(
+    target: str = typer.Option(
         os.path.join(state_base_path(), state_series_dir()),
         help="Target directory",
     ),
-    _no_confirm: Optional[bool] = typer.Option(
+    _no_confirm: bool = typer.Option(
         False,
         "--no-confirm",
     ),
 ):
-    """Remove empty directories in base path"""
+    """
+    Remove empty directories in the base path
+
+    Args:
+        interactive (bool, optional): Whether to run in interactive mode. Defaults to False
+        greedy (bool, optional): Remove all directories without videos, even it they are not empty. Defaults to False.
+        target (str, optional): Target directory. Defaults to os.path.join(state_base_path(), state_series_dir()).
+        _no_confirm (bool, optional): Don't show prompt to confirm actions. Defaults to False.
+    """
     validate_config_file()
     if greedy and not _no_confirm:
         typer.confirm(
@@ -226,7 +247,7 @@ def clean_base(
                 or typer.confirm(f"Found Empty Directory, Remove {path}?")
             ):
                 # empty dir
-                logging.info(f"Empty Directory, Removing {path}")
+                logging.info("Empty Directory, Removing %s", path)
                 shutil.rmtree(path)
             elif (
                 greedy
@@ -241,6 +262,6 @@ def clean_base(
                 # clean_base(interactive, greedy, target, _no_confirm=True)
                 # # not empty dir and no video, remove
                 logging.info(
-                    f"Directory without video and and sub-dir, Removing {path}"
+                    "Directory without video and and sub-dir, Removing %s", {path}
                 )
                 shutil.rmtree(path)

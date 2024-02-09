@@ -1,3 +1,50 @@
+## v1.3.2 (2023-11-09)
+
+### Fix
+
+- File Exists function checks non-existent directory
+
+### Refactor
+
+- Clean up episode.py
+
+## v1.3.1 (2023-10-23)
+
+### Fix
+
+- Get episode number from existing episode for calculation
+- create Season Directory before checking local files
+
+### Refactor
+
+- remove unused variable
+
+### Perf
+
+- remove unused init command
+
+## v1.3.0 (2023-10-22)
+
+### Feat
+
+- improve ep exist detection and set ep no.
+
+### Fix
+
+- ssstv.py scrape error fix
+
+### Refactor
+
+- Clean code and fix types
+- Clean code for download.py file
+- clean code after poetry migration
+
+### Perf
+
+- add poetry script to shorten run command
+- print message "name" already exists not "filename"
+- reduce code complexity for sources iteration
+
 ## v1.2.1 (2023-09-02)
 
 ### Feat
