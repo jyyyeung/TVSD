@@ -14,7 +14,7 @@ click==8.1.4
 cloudscraper==1.2.71
 colorama==0.4.6
 commitizen==3.5.0
-cryptography==41.0.6
+cryptography==42.0.2
 cssselect==1.2.0
 decli==0.6.1
 distlib==0.3.8
