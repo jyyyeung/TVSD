@@ -87,9 +87,6 @@ def callback(
     # change the environment to update proper settings
     settings.setenv(env)
 
-    # raises on first error found
-    settings.validators.validate()
-
     # update the dynaconf settings
     if verbose:
         typer.echo("Will write verbose output")
@@ -102,7 +99,7 @@ def callback(
         settings.set("series_dir", series_dir)
         logging.info("Series directory set to %s", series_dir)
 
-    if Path(media_root) != settings.MEDIA_ROOT:
+    if media_root != settings.MEDIA_ROOT:
         settings.set("media_root", media_root)
         logging.info("Media Root set to %s", media_root)
 
@@ -125,6 +122,9 @@ def search(
         query (str): query string
     """
 
+    # raises on first error found
+    settings.validators.validate()
+
     search_media_and_download(query, specials_only)
 
 
@@ -140,7 +140,9 @@ def clean_temp() -> None:
     Raises:
         FileNotFoundError: If temp directory does not exist
     """
-    # validate_config_file()
+
+    # raises on first error found
+    settings.validators.validate()
 
     try:
         dir_content = os.listdir(settings.TEMP_ROOT)
@@ -186,6 +188,7 @@ def remove_show() -> None:
     Returns:
         None
     """
+
     shows, num_rows = list_shows_as_table(show_index=True)
 
     while True:
@@ -220,10 +223,11 @@ def print_state() -> None:
         ConfigFileError: If the configuration file is invalid or missing.
     """
     # validate_config_file()
-    data = settings.as_dict(env=settings.current_env)
+    data: dict = settings.as_dict(env=settings.current_env)
+    data.pop("POST_HOOKS", None)
+    data.pop("PRETTY_EXCEPTIONS_SHOW_LOCALS", None)
 
-    for key, value in data:
-        typer.echo(f"{key}: {value}")
+    typer.echo(data)
 
 
 @app.command()

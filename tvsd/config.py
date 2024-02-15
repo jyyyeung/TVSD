@@ -1,6 +1,7 @@
 """This module provides the TVSD config functionality."""
 
 # tvsd/config.py
+import logging
 import pathlib
 from pathlib import Path
 
@@ -8,11 +9,24 @@ import typer
 from dynaconf import Dynaconf, LazySettings, Validator
 
 CONFIG_DIR_PATH = Path(typer.get_app_dir(__name__))
+CONFIG_FILE_PATH: Path = CONFIG_DIR_PATH / "config.ini"
+
+
+def hook_function(settings: Dynaconf) -> None:
+    DEPRECATED: dict[str, str] = {
+        "BASE_PATH": "MEDIA_ROOT",
+        "TEMP_PATH": "TEMP_ROOT",
+        "TEMP_BASE_PATH": "TEMP_ROOT",
+    }
+    for key, new in DEPRECATED.items():
+        if value := settings.get(key):
+            logging.warning(f"{key} has been replaced by {new}")
+            settings.set(new, value)
 
 
 settings: LazySettings = Dynaconf(
     envvar_prefix="TVSD",
-    settings_files=["settings.yaml"],
+    settings_files=["settings.yaml", CONFIG_FILE_PATH],
     environments=True,
     load_dotenv=True,
     ignore_unknown_envvars=True,
@@ -21,6 +35,7 @@ settings: LazySettings = Dynaconf(
     validate_only_current_env=True,
     pretty_exceptions_short=True,
     pretty_exceptions_show_locals=False,
+    post_hooks=hook_function,
 )
 
 
