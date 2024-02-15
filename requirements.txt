@@ -92,4 +92,4 @@ w3lib==2.1.1
 watchdog==3.0.0
 wcwidth==0.2.6
 websockets==11.0.3
-zipp==3.16.2
+zipp==3.17.0
