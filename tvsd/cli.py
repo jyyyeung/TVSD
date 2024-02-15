@@ -5,14 +5,21 @@ import os
 import shutil
 from typing import Optional
 
+import dynaconf
 import typer
-from rich import print as rprint
 
-from tvsd import __app_name__, __version__, app, state
-from tvsd._variables import state_base_path, state_series_dir, state_temp_base_path
+# from docstring_parser import parse
+from rich import print as rprint
+from zipp import Path
+
+from tvsd import __app_name__, __version__, app
 from tvsd.actions import list_shows_as_table, search_media_and_download
-from tvsd.config import apply_config, validate_config_file
+from tvsd.config import register_validators, settings
+
+# from tvsd.config import apply_config, validate_config_file
 from tvsd.utils import video_in_dir
+
+from .utils import typer_easy_cli
 
 
 def _version_callback(value: bool) -> None:
@@ -30,8 +37,10 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
+@typer_easy_cli
 @app.callback()
-def main(
+def callback(
+    *,
     _: Optional[bool] = typer.Option(
         None,
         "--version",
@@ -42,16 +51,19 @@ def main(
     ),
     verbose: Optional[bool] = False,
     series_dir: Optional[str] = typer.Option(
-        None,
+        settings.SERIES_DIR,
         "--series-dir",
         "-sd",
         help="Specify the series directory, overrides config file",
     ),
-    base_path: Optional[str] = typer.Option(
-        None,
-        "--base-path",
-        "-bp",
-        help="Specify the base path, overrides config file",
+    media_root: Optional[str] = typer.Option(
+        settings.MEDIA_ROOT,
+        "--media-root",
+        "-mr",
+        help="Specify the media root, overrides config file",
+    ),
+    env: Optional[str] = typer.Option(
+        settings.current_env, "--env", "-e", help="Specify the environment"
     ),
 ) -> None:
     """
@@ -61,29 +73,38 @@ def main(
     It applies the config and sets the state of the application based on the provided options.
 
     Args:
-        _: Optional[bool]: Show the application's version and exit.
-        verbose (Optional[bool], optional): Show verbose output. Defaults to False.
-        series_dir (Optional[str], optional): Specify the series directory, overrides config file. Defaults to None.
-        base_path (Optional[str], optional): Specify the base path, overrides config file. Defaults to None.
-    """
-    # initialize the config file before setting instance level
-    validate_config_file()
-    apply_config()
+        verbose (bool, optional): Show verbose output.
+        series_dir (str, optional): Specify the series directory, overrides config file.
+        media_root (str, optional): Specify the media root, overrides config file.
+        env (str, optional): Specify the environment, overrides config file.
 
+    Returns:
+        None
+    """
+
+    register_validators()
+
+    # change the environment to update proper settings
+    settings.setenv(env)
+
+    # raises on first error found
+    settings.validators.validate()
+
+    # update the dynaconf settings
     if verbose:
         typer.echo("Will write verbose output")
-        state["verbose"] = True
+        settings.set("verbose", True)
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
 
-    if series_dir:
-        state["series_dir"] = series_dir
+    if series_dir != settings.SERIES_DIR:
+        settings.set("series_dir", series_dir)
         logging.info("Series directory set to %s", series_dir)
 
-    if base_path:
-        state["base_path"] = base_path
-        logging.info("Base path set to %s", base_path)
+    if Path(media_root) != settings.MEDIA_ROOT:
+        settings.set("media_root", media_root)
+        logging.info("Media Root set to %s", media_root)
 
 
 @app.command()
@@ -96,13 +117,14 @@ def search(
         help="Download Specials Only",
     ),
 ) -> None:
-    """Search for media and download
+    """
+    Search for media and download
 
     Args:
         specials_only (Optional[bool], optional): Download only specials episode
         query (str): query string
     """
-    validate_config_file()
+
     search_media_and_download(query, specials_only)
 
 
@@ -118,29 +140,29 @@ def clean_temp() -> None:
     Raises:
         FileNotFoundError: If temp directory does not exist
     """
-    validate_config_file()
+    # validate_config_file()
 
     try:
-        dir_content = os.listdir(state_temp_base_path())
+        dir_content = os.listdir(settings.TEMP_ROOT)
         if len(dir_content) == 0:
             raise FileNotFoundError
 
-        rprint(f"{state_temp_base_path()} contents: ")
+        rprint(f"{settings.TEMP_ROOT} contents: ")
         for item in dir_content:
             rprint(f"  {item}")
 
-        confirm = typer.prompt(
+        confirm: str = typer.prompt(
             text="Do you want to delete all files in temp directory?",
             type=str,
             default="n",
         )
         if confirm.capitalize() == "Y":
-            shutil.rmtree(state_temp_base_path(), ignore_errors=True)
-            os.mkdir(state_temp_base_path())
+            shutil.rmtree(settings.TEMP_ROOT, ignore_errors=True)
+            os.mkdir(settings.TEMP_ROOT)
             logging.info("All files deleted")
 
     except FileNotFoundError:
-        logging.info("Temp directory %s does not exist", state_temp_base_path())
+        logging.info("Temp directory %s does not exist", settings.TEMP_ROOT)
 
 
 @app.command()
@@ -177,7 +199,9 @@ def remove_show() -> None:
             if typer.confirm(f"Will remove {shows[choice]}. Are you sure?", abort=True):
                 typer.echo("Removing show: " + shows[choice])
                 shutil.rmtree(
-                    os.path.join(state_base_path(), state_series_dir(), shows[choice])
+                    os.path.join(
+                        settings.MEDIA_ROOT, settings.SERIES_DIR, shows[choice]
+                    )
                 )
                 typer.echo("Show removed")
             break
@@ -195,9 +219,10 @@ def print_state() -> None:
     Raises:
         ConfigFileError: If the configuration file is invalid or missing.
     """
-    validate_config_file()
+    # validate_config_file()
+    data = settings.as_dict(env=settings.current_env)
 
-    for key, value in state.items():
+    for key, value in data:
         typer.echo(f"{key}: {value}")
 
 
@@ -216,7 +241,7 @@ def clean_base(
         help="Remove directories without videos",
     ),
     target: str = typer.Option(
-        os.path.join(state_base_path(), state_series_dir()),
+        os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR),
         help="Target directory",
     ),
     _no_confirm: bool = typer.Option(
@@ -230,10 +255,10 @@ def clean_base(
     Args:
         interactive (bool, optional): Whether to run in interactive mode. Defaults to False
         greedy (bool, optional): Remove all directories without videos, even it they are not empty. Defaults to False.
-        target (str, optional): Target directory. Defaults to os.path.join(state_base_path(), state_series_dir()).
+        target (str, optional): Target directory. Defaults to os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR).
         _no_confirm (bool, optional): Don't show prompt to confirm actions. Defaults to False.
     """
-    validate_config_file()
+    # validate_config_file()
     if greedy and not _no_confirm:
         typer.confirm(
             "Greedy mode will remove directories without videos, even if they contain other content",

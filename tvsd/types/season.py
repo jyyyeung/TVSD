@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Callable, List
 
 import typer
 
-from tvsd._variables import state_specials_dir
+from tvsd.config import settings
 from tvsd.types.episode import Episode
 from tvsd.types.show import Show
 
@@ -224,7 +224,7 @@ class Season:
         Returns:
             str: relative specials directory
         """
-        return os.path.join(self._show.relative_show_dir, state_specials_dir())
+        return os.path.join(self._show.relative_show_dir, settings.SPECIALS_DIR)
 
     def determine_show_begin_year(self) -> str:
         """Query the begin year of the show

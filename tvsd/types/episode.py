@@ -7,7 +7,7 @@ import os
 from re import Match, findall, match
 from typing import TYPE_CHECKING
 
-from tvsd._variables import state_base_path
+from tvsd.config import settings
 from tvsd.utils import file_exists_in_base, relative_to_absolute_path
 
 if TYPE_CHECKING:
@@ -244,7 +244,7 @@ class Episode:
         episode_title: str = self.filename.split(" - ")[-1]
         try:
             for file in os.listdir(
-                os.path.join(state_base_path(), self._season.relative_season_dir)
+                os.path.join(settings.MEDIA_ROOT, self._season.relative_season_dir)
             ):
                 if episode_title in file:
                     print(f"{self.filename} probably exist as {file}, skipping...")

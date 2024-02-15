@@ -1,0 +1,18 @@
+default:
+  media_root: /Volumes/Viewable
+  create_media_root: false
+  temp_root: "@format {env[HOME]}/Movies/temp-parts"
+  create_temp_root: true
+  series_dir: TV Series
+  specials_dir: Specials
+  verbose: false
+  debug: false
+dev:
+  media_root: "@format {env[PWD]}/temp/media"
+  create_media_root: true
+  temp_root: "@format {env[PWD]}/temp/downloads"
+  create_temp_root: true
+  series_dir: TV Series
+  specials_dir: Specials
+  verbose: true
+  debug: true

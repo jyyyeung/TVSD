@@ -65,6 +65,8 @@ Update Release Version: `cz bump`
 - [x] Search & Download Shows
 - [ ] Track new episodes
 - [ ] Web UI
+- [ ] Docker
+- [ ] Add Searching Progress Bar
 
 ## Inspired By and Credits to
 

@@ -12,14 +12,15 @@ from rich.console import Console
 from rich.table import Table
 
 from tvsd import sources
-from tvsd._variables import state_series_dir
 
 # from tvsd.sources import *
 from tvsd.sources.base import Source
 
+from .config import settings
+
 if TYPE_CHECKING:
     from tvsd.types.season import Season
-    from tvsd.types.show import Show
+
 
 console = Console()
 
@@ -32,7 +33,7 @@ class SearchQuery:
         self._exists_locally = False
         self._chosen_show = None
 
-    def find_show(self, base_path: str) -> "Season":
+    def find_show(self) -> "Season":
         """Finds show information either locally or online.
 
         If the show information is not found locally or if no show has been chosen, the method will attempt to find the
@@ -58,7 +59,7 @@ class SearchQuery:
 
         return self._chosen_show
 
-    def check_local_shows(self, base_path: str) -> None:
+    def check_local_shows(self) -> None:
         """Checks if a TV show exists locally in the specified directory.
 
         Args:
@@ -66,7 +67,9 @@ class SearchQuery:
 
         """
         # dir loop check dir
-        for directory in os.listdir(os.path.join(base_path, state_series_dir())):
+        for directory in os.listdir(
+            os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)
+        ):
             season_title: str = directory.split(" ")[0]
             similarity_ratio: float = SequenceMatcher(
                 None, self._query, season_title

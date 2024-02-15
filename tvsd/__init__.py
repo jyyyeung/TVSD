@@ -11,15 +11,12 @@ __version__: str = _DISTRIBUTION_METADATA["Version"]
 __app_name__ = "tvsd"
 
 
-app = Typer(name=__name__, rich_markup_mode="rich")
-state = {
-    "verbose": False,
-    "series_dir": "TV Series",
-    "specials_dir": "Specials",
-    "base_path": "/Volumes/Viewable",
-    "temp_base_path": "/Volumes/Viewable/temp",
-}
-
+app = Typer(
+    name=__name__,
+    rich_markup_mode="rich",
+    invoke_without_command=True,
+    no_args_is_help=True,
+)
 
 (
     SUCCESS,

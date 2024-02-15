@@ -6,7 +6,7 @@ Currently not used a lot, will consider removing
 import os
 from typing import TYPE_CHECKING, List
 
-from tvsd._variables import state_series_dir
+from tvsd.config import settings
 
 if TYPE_CHECKING:
     from tvsd.sources.base import Source
@@ -131,4 +131,4 @@ class Show:
         """
 
         # Relative directory of show in media directory from base path
-        return os.path.join(state_series_dir(), self._prefix)
+        return os.path.join(settings.SERIES_DIR, self._prefix)

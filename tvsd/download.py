@@ -7,7 +7,7 @@ import shutil
 import m3u8_To_MP4
 import typer
 
-from tvsd._variables import state_base_path, state_temp_base_path
+from tvsd.config import settings
 from tvsd.types.episode import Episode
 from tvsd.types.season import Season
 from tvsd.types.show import Show
@@ -30,8 +30,6 @@ class Download:
     def __init__(
         self,
         target: Show | Season | Episode,
-        base_path: str = state_base_path(),
-        temp_path: str = state_temp_base_path(),
         specials_only: bool = False,
     ) -> None:
         """
@@ -39,13 +37,11 @@ class Download:
 
         Args:
             target (Show|Season|Episode): The target show, season or episode to download.
-            base_path (str, optional): The base path for the downloaded files. Defaults to state_base_path().
-            temp_path (str, optional): The temporary base path for the downloaded files. Defaults to state_temp_base_path().
+            base_path (str, optional): The base path for the downloaded files. Defaults to settings.MEDIA_ROOT.
+            temp_path (str, optional): The temporary base path for the downloaded files. Defaults to settings.TEMP_ROOT.
             specials_only (bool, optional): Whether to download only special episodes. Defaults to False.
         """
         self._target: Show | Season | Episode = target
-        self._base_path: str = base_path
-        self._temp_base_path: str = temp_path
 
         self._specials_index: int = 1
         self._regular_ep_index: int = 1
@@ -184,7 +180,7 @@ class Download:
             return
 
         absolute_dest_dir = os.path.join(
-            self._base_path, episode.relative_destination_dir
+            settings.MEDIA_ROOT, episode.relative_destination_dir
         )
         logging.info(absolute_dest_dir)
         mkdir_if_no(absolute_dest_dir)
@@ -215,7 +211,7 @@ class Download:
                 "m3u8 not found in episode url, Stream probably does not exist"
             )
 
-        temp_dir: str = os.path.join(self._temp_base_path, episode.filename)
+        temp_dir: str = os.path.join(settings.TEMP_ROOT, episode.filename)
         if not os.path.isdir(temp_dir):
             mkdir_if_no(temp_dir)
             print(f"Downloading {episode.filename} to {absolute_dest_dir}...")
