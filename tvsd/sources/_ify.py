@@ -14,7 +14,9 @@ def search_iyf(query: str) -> [Show]:
     :return:
     :rtype:
     """
-    search_url: str = f"https://rankv21.iyf.tv/v3/list/briefsearch?tags={query}&orderby=4&page=1&size=36&desc=1&isserial=-1"
+    search_url: str = (
+        f"https://rankv21.iyf.tv/v3/list/briefsearch?tags={query}&orderby=4&page=1&size=36&desc=1&isserial=-1"
+    )
     scraper = cloudscraper.create_scraper(
         delay=10,
         browser={

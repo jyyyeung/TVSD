@@ -1,6 +1,7 @@
 """
 TVSD Season class, parent of Episodes
 """
+
 import logging
 import os
 from typing import TYPE_CHECKING, Callable, List
@@ -52,7 +53,7 @@ def check_season_index(show_title: str) -> int:
     elif "part" in show_title:
         season_index = 1
     elif typer.prompt("这个节目是否续季？（not S1)", default="").capitalize() == "Y":
-        season_index = typer.prompt(text="这个节目是第几季？", type=int)
+        season_index: int = typer.prompt(text="这个节目是第几季？", type=int)
     else:
         season_index = 1
     return season_index
@@ -90,17 +91,17 @@ class Season:
             note (str, optional): A note about the season. Defaults to "".
             details_url (str, optional): The URL of the page containing details about the season. Defaults to "".
         """
-        season_title = details["title"]
+        season_title: str = details["title"]
         self._episodes: List["Episode"] = episodes
-        self._title = season_title
-        self._year = details["year"]
-        self._description = details["description"]
+        self._title: str = season_title
+        self._year: str = details["year"]
+        self._description: str = details["description"]
         self._index: int | None = None
 
-        self._details_url = details_url
+        self._details_url: str = details_url
         # self._source_id = source_id
-        self._note = note
-        self._source = source
+        self._note: str = note
+        self._source: Source = source
         self._show: Show
 
         self._fetch_episode_m3u8 = fetch_episode_m3u8
@@ -175,7 +176,7 @@ class Season:
         Returns:
             int: index of season
         """
-        season_index = check_season_index(season_title)
+        season_index: int = check_season_index(season_title)
         season_index = typer.prompt(
             text="Fix the season index? ", default=season_index, type=int
         )
@@ -236,14 +237,16 @@ class Season:
         """
         print(self.year)
         season_year = int(self.year)
-        show_year = season_year
+        show_year: int = season_year
 
         if self.season_index > 1:
             # TODO: Auto
 
             show_year = season_year - self.season_index + 1
             show_year = typer.prompt(
-                text=f"第一季在那一年？(calculated={show_year})", type=int, default=show_year
+                text=f"第一季在那一年？(calculated={show_year})",
+                type=int,
+                default=show_year,
             )
         # self.begin_year = season_year
 

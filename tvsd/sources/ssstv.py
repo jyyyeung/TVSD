@@ -9,7 +9,7 @@ from tvsd.sources.base import Source
 class SSSTV(Source):
     """777tv class"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.__status__ = "active"
         self._domains = ["https://777tv.tw"]
@@ -74,7 +74,7 @@ class SSSTV(Source):
                 return scroll_content.find_all("a", recursive=False)
         return []
 
-    def _set_season_year(self, soup: BeautifulSoup):
+    def _set_season_year(self, soup: BeautifulSoup) -> str:
         year_tag = soup.find(
             "a",
             href=re.compile(r"/vodshow/\d+-+\d{4}.html"),

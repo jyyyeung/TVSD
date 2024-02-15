@@ -1,5 +1,5 @@
 """
-TVSD app entry point 
+TVSD app entry point
 """
 
 from tvsd import cli

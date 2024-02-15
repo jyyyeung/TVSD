@@ -27,7 +27,7 @@ console = Console()
 class SearchQuery:
     """Searches for a show based on query"""
 
-    def __init__(self, query: str):
+    def __init__(self, query: str) -> None:
         self._query: str = query
         self._exists_locally = False
         self._chosen_show = None
@@ -67,8 +67,10 @@ class SearchQuery:
         """
         # dir loop check dir
         for directory in os.listdir(os.path.join(base_path, state_series_dir())):
-            season_title = directory.split(" ")[0]
-            similarity_ratio = SequenceMatcher(None, self._query, season_title).ratio()
+            season_title: str = directory.split(" ")[0]
+            similarity_ratio: float = SequenceMatcher(
+                None, self._query, season_title
+            ).ratio()
 
             # If directory name is similar to query
             if similarity_ratio >= 0.8:
@@ -123,7 +125,9 @@ class SearchQuery:
             )
 
         console.print(table)
-        self._chosen_show = query_results[typer.prompt(text="请选择你下载的节目", type=int)]
+        self._chosen_show = query_results[
+            typer.prompt(text="请选择你下载的节目", type=int)
+        ]
 
     @property
     def chosen_show(self) -> "Season":

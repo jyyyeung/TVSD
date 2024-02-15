@@ -1,11 +1,18 @@
 """Custom types for TVSD """
+
 from typing import List, TypedDict
 
 from tvsd.types.episode import Episode
 from tvsd.types.season import Season
 from tvsd.types.show import Show
 
-__all__ = ["Episode", "Season", "Show", "SeasonDetailsFromURL", "EpisodeDetailsFromURL"]
+__all__: list[str] = [
+    "Episode",
+    "Season",
+    "Show",
+    "SeasonDetailsFromURL",
+    "EpisodeDetailsFromURL",
+]
 
 
 class SeasonDetailsFromURL(TypedDict):

@@ -16,7 +16,7 @@ bump-version-major:
 
 bump-version-patch:
 	cz bump --increment PATCH
-	
+
 bump-specific-version:
 	cz bump $(VERSION)
 

@@ -1,4 +1,5 @@
 """This module provides the TVSD config functionality."""
+
 # tvsd/config.py
 
 import configparser
@@ -12,13 +13,13 @@ from tvsd import DIR_ERROR, FILE_ERROR, SUCCESS, state
 config_parser = configparser.ConfigParser()
 
 CONFIG_DIR_PATH = Path(typer.get_app_dir(__name__))
-CONFIG_FILE_PATH = CONFIG_DIR_PATH / "config.ini"
+CONFIG_FILE_PATH: Path = CONFIG_DIR_PATH / "config.ini"
 
 
 class Config:
     """A class for managing configuration settings for the TVSD application."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes a new instance of the Config class.
 
@@ -35,7 +36,7 @@ class Config:
         Returns:
             int: A status code indicating whether the initialization was successful.
         """
-        config_code = cls._init_config_file()
+        config_code: int = cls._init_config_file()
         if config_code != SUCCESS:
             return config_code
         return SUCCESS

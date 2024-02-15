@@ -1,4 +1,5 @@
 """TVSD Download Class"""
+
 import logging
 import os
 import shutil
@@ -32,7 +33,7 @@ class Download:
         base_path: str = state_base_path(),
         temp_path: str = state_temp_base_path(),
         specials_only: bool = False,
-    ):
+    ) -> None:
         """
         Initializes a new instance of the Download class.
 
@@ -43,15 +44,15 @@ class Download:
             specials_only (bool, optional): Whether to download only special episodes. Defaults to False.
         """
         self._target: Show | Season | Episode = target
-        self._base_path = base_path
-        self._temp_base_path = temp_path
+        self._base_path: str = base_path
+        self._temp_base_path: str = temp_path
 
         self._specials_index: int = 1
         self._regular_ep_index: int = 1
 
-        self._specials_only = specials_only
+        self._specials_only: bool = specials_only
 
-    def guided_download(self):
+    def guided_download(self) -> None:
         """
         Guided download of show.
 
@@ -77,7 +78,7 @@ class Download:
             assert isinstance(self._target, Season)
             self.choose_download(self._target)
 
-    def choose_download(self, season: "Season"):
+    def choose_download(self, season: "Season") -> None:
         """
         Choose which episodes in a season to download.
 
@@ -97,7 +98,7 @@ class Download:
             else:
                 self.set_ep_index(episode)
 
-    def download_all(self, target: "Season| Show| Episode"):
+    def download_all(self, target: "Season| Show| Episode") -> None:
         """
         Download all episodes under the specified Season/Show/Episode.
 
@@ -132,7 +133,7 @@ class Download:
         else:
             raise TypeError("Target must be Show, Season or Episode")
 
-    def set_special_ep_index(self, episode: "Episode"):
+    def set_special_ep_index(self, episode: "Episode") -> None:
         """
         Set the index for a special episode.
 
@@ -142,7 +143,7 @@ class Download:
         episode.episode_number = self._specials_index
         self._specials_index += 1
 
-    def set_regular_ep_index(self, episode: "Episode"):
+    def set_regular_ep_index(self, episode: "Episode") -> None:
         """
         Set the index for a regular episode.
 
@@ -152,7 +153,7 @@ class Download:
         episode.episode_number = self._regular_ep_index
         self._regular_ep_index += 1
 
-    def set_ep_index(self, episode: "Episode"):
+    def set_ep_index(self, episode: "Episode") -> None:
         """Set index for episode
 
         This method sets the index for a given episode. If the episode is a special episode, it calls the
@@ -166,7 +167,7 @@ class Download:
         else:
             self.set_regular_ep_index(episode)
 
-    def download_episode(self, episode: "Episode"):
+    def download_episode(self, episode: "Episode") -> None:
         """Download an episode
 
         Args:
@@ -190,7 +191,7 @@ class Download:
 
         self.set_ep_index(episode)
 
-        existing_file = episode.file_exists_locally
+        existing_file: str = episode.file_exists_locally
 
         if existing_file != "":
             print(f"{episode.name} already exists in directory, skipping... ")
@@ -214,7 +215,7 @@ class Download:
                 "m3u8 not found in episode url, Stream probably does not exist"
             )
 
-        temp_dir = os.path.join(self._temp_base_path, episode.filename)
+        temp_dir: str = os.path.join(self._temp_base_path, episode.filename)
         if not os.path.isdir(temp_dir):
             mkdir_if_no(temp_dir)
             print(f"Downloading {episode.filename} to {absolute_dest_dir}...")

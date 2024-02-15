@@ -2,6 +2,7 @@
 TYSD Show Class, parent of Seasons
 Currently not used a lot, will consider removing
 """
+
 import os
 from typing import TYPE_CHECKING, List
 
@@ -23,7 +24,7 @@ class Show:
         _prefix (str): The directory name of the show.
     """
 
-    def __init__(self, source: "Source", title: str = "", begin_year: str = ""):
+    def __init__(self, source: "Source", title: str = "", begin_year: str = "") -> None:
         """
         Initializes a new instance of the Show class.
 
@@ -32,12 +33,12 @@ class Show:
             title (str, optional): The title of the show. Defaults to "".
             begin_year (str, optional): The year the show began. Defaults to "".
         """
-        self._title = title
-        self._source = source
+        self._title: str = title
+        self._source: Source = source
         self._seasons: List["Season"] = []
-        self._begin_year = begin_year
+        self._begin_year: str = begin_year
 
-        self._prefix = self.generate_show_prefix()
+        self._prefix: str = self.generate_show_prefix()
 
     @property
     def seasons(self) -> List["Season"]:

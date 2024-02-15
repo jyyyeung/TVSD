@@ -1,12 +1,13 @@
-""" 
+"""
 TVSD init module
 """
-import importlib.metadata
+
+from importlib.metadata import PackageMetadata, metadata
 
 from typer import Typer
 
-_DISTRIBUTION_METADATA = importlib.metadata.metadata("tvsd")
-__version__ = _DISTRIBUTION_METADATA["Version"]
+_DISTRIBUTION_METADATA: PackageMetadata = metadata("tvsd")
+__version__: str = _DISTRIBUTION_METADATA["Version"]
 __app_name__ = "tvsd"
 
 
@@ -26,7 +27,7 @@ state = {
     FILE_ERROR,
 ) = range(3)
 
-ERRORS = {
+ERRORS: dict[int, str] = {
     DIR_ERROR: "config directory error",
     FILE_ERROR: "config file error",
 }

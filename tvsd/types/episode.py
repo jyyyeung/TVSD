@@ -4,7 +4,7 @@ Episode class.
 
 import logging
 import os
-import re
+from re import Match, findall, match
 from typing import TYPE_CHECKING
 
 from tvsd._variables import state_base_path
@@ -30,7 +30,7 @@ class Episode:
         episode_name: str,
         episode_url: str,
         season: "Season",
-    ):
+    ) -> None:
         """Initialize a new Episode object.
 
         Args:
@@ -38,8 +38,8 @@ class Episode:
             episode_url (str): The URL of the episode.
             season (Season): The season that this episode belongs to.
         """
-        self._name = episode_name
-        self._url = episode_url
+        self._name: str = episode_name
+        self._url: str = episode_url
         self._number: int
 
         self._season: "Season" = season
@@ -57,7 +57,7 @@ class Episode:
         """
         return f"{self.name} ({self.episode_number})"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Returns a string representation of the Episode object.
         The string contains the name and episode number of the episode.
@@ -78,7 +78,7 @@ class Episode:
         try:
             print(self._name)
             episode_number_identifying_regex = r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$"
-            episode_number_match = re.match(
+            episode_number_match: Match[str] | None = match(
                 episode_number_identifying_regex, self._name
             )
 
@@ -92,7 +92,7 @@ class Episode:
 
                 print(f"episode_number: {identified_number}")
                 # episode_index = int(re.findall(r'\d*', episode_number)[0])
-                resulting_index = int(re.findall(r"^\d{1,3}$", identified_number)[0])
+                resulting_index = int(findall(r"^\d{1,3}$", identified_number)[0])
 
                 # print(episode_number)
             else:
@@ -112,8 +112,8 @@ class Episode:
             bool: True if the episode is a special episode, False otherwise.
         """
         specials_regex = r"^[0-9]{8}[(（上中下)）]*$|^[0-9]{8}[（(]*第([0-9]+)[期集][(（上中下)）]*[)）]?$|^([0-9]{1,3})$|^第([0-9]+)[期集][上中下]*$"
-        not_specials = re.match(specials_regex, self._name)
-        self._not_specials = not_specials
+        not_specials: bool = bool(match(specials_regex, self._name))
+        self._not_specials: bool = not_specials
         return not not_specials
 
     @property
@@ -148,7 +148,7 @@ class Episode:
         return self._number
 
     @episode_number.setter
-    def episode_number(self, episode_number: int):
+    def episode_number(self, episode_number: int) -> None:
         """
         Sets the episode number.
 
@@ -166,7 +166,7 @@ class Episode:
         Returns:
             int: The episode number.
         """
-        index = (
+        index: int = (
             # self._previous_episode.episode_number + 1
             # or
             self.identify_episode_number_from_name()
@@ -214,7 +214,7 @@ class Episode:
         Returns:
             str: The episode url.
         """
-        episode_url = self._url
+        episode_url: str = self._url
         return episode_url
 
     @property
@@ -241,7 +241,7 @@ class Episode:
             print(f"{self.filename} already exists in directory, skipping... ")
             return self.filename
 
-        episode_title = self.filename.split(" - ")[-1]
+        episode_title: str = self.filename.split(" - ")[-1]
         try:
             for file in os.listdir(
                 os.path.join(state_base_path(), self._season.relative_season_dir)
@@ -287,7 +287,9 @@ class Episode:
         Returns:
             str: The m3u8 url of the episode.
         """
-        m3u8_url = self.season.source.fetch_episode_m3u8(relative_episode_url=self._url)
+        m3u8_url: str | None = self.season.source.fetch_episode_m3u8(
+            relative_episode_url=self._url
+        )
         if m3u8_url is None:
             return ""
         return m3u8_url

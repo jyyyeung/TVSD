@@ -1,4 +1,5 @@
 """TVSD CLI entry point, main app module."""
+
 import logging
 import os
 import shutil
@@ -94,7 +95,7 @@ def search(
         "-s",
         help="Download Specials Only",
     ),
-):
+) -> None:
     """Search for media and download
 
     Args:
@@ -106,7 +107,7 @@ def search(
 
 
 @app.command()
-def clean_temp():
+def clean_temp() -> None:
     """
     Cleans the temp directory.
 
@@ -143,7 +144,7 @@ def clean_temp():
 
 
 @app.command()
-def list_shows():
+def list_shows() -> None:
     """
     List all shows in the database.
 
@@ -153,7 +154,7 @@ def list_shows():
 
 
 @app.command()
-def remove_show():
+def remove_show() -> None:
     """List shows and remove selected show.
 
     This function lists all the shows and their indices, prompts the user to select a show index to remove,
@@ -185,7 +186,7 @@ def remove_show():
 
 
 @app.command()
-def print_state():
+def print_state() -> None:
     """
     Print the current state of the application.
 
@@ -222,7 +223,7 @@ def clean_base(
         False,
         "--no-confirm",
     ),
-):
+) -> None:
     """
     Remove empty directories in the base path
 
@@ -241,7 +242,7 @@ def clean_base(
 
     for root, dirs, _ in os.walk(target, topdown=False):
         for name in dirs:
-            path = os.path.join(root, name)
+            path: str = os.path.join(root, name)
             if not os.listdir(path) and (
                 not interactive
                 or typer.confirm(f"Found Empty Directory, Remove {path}?")

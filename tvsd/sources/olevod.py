@@ -10,7 +10,7 @@ from tvsd.sources.base import Source
 class OLEVOD(Source):
     """Olevod class"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()  # Call parent constructor
         self.__status__ = "active"
         # self._domains = ["https://olevod.com", "https://olevod1.com"]

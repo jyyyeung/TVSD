@@ -14,7 +14,7 @@ from tvsd.types.season import Season
 from tvsd.utils import SCRAPER
 
 
-def load_source_details(season_dir: str):
+def load_source_details(season_dir: str) -> None:
     """Loads the source details from the season directory
 
     Args:

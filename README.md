@@ -25,7 +25,7 @@ pip install tvsd
 tvsd --help # Show available commands
 ```
 
-### Update 
+### Update
 
 ```bash
 pip install tvsd -U
@@ -49,7 +49,8 @@ NOTE: Not not updated
 ```bash
 git clone https://github.com/SheepYY039/tv-series-download.git
 cd tv-series-download
-pip -r requirements.txt
+# pip -r requirements.txt
+poetry install
 python3 setup.py install
 cp .env.example .env # update .env according to your environment
 ```

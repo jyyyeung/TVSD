@@ -13,7 +13,7 @@ from tvsd.search import SearchQuery
 from tvsd.utils import check_dir_mounted, is_video
 
 
-def search_media_and_download(query: str, specials_only: bool = False):
+def search_media_and_download(query: str, specials_only: bool = False) -> None:
     """Search for media and download
 
     This function searches for media based on the given query string and downloads it.
@@ -99,7 +99,7 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
             show_split = show.split(" ")
 
             if len(show_split) > 1:  # If show name has year
-                name = " ".join(show_split[:-1])
+                name: str = " ".join(show_split[:-1])
                 year = show_split[-1]
             else:
                 name = show_split[0]

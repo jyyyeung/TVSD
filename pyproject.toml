@@ -11,29 +11,29 @@ keywords = ["download", "tv", "search", "m3u8"]
 license = "MIT"
 version = "1.3.2"
 classifiers = [
-    # 发展时期,常见的如下
-    #   3 - Alpha
-    #   4 - Beta
-    #   5 - Production/Stable
-    "Development Status :: 5 - Production/Stable",
-    # 开发的目标用户
-    # "Intended Audience :: Developers",
-    # 属于什么类型
-    # "Topic :: Software Development :: Build Tools",
-    "Topic :: Utilities",
-    # 许可证信息
-    "License :: OSI Approved :: MIT License",
-    # 目标 Python 版本
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    # Environment
-    "Environment :: Console",
+  # 发展时期,常见的如下
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 5 - Production/Stable",
+  # 开发的目标用户
+  # "Intended Audience :: Developers",
+  # 属于什么类型
+  # "Topic :: Software Development :: Build Tools",
+  "Topic :: Utilities",
+  # 许可证信息
+  "License :: OSI Approved :: MIT License",
+  # 目标 Python 版本
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  # Environment
+  "Environment :: Console",
 ]
 repository = "https://github.com/sheepyy039/TVSD.git"
 
 
 packages = [
-    { include = "tvsd*" }, # package names should match these glob patterns (["*"] by default)}
+  { include = "tvsd*" }, # package names should match these glob patterns (["*"] by default)}
 ]
 exclude = [".venv"]
 
@@ -90,10 +90,10 @@ version_scheme = "pep440"
 version = "1.3.2"
 tag_format = "v$version"
 version_files = [
-    "pyproject.toml:^version",
-    "VERSION",
-    "setup.py",
-    "pyproject.toml:version",
+  "pyproject.toml:^version",
+  "VERSION",
+  "setup.py",
+  "pyproject.toml:version",
 ]
 bump_message = "bump: version $current_version → $new_version"
 update_changelog_on_bump = true

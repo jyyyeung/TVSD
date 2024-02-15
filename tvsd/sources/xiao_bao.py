@@ -9,7 +9,7 @@ from tvsd.sources.base import Source
 class XiaoBao(Source):
     """XiaoBao class"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()  # Call parent constructor
         self.__status__ = "active"
         self._domains = ["https://xiaoheimi.net"]

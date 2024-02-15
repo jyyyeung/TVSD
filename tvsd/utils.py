@@ -1,5 +1,5 @@
 """
-TVSD Utilities, contains useful functions 
+TVSD Utilities, contains useful functions
 """
 
 import logging
@@ -30,7 +30,7 @@ SCRAPER = cloudscraper.create_scraper(
 )
 
 
-def mkdir_if_no(check_dir: str, recursive: bool = True):
+def mkdir_if_no(check_dir: str, recursive: bool = True) -> None:
     """Creates a directory if it does not exist
 
     Args:
@@ -49,7 +49,7 @@ def mkdir_if_no(check_dir: str, recursive: bool = True):
                 )
 
 
-def mkdir_from_base(check_dir: str):
+def mkdir_from_base(check_dir: str) -> None:
     """
     Creates a directory from the base path.
 
@@ -106,10 +106,10 @@ def get_next_specials_index(show_dir: str) -> int:
         int: Next specials index.
     """
     existing_episode_indexes: List[int] = []
-    specials_dir = os.path.join(show_dir, state_specials_dir())
+    specials_dir: str = os.path.join(show_dir, state_specials_dir())
     if os.path.exists(specials_dir):
         for existing_special in os.listdir(specials_dir):
-            match = re.search(r"S00E(\d{2})", existing_special)
+            match: re.Match[str] | None = re.search(r"S00E(\d{2})", existing_special)
             if match:
                 existing_episode_indexes.append(int(match.group(1)))
         existing_episode_indexes.sort()
@@ -156,9 +156,9 @@ def _detect_video_mimetype(video_path: str) -> str:
         str: The mimetype of the video file.
     """
     mimetypes.init()
-    mimestart = mimetypes.guess_type(video_path)[0]
+    mimestart: str | None = mimetypes.guess_type(video_path)[0]
 
-    if mimestart != None:
+    if mimestart is not None:
         mimestart = mimestart.split("/")[0]
         return mimestart
     return ""
