@@ -57,8 +57,18 @@ cp .env.example .env # update .env according to your environment
 
 This project uses [Commitizen](https://github.com/commitizen-tools/commitizen) to help release and versioning management.
 
+Fetch GitHub Version Tags: `make fetch-tags`
 Commit: `cz commit`
-Update Release Version: `cz bump`
+Update Release Version: `make bump`
+Push GitHub Version Tag: `make push-tag`
+
+### Publish
+
+```bash
+poetry config pypi-token.pypi <my-pypi-token>
+poetry build
+poetry publish
+```
 
 ## Features
 
