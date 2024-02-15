@@ -10,4 +10,4 @@ repos:
         stages:
           - push
     repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.5.2
+    rev: v3.14.1

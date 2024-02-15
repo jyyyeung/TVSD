@@ -44,16 +44,27 @@ More features coming soon, feel free to raise feature request or issues.
 
 Contributions are welcomed, contribution methods and accurate details will be included very soon.
 
-NOTE: Not not updated
-
 ```bash
-git clone https://github.com/SheepYY039/tv-series-download.git
-cd tv-series-download
-# pip -r requirements.txt
+git clone https://github.com/SheepYY039/tvsd.git
+cd tvsd
+make setup-dev-env # install pre-commit hooks
 poetry install
-python3 setup.py install
+# python3 setup.py install
 cp .env.example .env # update .env according to your environment
 ```
+
+### Versioning
+
+This project uses [Commitizen](https://github.com/commitizen-tools/commitizen) to help release and versioning management.
+
+Commit: `cz commit`
+Update Release Version: `cz bump`
+
+## Features
+
+- [x] Search & Download Shows
+- [ ] Track new episodes
+- [ ] Web UI
 
 ## Inspired By and Credits to
 
