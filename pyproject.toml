@@ -82,6 +82,7 @@ mkdocstrings-python = "^1.7.3"
 mkdocs-typer = "^0.0.3"
 pytkdocs = { version = "^0.16.1", extras = ["google-style"] }
 mkdocs-homepage-copier = "^1.0.0"
+mkdocs-literate-nav = "^0.6.1"
 
 
 [tool.isort]

@@ -39,9 +39,6 @@ class SearchQuery:
         If the show information is not found locally or if no show has been chosen, the method will attempt to find the
         show online. If no show is found, a ValueError will be raised.
 
-        Args:
-            base_path (str): Base path to local media directory
-
         Returns:
             The chosen show object with its details fetched.
         """
@@ -60,12 +57,7 @@ class SearchQuery:
         return self._chosen_show
 
     def check_local_shows(self) -> None:
-        """Checks if a TV show exists locally in the specified directory.
-
-        Args:
-            base_path (str): The base path to the local media directory.
-
-        """
+        """Checks if a TV show exists locally in the specified directory."""
         # dir loop check dir
         for directory in os.listdir(
             os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)

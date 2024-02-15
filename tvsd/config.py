@@ -50,6 +50,11 @@ def register_validators() -> None:
     )
 
 
+def validate_config() -> None:
+    # raises on first error found
+    settings.validators.validate()
+
+
 class ConfigError(Exception):
     pass
 

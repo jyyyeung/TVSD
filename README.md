@@ -57,10 +57,10 @@ cp .env.example .env # update .env according to your environment
 
 This project uses [Commitizen](https://github.com/commitizen-tools/commitizen) to help release and versioning management.
 
-Fetch GitHub Version Tags: `make fetch-tags`
-Commit: `cz commit`
-Update Release Version: `make bump`
-Push GitHub Version Tag: `make push-tag`
+- Fetch GitHub Version Tags: `make fetch-tags`
+- Commit: `cz commit`
+- Update Release Version: `make bump`
+- Push GitHub Version Tag: `make push-tag`
 
 ### Publish
 

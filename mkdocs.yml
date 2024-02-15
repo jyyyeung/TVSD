@@ -7,7 +7,8 @@ site_author: JYYYEUNG
 repo_name: SheepYY039/TVSD
 repo_url: https://github.com/SheepYY039/tvsd
 # edit_uri: edit/master/[YOU-DOCUMENTATION-FOLDER]
-docs_dir: "docs"
+docs_dir: docs
+watch: [mkdocs.yml, README.md, CHANGELOG.md, tvsd]
 
 plugins:
   - autorefs
@@ -15,31 +16,104 @@ plugins:
       default_handler: python
       handlers:
         python:
+          import:
+            - https://docs.python.org/3/objects.inv
+          paths: [tvsd]
           selection:
-            docstring_style: "google"
-          # options:
-          #   docstring_options:
-          #     ignore_init_summary: yes
-          #   merge_init_into_class: yes
-          #   show_submodules: no
-          # show_source: no
+            docstring_style: google
+          options:
+            #   docstring_options:
+            #     ignore_init_summary: yes
+            merge_init_into_class: true
+            returns_named_value: false
+            #   show_submodules: no
+            show_source: false
+
+            docstring_options:
+              ignore_init_summary: true
+            docstring_section_style: list
+
+            heading_level: 1
+            inherited_members: true
+
+            separate_signature: true
+            show_root_heading: true
+            show_root_full_path: false
+
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
 
   - search
   - mkdocs-homepage-copier
 
-watch:
-  - tvsd
+# dev_addr: localhost:8006 # such as 127.0.0.1:8006
+
+nav:
+  - Home:
+      - Overview: index.md
+      - Changelog: changelog.md
+      # - Credits: credits.md
+      - License: license.md
+  - Usage:
+      - Installation: install.md
+      - CLI reference: CLI.md
+  - API reference:
+      - TVSD:
+          - Actions: api/actions.md
+          - Download: api/download.md
+          - Search: api/search.md
+          - Types: api/types.md
+          - Utils: api/utils.md
+  # - Development:
+  #     - Contributing: contributing.md
+  #     - Code of Conduct: code_of_conduct.md
+  #     - Coverage report: coverage.md
+  # - Author's website: https://pawamoy.github.io/
 
 theme:
-  name: "material"
-  palette:
-    accent: teal
-  # primary: black
-  # accent: teal
+  name: material
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
   # features:
   #   - content.code.annotate
   #   - toc.integrate
   #   - navigation.top
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
 
 # Extensions
 markdown_extensions:
@@ -47,40 +121,30 @@ markdown_extensions:
   - markdown.extensions.codehilite:
       guess_lang: false
 
-  - codehilite
-  # - extra
-
-  # - abbr
-  # - admonition
-  # - attr_list
-  # - def_list
-  # - footnotes
-  # - meta
+  - attr_list
+  - admonition
+  # - callouts:
+  #     strip_period: no
+  - footnotes
+  - pymdownx.emoji
+    # emoji_index: !!python/name:material.extensions.emoji.twemoji
+    # emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.snippets
+    # base_path: [!relative $config_dir]
+    # check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - toc:
-      permalink: true
-  # - pymdownx.arithmatex:
-  #     generic: true
-  # - pymdownx.betterem:
-  #     smart_enable: all
-  # - pymdownx.caret
-  # - pymdownx.critic
-  # - pymdownx.details
-  # - pymdownx.emoji:
-  #     emoji_index: !!python/name:materialx.emoji.twemoji
-  #     emoji_generator: !!python/name:materialx.emoji.to_svg
-  - pymdownx.highlight
-  - pymdownx.inlinehilite
-  # - pymdownx.keys
-  # - pymdownx.mark
-  # - pymdownx.smartsymbols
-  # - pymdownx.snippets:
-  #     check_paths: true
-  # - pymdownx.superfences:
-  #     custom_fences:
-  #       - name: mermaid
-  #         class: mermaid
-  #         format: !!python/name:pymdownx.superfences.fence_code_format
-  # - pymdownx.tabbed
-  # - pymdownx.tasklist:
-  #     custom_checkbox: true
-  # - pymdownx.tilde
+      permalink: "¤"

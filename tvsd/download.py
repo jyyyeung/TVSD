@@ -37,8 +37,6 @@ class Download:
 
         Args:
             target (Show|Season|Episode): The target show, season or episode to download.
-            base_path (str, optional): The base path for the downloaded files. Defaults to settings.MEDIA_ROOT.
-            temp_path (str, optional): The temporary base path for the downloaded files. Defaults to settings.TEMP_ROOT.
             specials_only (bool, optional): Whether to download only special episodes. Defaults to False.
         """
         self._target: Show | Season | Episode = target

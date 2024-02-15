@@ -5,16 +5,14 @@ import os
 import shutil
 from typing import Optional
 
-import dynaconf
 import typer
 
 # from docstring_parser import parse
 from rich import print as rprint
-from zipp import Path
 
 from tvsd import __app_name__, __version__, app
 from tvsd.actions import list_shows_as_table, search_media_and_download
-from tvsd.config import register_validators, settings
+from tvsd.config import register_validators, settings, validate_config
 
 # from tvsd.config import apply_config, validate_config_file
 from tvsd.utils import video_in_dir
@@ -51,19 +49,19 @@ def callback(
     ),
     verbose: Optional[bool] = False,
     series_dir: Optional[str] = typer.Option(
-        settings.SERIES_DIR,
+        None,
         "--series-dir",
         "-sd",
         help="Specify the series directory, overrides config file",
     ),
     media_root: Optional[str] = typer.Option(
-        settings.MEDIA_ROOT,
+        None,
         "--media-root",
         "-mr",
         help="Specify the media root, overrides config file",
     ),
     env: Optional[str] = typer.Option(
-        settings.current_env, "--env", "-e", help="Specify the environment"
+        None, "--env", "-e", help="Specify the environment"
     ),
 ) -> None:
     """
@@ -84,8 +82,9 @@ def callback(
 
     register_validators()
 
-    # change the environment to update proper settings
-    settings.setenv(env)
+    if env:
+        # change the environment to update proper settings
+        settings.setenv(env)
 
     # update the dynaconf settings
     if verbose:
@@ -95,11 +94,11 @@ def callback(
     else:
         logging.basicConfig(level=logging.INFO)
 
-    if series_dir != settings.SERIES_DIR:
+    if series_dir:
         settings.set("series_dir", series_dir)
         logging.info("Series directory set to %s", series_dir)
 
-    if media_root != settings.MEDIA_ROOT:
+    if media_root:
         settings.set("media_root", media_root)
         logging.info("Media Root set to %s", media_root)
 
@@ -141,8 +140,7 @@ def clean_temp() -> None:
         FileNotFoundError: If temp directory does not exist
     """
 
-    # raises on first error found
-    settings.validators.validate()
+    validate_config()
 
     try:
         dir_content = os.listdir(settings.TEMP_ROOT)
@@ -222,7 +220,8 @@ def print_state() -> None:
     Raises:
         ConfigFileError: If the configuration file is invalid or missing.
     """
-    # validate_config_file()
+    # validate_config()
+
     data: dict = settings.as_dict(env=settings.current_env)
     data.pop("POST_HOOKS", None)
     data.pop("PRETTY_EXCEPTIONS_SHOW_LOCALS", None)
@@ -230,8 +229,10 @@ def print_state() -> None:
     typer.echo(data)
 
 
+@typer_easy_cli
 @app.command()
 def clean_base(
+    *,
     interactive: bool = typer.Option(
         False,
         "--interactive",
@@ -262,7 +263,8 @@ def clean_base(
         target (str, optional): Target directory. Defaults to os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR).
         _no_confirm (bool, optional): Don't show prompt to confirm actions. Defaults to False.
     """
-    # validate_config_file()
+    validate_config()
+
     if greedy and not _no_confirm:
         typer.confirm(
             "Greedy mode will remove directories without videos, even if they contain other content",

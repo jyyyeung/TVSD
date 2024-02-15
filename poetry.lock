@@ -750,6 +750,20 @@ files = [
 mkdocs = "*"
 
 [[package]]
+name = "mkdocs-literate-nav"
+version = "0.6.1"
+description = "MkDocs plugin to specify the navigation in Markdown instead of YAML"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mkdocs_literate_nav-0.6.1-py3-none-any.whl", hash = "sha256:e70bdc4a07050d32da79c0b697bd88e9a104cf3294282e9cb20eec94c6b0f401"},
+    {file = "mkdocs_literate_nav-0.6.1.tar.gz", hash = "sha256:78a7ab6d878371728acb0cdc6235c9b0ffc6e83c997b037f4a5c6ff7cef7d759"},
+]
+
+[package.dependencies]
+mkdocs = ">=1.0.3"
+
+[[package]]
 name = "mkdocs-material"
 version = "9.5.9"
 description = "Documentation that simply works"
@@ -1528,4 +1542,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "95e9b83cb4b1d8122d4feee9092d8cffd8c0ca16e9c0d3f86cf3cb8bed03d57c"
+content-hash = "7e72430a7e0292ecbc9fc0622cc1f4e5a50f3baf254302830ad1e6d1572ce7ff"
