@@ -1,3 +1,9 @@
+## 0.3.8 (2024-02-15)
+
+### Fix
+
+- fix config file backwards compatibility
+
 ## v1.3.3 (2024-02-15)
 
 ### Perf
@@ -59,7 +65,7 @@
 
 ### Fix
 
-- _variables were created as const, didn't update according to config state
+- \_variables were created as const, didn't update according to config state
 
 ## v1.2.0 (2023-07-31)
 
@@ -123,7 +129,7 @@
 
 ### Refactor
 
-- added all sources import in __init__.py and generalized ssstv urls into source_url and relative path
+- added all sources import in **init**.py and generalized ssstv urls into source_url and relative path
 
 ## v1.0.0 (2023-07-11)
 
