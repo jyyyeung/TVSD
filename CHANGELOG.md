@@ -1,3 +1,9 @@
+## v1.3.3 (2024-02-15)
+
+### Perf
+
+- change config to use dynaconf
+
 ## v1.3.2 (2023-11-09)
 
 ### Fix
