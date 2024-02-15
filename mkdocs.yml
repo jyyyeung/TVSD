@@ -6,7 +6,7 @@ site_author: JYYYEUNG
 # Repository
 repo_name: SheepYY039/TVSD
 repo_url: https://github.com/SheepYY039/tvsd
-# edit_uri: edit/master/[YOU-DOCUMENTATION-FOLDER]
+edit_uri: edit/main/docs/
 docs_dir: docs
 watch: [mkdocs.yml, README.md, CHANGELOG.md, tvsd]
 
