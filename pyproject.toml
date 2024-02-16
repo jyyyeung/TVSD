@@ -57,6 +57,7 @@ chinese-converter = "^1.1.1"
 pytest = "^7.4.2"
 docstring-parser = "^0.15"
 dynaconf = "^3.2.4"
+django = "^5.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
