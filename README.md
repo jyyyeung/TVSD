@@ -70,6 +70,16 @@ poetry build
 poetry publish
 ```
 
+### Bulma Configuration
+
+Quoting from the `django-simple-bulma` documentation
+
+> Run `python manage.py collectstatic` command in order to build Bulma and move it to your `staticfiles` folder. Please note that you will need to use this command every time you make a change to the configuration, as this is the only way to rebuild the Bulma css file.
+
+```bash
+poetry run python manage.py collectstatic
+```
+
 ## Features
 
 - [x] Search & Download Shows

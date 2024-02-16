@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% load unicorn %}
+<html lang="en">
+    <head>
+        <!-- Standard Meta -->
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <!-- Site Properties -->
+        <title>TVSD</title>
+        <!-- Load static files -->
+        {% load static %}
+        <!-- Include the Bulma CSS framework for styling -->
+        {% load django_simple_bulma %}
+        {% bulma %}
+        <!-- Include the Font Awesome CSS framework for icons -->
+        {% font_awesome %}
+        <!-- Include the Alpine.js JavaScript framework for interactivity -->
+        <script defer src="https://unpkg.com/@alpinejs/morph@3.x.x/dist/cdn.min.js"></script>
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <!-- Include the Unicorn Full Stack Framework for django -->
+        {% unicorn_scripts %}
+    </head>
+    <body>
+        <!-- The CSRF token is required by Unicorn to prevent cross-site scripting attacks -->
+        {% csrf_token %}
+        <!-- Navbar component -->
+        {% unicorn 'navbar' %}
+        <section class="section">
+            <div class="container">
+                <!-- Main Content -->
+                {% block content %}{% endblock %}
+            </div>
+        </section>
+    </body>
+</html>

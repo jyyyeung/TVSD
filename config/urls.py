@@ -16,8 +16,14 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
 
-urlpatterns = [
+# from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import URLResolver, include, path
+
+urlpatterns: list[URLResolver] = [
     path("admin/", admin.site.urls),
+    path("", include("pages.urls")),
+    path("unicorn/", include("django_unicorn.urls")),
 ]
+
+# urlpatterns += staticfiles_urlpatterns()

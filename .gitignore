@@ -335,3 +335,6 @@ pyrightconfig.json
 
 temp/
 .pypirc
+
+# Where static files end up after running `collect static`:
+staticfiles
