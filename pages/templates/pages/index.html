@@ -1,6 +1,7 @@
 {% extends 'pages/base.html' %}
 {% load unicorn %}
 {% load static %}
+{% load crispy_forms_tags %}
 {% block title %}Home{% endblock %}
 <!-- This is the content block -->
 {% block content %}
@@ -8,4 +9,9 @@
     <p class="subtitle">
         My first website with <strong>Bulma</strong>!
     </p>
+    <section>
+        <form method="post" id="{{ form.helper.form_id }}">
+            {% crispy form %}
+        </form>
+    </section>
 {% endblock %}

@@ -8,8 +8,6 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from tvsd import utils
-
 from .config import settings
 from .download import Download
 from .search import SearchQuery
