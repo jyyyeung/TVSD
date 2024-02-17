@@ -1,5 +1,7 @@
-<!DOCTYPE html>
+{% load django_simple_bulma %}
 {% load unicorn %}
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <!-- Standard Meta -->
@@ -9,10 +11,7 @@
               content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
         <!-- Site Properties -->
         <title>TVSD</title>
-        <!-- Load static files -->
-        {% load static %}
         <!-- Include the Bulma CSS framework for styling -->
-        {% load django_simple_bulma %}
         {% bulma %}
         <!-- Include the Font Awesome CSS framework for icons -->
         {% font_awesome %}
@@ -21,6 +20,7 @@
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <!-- Include the Unicorn Full Stack Framework for django -->
         {% unicorn_scripts %}
+        {% block cssjs %}{% endblock %}
     </head>
     <body>
         <!-- The CSRF token is required by Unicorn to prevent cross-site scripting attacks -->

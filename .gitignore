@@ -338,3 +338,4 @@ temp/
 
 # Where static files end up after running `collect static`:
 staticfiles
+_vendor

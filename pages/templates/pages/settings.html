@@ -1,7 +1,16 @@
 {% extends 'pages/base.html' %}
+{% load unicorn %}
+{% load static %}
 {% block title %}Settings{% endblock %}
+{% block cssjs %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'bulma-checkradio.min.css' %}">
+{% endblock %}
 <!-- This is the content block -->
 {% block content %}
     <h1 class="title">Settings</h1>
-    <p class="subtitle">Settings</p>
+    {% comment %} <p class="subtitle">Settings</p> {% endcomment %}
+    <section>
+        {% unicorn 'config-form' %}
+    </section>
 {% endblock %}

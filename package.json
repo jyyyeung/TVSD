@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@creativebulma/bulma-divider": "^1.1.0",
+    "bulma-checkradio": "^2.1.3",
+    "gulp": "^4.0.2"
+  },
+  "scripts": {
+    "install": "gulp"
+  }
+}

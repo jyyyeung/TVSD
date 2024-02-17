@@ -1,0 +1,106 @@
+<form class="form-horizontal" action="">
+    <fieldset>
+        <div>
+            <!-- Text input-->
+            <div class="field is-horizontal ">
+                <div class="field-label is-normal">
+                    <label class="label" for="media-root-input">Media Root Path</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input id="media-root-input"
+                                   name="media-root-input"
+                                   type="text"
+                                   placeholder="/media"
+                                   class="input "
+                                   required="">
+                            <p class="help">Path to media storage after download is completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label">Create Media Root?</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <input class="is-checkradio"
+                               id="createMediaRootTrue"
+                               type="radio"
+                               name="createMediaRoot"
+                               checked="checked">
+                        <label for="createMediaRootTrue">Yes</label>
+                        <input class="is-checkradio"
+                               id="createMediaRootFalse"
+                               type="radio"
+                               name="createMediaRoot"
+                               checked="checked">
+                        <label for="createMediaRootFalse">No</label>
+                        <p class="help">
+                            Create <strong>media root</strong> path when it is missing?
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal"></div>
+            <!-- Text input-->
+            <div class="field is-horizontal ">
+                <div class="field-label is-normal">
+                    <label class="label" for="temp-root-input">Temp Root Path</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input id="temp-root-input"
+                                   name="temp-root-input"
+                                   type="text"
+                                   placeholder="/temp"
+                                   class="input "
+                                   required="">
+                            <p class="help">Path to directory for storing temp files during download</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label">Create Temp Root?</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <input class="is-checkradio"
+                               id="createTempRootTrue"
+                               type="radio"
+                               name="createTempRoot"
+                               checked="checked">
+                        <label for="createTempRootTrue">Yes</label>
+                        <input class="is-checkradio"
+                               id="createTempRootFalse"
+                               type="radio"
+                               name="createTempRoot"
+                               checked="checked">
+                        <label for="createTempRootFalse">No</label>
+                        <p class="help">
+                            Create <strong>temp root</strong> path when it is missing?
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal"></div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <!-- Left empty for spacing -->
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-primary">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</form>

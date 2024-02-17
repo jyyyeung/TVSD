@@ -25,10 +25,11 @@ INSTALLED_APPS: list[str] = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "django_simple_bulma",
     "pages",
     "django_unicorn",
-    "django_simple_bulma",
 ]
 
 MIDDLEWARE: list[str] = [
@@ -111,8 +112,17 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    BASE_DIR / "_vendor",  # Files generated from gulp
+]
 
+
+# STORAGES = {
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
@@ -123,6 +133,7 @@ STATICFILES_FINDERS: list[str] = [
     # Now add our custom SimpleBulma one.
     "django_simple_bulma.finders.SimpleBulmaFinder",
 ]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -177,11 +188,6 @@ UNICORN: dict[str, Any] = {
 
 # Custom settings for django-simple-bulma
 BULMA_SETTINGS: dict[str, Any] = {
-    "extensions": [
-        "all"
-        # "bulma-collapsible",
-        # "bulma-calendar",
-    ],
     # "variables": {
     #     "primary": "#000000",
     #     "size-1": "6rem",
@@ -191,6 +197,6 @@ BULMA_SETTINGS: dict[str, Any] = {
     #     "scheme-main": "#000",
     # },
     "output_style": "compressed",  # production
-    # "output_style": "nested",
+    # "output_style": "expanded",
     "fontawesome_token": "e761a01be3",
 }
