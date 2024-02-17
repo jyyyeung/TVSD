@@ -5,6 +5,7 @@ default:
   create_temp_root: true
   series_dir: TV Series
   specials_dir: Specials
+  sources: [xiao_bao, olevod]
   verbose: false
   debug: false
 dev:

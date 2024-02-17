@@ -28,6 +28,8 @@ INSTALLED_APPS: list[str] = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_simple_bulma",
+    "crispy_forms",
+    "crispy_bulma",
     "pages",
     "django_unicorn",
 ]
@@ -94,6 +96,17 @@ AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [
 ]
 
 
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+
+# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = settings.DEBUG
+DEBUG = True
+
+ALLOWED_HOSTS: list[Any] = ["localhost"]
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -140,34 +153,28 @@ STATICFILES_FINDERS: list[str] = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# --------------------------------- Dynaconf --------------------------------- #
 
-# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
-# Read more at https://www.dynaconf.com/django/
-import dynaconf  # noqa
+# ----------------------------------- Bulma ---------------------------------- #
 
-settings: dynaconf.LazySettings = dynaconf.DjangoDynaconf(
-    __name__,
-    ENVVAR_PREFIX_FOR_DYNACONF="TVSD",
-    # ENV_SWITCHER_FOR_DYNACONF="PROJECTNAME_ENV",
-    # SETTINGS_FILE_FOR_DYNACONF="/etc/projectname/settings.toml",
-    # ENVVAR_FOR_DYNACONF="PROJECTNAME_SETTINGS",
-    # INCLUDES_FOR_DYNACONF=["/etc/projectname/plugins/*"],
-)  # noqa
-# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
+# Custom settings for django-simple-bulma
+BULMA_SETTINGS: dict[str, Any] = {
+    "extensions": ["bulma-navbar-burger"],
+    # "variables": {
+    #     "primary": "#000000",
+    #     "size-1": "6rem",
+    # },
+    # "alt_variables": {
+    #     "primary": "#fff",
+    #     "scheme-main": "#000",
+    # },
+    "output_style": "compressed",  # production
+    # "output_style": "expanded",
+    "fontawesome_token": "e761a01be3",
+}
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bulma"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = settings.SECRET_KEY
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = settings.DEBUG
-DEBUG = True
-
-ALLOWED_HOSTS: list[Any] = ["localhost"]
+CRISPY_TEMPLATE_PACK = "bulma"
 
 
 # ---------------------------------- Unicorn --------------------------------- #
@@ -184,19 +191,21 @@ UNICORN: dict[str, Any] = {
 }
 
 
-# ----------------------------------- Bulma ---------------------------------- #
+# --------------------------------- Dynaconf --------------------------------- #
 
-# Custom settings for django-simple-bulma
-BULMA_SETTINGS: dict[str, Any] = {
-    # "variables": {
-    #     "primary": "#000000",
-    #     "size-1": "6rem",
-    # },
-    # "alt_variables": {
-    #     "primary": "#fff",
-    #     "scheme-main": "#000",
-    # },
-    "output_style": "compressed",  # production
-    # "output_style": "expanded",
-    "fontawesome_token": "e761a01be3",
-}
+# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
+# Read more at https://www.dynaconf.com/django/
+import dynaconf  # noqa
+
+settings: dynaconf.LazySettings = dynaconf.DjangoDynaconf(
+    __name__,
+    ENVVAR_PREFIX_FOR_DYNACONF="TVSD",
+    # ENV_SWITCHER_FOR_DYNACONF="PROJECTNAME_ENV",
+    # SETTINGS_FILE_FOR_DYNACONF="/etc/projectname/settings.toml",
+    # ENVVAR_FOR_DYNACONF="PROJECTNAME_SETTINGS",
+    # INCLUDES_FOR_DYNACONF=["/etc/projectname/plugins/*"],
+)  # noqa
+# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = settings.SECRET_KEY
