@@ -1,6 +1,9 @@
 <form class="form-horizontal" action="">
     <fieldset>
         <div>
+            <div>
+                <div class="divider">Media Root</div>
+            </div>
             <!-- Text input-->
             <div class="field is-horizontal ">
                 <div class="field-label is-normal">
@@ -44,6 +47,10 @@
                     </div>
                 </div>
             </div>
+            {% comment %} <div class="is-divider" data-content="OR"></div> {% endcomment %}
+            <div>
+                <div class="divider">Temp Root</div>
+            </div>
             <div class="field is-horizontal"></div>
             <!-- Text input-->
             <div class="field is-horizontal ">
@@ -85,6 +92,24 @@
                         <p class="help">
                             Create <strong>temp root</strong> path when it is missing?
                         </p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="divider">Sources</div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label">
+                    <label class="label">Enable Sources</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <input class="is-checkradio"
+                               id="exampleCheckboxDefault"
+                               type="checkbox"
+                               name="exampleCheckboxDefault"
+                               checked="checked">
+                        <label for="exampleCheckboxDefault">Checkbox</label>
                     </div>
                 </div>
             </div>
