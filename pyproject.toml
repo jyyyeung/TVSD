@@ -68,7 +68,7 @@ crispy-bulma = {git = "https://github.com/SheepYY039/crispy-bulma"}
 
 [tool.poetry.group.dev.dependencies]
 commitizen = "^3.10.0"
-black = "^23.9.1"
+black = ">=23.9.1,<25.0.0"
 pylint = "^3.0.1"
 isort = "^5.12.0"
 
