@@ -9,7 +9,7 @@ import typer
 from dynaconf import Dynaconf, LazySettings, Validator
 
 CONFIG_DIR_PATH = Path(typer.get_app_dir(__name__))
-CONFIG_FILE_PATH: Path = CONFIG_DIR_PATH / "config.ini"
+CONFIG_FILE_PATH: Path = CONFIG_DIR_PATH / "settings.yaml"
 
 
 def hook_function(_settings: Dynaconf) -> None:
@@ -45,7 +45,7 @@ def register_validators() -> None:
         Validator("TEMP_ROOT", cast=Path, must_exist=True),
         Validator("CREATE_MEDIA_ROOT", cast=bool, must_exist=True, default=False),
         Validator("CREATE_TEMP_ROOT", cast=bool, must_exist=True, default=False),
-        # Validator("DRY_RUN", cast=bool, must_exist=False, default=False),
+        Validator("DRY_RUN", cast=bool, apply_default_on_none=True, default=False),
         Validator("SERIES_DIR", cast=str, must_exist=True, default="Series"),
         Validator("SPECIALS_DIR", cast=str, must_exist=True, default="Specials"),
     )
@@ -58,6 +58,7 @@ def validate_config() -> None:
 
 class ConfigError(Exception):
     pass
+
 
 
 def update_settings_path(

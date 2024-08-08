@@ -1,5 +1,5 @@
 default:
-  media_root: /Volumes/Viewable
+  media_root: /mnt/viewable
   create_media_root: false
   temp_root: "@format {env[HOME]}/Movies/temp-parts"
   create_temp_root: true

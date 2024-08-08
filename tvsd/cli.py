@@ -12,7 +12,7 @@ from rich import print as rprint
 
 from tvsd import __app_name__, __version__, app
 from tvsd.actions import list_shows_as_table, search_media_and_download
-from tvsd.config import register_validators, settings, validate_config
+from tvsd.config import register_validators, settings, update_settings_path, validate_config
 
 # from tvsd.config import apply_config, validate_config_file
 from tvsd.utils import video_in_dir
@@ -83,7 +83,6 @@ def callback(
     Returns:
         None
     """
-
     register_validators()
 
     if env:
@@ -109,6 +108,8 @@ def callback(
     if dry_run:
         settings.set("dry_run", dry_run)
         logging.info("Dry run set to %s.", dry_run)
+
+    validate_config()
 
 
 @app.command()
@@ -257,7 +258,7 @@ def clean_base(
         help="Remove directories without videos",
     ),
     target: str = typer.Option(
-        os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR),
+        "",
         help="Target directory",
     ),
     _no_confirm: bool = typer.Option(
@@ -281,6 +282,9 @@ def clean_base(
             "Greedy mode will remove directories without videos, even if they contain other content",
             abort=True,
         )
+
+    if target == "":
+        target=os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)
 
     for root, dirs, _ in os.walk(target, topdown=False):
         for name in dirs:
