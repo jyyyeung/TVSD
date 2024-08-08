@@ -1,3 +1,19 @@
+## v1.4.0 (2024-08-08)
+
+### Feat
+
+- **CLI**: :children_crossing: Added `--dry-run` flag
+- **searchbar**: add searchbar to webui
+- **django**: settings form
+- **settings**: add sources checkbox
+- **django**: setup basic web structure
+- **django**: init django
+
+### Fix
+
+- **Source**: :bug: fix xiaobao source download link not found bug
+- **bulma**: fix bulma css extensions
+
 ## v1.3.4 (2024-02-16)
 
 ### Fix
