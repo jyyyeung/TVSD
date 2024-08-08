@@ -1,3 +1,19 @@
+## v1.4.0 (2024-08-08)
+
+### Feat
+
+- **CLI**: :children_crossing: Added `--dry-run` flag
+- **searchbar**: add searchbar to webui
+- **django**: settings form
+- **settings**: add sources checkbox
+- **django**: setup basic web structure
+- **django**: init django
+
+### Fix
+
+- **Source**: :bug: fix xiaobao source download link not found bug
+- **bulma**: fix bulma css extensions
+
 ## v1.3.4 (2024-02-16)
 
 ### Fix
@@ -65,7 +81,7 @@
 
 ### Fix
 
-- \_variables were created as const, didn't update according to config state
+- _variables were created as const, didn't update according to config state
 
 ## v1.2.0 (2023-07-31)
 
@@ -129,7 +145,7 @@
 
 ### Refactor
 
-- added all sources import in **init**.py and generalized ssstv urls into source_url and relative path
+- added all sources import in __init__.py and generalized ssstv urls into source_url and relative path
 
 ## v1.0.0 (2023-07-11)
 
