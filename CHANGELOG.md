@@ -1,3 +1,9 @@
+## v1.4.1 (2024-08-08)
+
+### Fix
+
+- :bug: new release bug fixes
+
 ## v1.4.0 (2024-08-08)
 
 ### Feat
