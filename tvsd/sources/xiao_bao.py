@@ -1,3 +1,5 @@
+import json
+import logging
 import re
 from typing import Any
 
@@ -77,11 +79,15 @@ class XiaoBao(Source):
         )
 
     def _set_episode_m3u8(self, episode_script: str) -> str:
+        logging.debug(episode_script)
+
         episode_m3u8_format = (
-            r"https:\\\/\\\/m3u.haiwaikan.com\\\/xm3u8\\\/[\w\d]+.m3u8"
+            r"https:\\\/\\\/[\w\d\.\\\/]+\.m3u8"
         )
 
         episode_m3u8 = re.findall(episode_m3u8_format, episode_script)[0].replace(
             "\\", ""
         )
+
+        logging.debug(episode_m3u8)
         return episode_m3u8

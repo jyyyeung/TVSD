@@ -23,14 +23,14 @@ class TestNamedspacedAttribute(object):
 
         a = NamespacedAttribute("xmlns")
         assert a == "xmlns"
-        
+
     def test_namespace_may_be_none_or_missing(self):
         a = NamespacedAttribute(None, "tag")
         assert a == "tag"
-        
+
         a = NamespacedAttribute("", "tag")
         assert a == "tag"
-        
+
     def test_attribute_is_equivalent_to_colon_separated_string(self):
         a = NamespacedAttribute("a", "b")
         assert "a:b" == a
@@ -56,7 +56,7 @@ class TestAttributeValueWithCharsetSubstitution(object):
     """Certain attributes are designed to have the charset of the
     final document substituted into their value.
     """
-    
+
     def test_content_meta_attribute_value(self):
         # The value of a CharsetMetaAttributeValue is whatever
         # encoding the string is in.

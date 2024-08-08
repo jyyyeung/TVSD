@@ -117,12 +117,18 @@ class Download:
             self._regular_ep_index = 1
 
             for episode in target.episodes:
-                self.download_episode(episode)
+                try:
+                    self.download_episode(episode)
+                except ValueError as e:
+                    logging.info("Skipping [%s]: %s", episode.name, e)
 
         elif isinstance(target, Episode):
             # download episode
+            try:
 
-            self.download_episode(target)
+                self.download_episode(target)
+            except ValueError as e:
+                logging.info("Skipping [%s]: %s", target.name, e)
 
         else:
             raise TypeError("Target must be Show, Season or Episode")
@@ -211,19 +217,22 @@ class Download:
 
         temp_dir: str = os.path.join(settings.TEMP_ROOT, episode.filename)
         if not os.path.isdir(temp_dir):
+
             mkdir_if_no(temp_dir)
             print(f"Downloading {episode.filename} to {absolute_dest_dir}...")
             try:
-                m3u8_To_MP4.multithread_uri_download(
-                    m3u8_uri=episode_m3u8,
-                    mp4_file_name=episode.filename,
-                    mp4_file_dir=absolute_dest_dir,
-                    tmpdir=temp_dir,
-                )
+                if not settings.DRY_RUN:
+                    m3u8_To_MP4.multithread_uri_download(
+                        m3u8_uri=episode_m3u8,
+                        mp4_file_name=episode.filename,
+                        mp4_file_dir=absolute_dest_dir,
+                        tmpdir=temp_dir,
+                    )
                 print("Completed downloading, removing temp dir...")
             except Exception as error:
                 print("Error downloading episode: " + str(error))
                 print("Removing temp dir...")
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            if not settings.DRY_RUN:
+                shutil.rmtree(temp_dir, ignore_errors=True)
         else:
             print("Temp Dir for this episode exists, should be already downloading")
