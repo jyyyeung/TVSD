@@ -12,16 +12,16 @@ CONFIG_DIR_PATH = Path(typer.get_app_dir(__name__))
 CONFIG_FILE_PATH: Path = CONFIG_DIR_PATH / "config.ini"
 
 
-def hook_function(settings: Dynaconf) -> None:
+def hook_function(_settings: Dynaconf) -> None:
     DEPRECATED: dict[str, str] = {
         "BASE_PATH": "MEDIA_ROOT",
         "TEMP_PATH": "TEMP_ROOT",
         "TEMP_BASE_PATH": "TEMP_ROOT",
     }
     for key, new in DEPRECATED.items():
-        if value := settings.get(key):
+        if value := _settings.get(key):
             logging.warning(f"{key} has been replaced by {new}")
-            settings.set(new, value)
+            _settings.set(new, value)
 
 
 settings: LazySettings = Dynaconf(
@@ -45,6 +45,7 @@ def register_validators() -> None:
         Validator("TEMP_ROOT", cast=Path, must_exist=True),
         Validator("CREATE_MEDIA_ROOT", cast=bool, must_exist=True, default=False),
         Validator("CREATE_TEMP_ROOT", cast=bool, must_exist=True, default=False),
+        # Validator("DRY_RUN", cast=bool, must_exist=False, default=False),
         Validator("SERIES_DIR", cast=str, must_exist=True, default="Series"),
         Validator("SPECIALS_DIR", cast=str, must_exist=True, default="Specials"),
     )

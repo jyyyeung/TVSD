@@ -63,6 +63,10 @@ def callback(
     env: Optional[str] = typer.Option(
         None, "--env", "-e", help="Specify the environment"
     ),
+    dry_run: Optional[bool]=typer.Option(
+        False,
+        "--dry-run"
+    )
 ) -> None:
     """
     Entry point for the TVSD CLI application.
@@ -101,6 +105,10 @@ def callback(
     if media_root:
         settings.set("media_root", media_root)
         logging.info("Media Root set to %s", media_root)
+
+    if dry_run:
+        settings.set("dry_run", dry_run)
+        logging.info("Dry run set to %s.", dry_run)
 
 
 @app.command()
@@ -157,8 +165,9 @@ def clean_temp() -> None:
             default="n",
         )
         if confirm.capitalize() == "Y":
-            shutil.rmtree(settings.TEMP_ROOT, ignore_errors=True)
-            os.mkdir(settings.TEMP_ROOT)
+            if not settings.DRY_RUN:
+                shutil.rmtree(settings.TEMP_ROOT, ignore_errors=True)
+                os.mkdir(settings.TEMP_ROOT)
             logging.info("All files deleted")
 
     except FileNotFoundError:
@@ -199,11 +208,13 @@ def remove_show() -> None:
         if choice < num_rows:
             if typer.confirm(f"Will remove {shows[choice]}. Are you sure?", abort=True):
                 typer.echo("Removing show: " + shows[choice])
-                shutil.rmtree(
-                    os.path.join(
-                        settings.MEDIA_ROOT, settings.SERIES_DIR, shows[choice]
+
+                if not settings.DRY_RUN:
+                    shutil.rmtree(
+                        os.path.join(
+                            settings.MEDIA_ROOT, settings.SERIES_DIR, shows[choice]
+                        )
                     )
-                )
                 typer.echo("Show removed")
             break
 
@@ -280,7 +291,8 @@ def clean_base(
             ):
                 # empty dir
                 logging.info("Empty Directory, Removing %s", path)
-                shutil.rmtree(path)
+                if not settings.DRY_RUN:
+                    shutil.rmtree(path)
             elif (
                 greedy
                 and not video_in_dir(path)
@@ -296,4 +308,5 @@ def clean_base(
                 logging.info(
                     "Directory without video and and sub-dir, Removing %s", {path}
                 )
-                shutil.rmtree(path)
+                if not settings.DRY_RUN:
+                    shutil.rmtree(path)

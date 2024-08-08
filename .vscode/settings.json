@@ -7,5 +7,6 @@
   "docwriter.progress.trackClasses": true,
   "docwriter.progress.trackFunctions": false,
   "docwriter.style": "Google",
-  "docwriter.hotkey.mac": "⌘ + ."
+  "docwriter.hotkey.mac": "⌘ + .",
+  "conventionalCommits.scopes": ["CLI"]
 }

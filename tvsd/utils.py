@@ -34,7 +34,8 @@ def mkdir_if_no(check_dir: str, recursive: bool = True) -> None:
     Args:
         check_dir (str): Directory to check
     """
-    if not os.path.isdir(check_dir):
+
+    if not os.path.isdir(check_dir) and not settings.DRY_RUN:
         if recursive:
             os.makedirs(check_dir, exist_ok=True)
         else:

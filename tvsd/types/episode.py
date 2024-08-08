@@ -256,15 +256,20 @@ class Episode:
             )
 
         # specials exists already
-        for existing_episode in os.listdir(
-            relative_to_absolute_path(self.relative_destination_dir)
-        ):
-            # print(episode_name, existing_episode)
-            if existing_episode.endswith(".mp4") and episode_title in existing_episode:
-                print(
-                    f"{self.filename} probably exist as {existing_episode}, skipping..."
-                )
-                return existing_episode
+        try:
+            for existing_episode in os.listdir(
+                relative_to_absolute_path(self.relative_destination_dir)
+            ):
+                # print(episode_name, existing_episode)
+                if existing_episode.endswith(".mp4") and episode_title in existing_episode:
+                    print(
+                        f"{self.filename} probably exist as {existing_episode}, skipping..."
+                    )
+                    return existing_episode
+        except FileNotFoundError:
+            if settings.DRY_RUN:
+                return ""
+
         return ""
 
     @property
