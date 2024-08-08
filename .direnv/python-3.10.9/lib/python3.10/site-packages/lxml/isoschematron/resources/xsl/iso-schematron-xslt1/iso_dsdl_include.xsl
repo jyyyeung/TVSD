@@ -1,100 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?><?xar XSLT?>
 
-<!-- 
+<!--
      OVERVIEW : iso_dsdl_include.xsl
-     
+
 	    This is an inclusion preprocessor for the non-smart text inclusions
-	    of ISO DSDL. It handles 
+	    of ISO DSDL. It handles
 	    	<relax:extRef> for ISO RELAX NG
 	    	<sch:include>  for ISO Schematron and Schematron 1.n
 	    	<sch:extends>  for 2009 draft ISO Schematron
-	    	<xi:xinclude>  simple W3C XIncludes for ISO NVRL and DSRL 
+	    	<xi:xinclude>  simple W3C XIncludes for ISO NVRL and DSRL
 	    	<crdl:ref>     for draft ISO CRDL
 	    	<dtll:include> for draft ISO DTLL
 	    	<* @xlink:href> for simple W3C XLink 1.1 embedded links
-	    	
-		 
+
+
 		This should be the first in any chain of processing. It only requires
 		XSLT 1. Each kind of inclusion can be turned off (or on) on the command line.
-		
+
 		Ids in fragment identifiers or xpointers will be sought in the following
 		order:
 		    * @xml:id
 		    * id() for typed schemas (e.g. from DTD) [NOTE: XInclude does not support this]
-		    * untyped @id 
-		    
+		    * untyped @id
+
 	The proposed behaviour for the update to ISO Schematron has been implemented. If an
 	include points to an element with the same name as the parent, then that element's
-	contents will be included. This supports the merge style of inclusion.    
-	
+	contents will be included. This supports the merge style of inclusion.
+
 	When an inclusion is made, it is preceded by a PI with target DSDL_INCLUDE_START
 	and the href and closed by a PI with target DSDL_INCLUDE_START and the href. This is
-	to allow better location of problems, though only to the file level. 
-	
+	to allow better location of problems, though only to the file level.
+
 	Limitations:
 	* No rebasing: relative paths will be interpreted based on the initial document's
 	path, not the including document. (Severe limitation!)
 	* No checking for circular references
 	* Not full xpointers: only ID matching
-	* <relax:include> not implemented 
-	* XInclude handling of xml:base and xml:lang not implemented   
+	* <relax:include> not implemented
+	* XInclude handling of xml:base and xml:lang not implemented
 -->
-<!-- 
+<!--
   VERSION INFORMATION
-	2009-02-25 
+	2009-02-25
 	* Update DSDL namespace to use schematron.com
-	* Tested with SAXON9, Xalan 2.7.1, IE7, 
-	* IE does not like multiple variables in same template with same name: rename.   
+	* Tested with SAXON9, Xalan 2.7.1, IE7,
+	* IE does not like multiple variables in same template with same name: rename.
 	2008-09-18
 	* Remove new behaviour for include, because it conflicts with existing usage [KH]
 	* Add extends[@href] element with that merge functionality
 	* Generate PIs to notate source of inclusions for potential better diagnostics
-	
+
 	2008-09-16
 	* Fix for XSLT1
-	
+
 	2008-08-28
 	* New behaviour for schematron includes: if the pointed to element is the same as the current,
 	include the children.
-	
+
 	2008-08-20
 	* Fix bug: in XSLT1 cannot do $document/id('x') but need to use for-each
-	
+
 	2008-08-04
-	* Add support for inclusions in old namespace  
-	
+	* Add support for inclusions in old namespace
+
 	2008-08-03
 	* Fix wrong param name include-relaxng & include-crdl (KH, PH)
 	* Allow inclusion of XSLT and XHTML (KH)
 	* Fix inclusion of fragments (KH)
-	
+
 	2008-07-25
 	* Add selectable input parameter
-	
-	2008-07-24  
+
+	2008-07-24
 	* RJ New
 -->
 <!--
 	LEGAL INFORMATION
-	
-	Copyright (c) 2008 Rick Jelliffe 
-	
-	This software is provided 'as-is', without any express or implied warranty. 
-	In no event will the authors be held liable for any damages arising from 
+
+	Copyright (c) 2008 Rick Jelliffe
+
+	This software is provided 'as-is', without any express or implied warranty.
+	In no event will the authors be held liable for any damages arising from
 	the use of this software.
-	
-	Permission is granted to anyone to use this software for any purpose, 
+
+	Permission is granted to anyone to use this software for any purpose,
 	including commercial applications, and to alter it and redistribute it freely,
 	subject to the following restrictions:
-	
+
 	1. The origin of this software must not be misrepresented; you must not claim
-	that you wrote the original software. If you use this software in a product, 
-	an acknowledgment in the product documentation would be appreciated but is 
+	that you wrote the original software. If you use this software in a product,
+	an acknowledgment in the product documentation would be appreciated but is
 	not required.
-	
-	2. Altered source versions must be plainly marked as such, and must not be 
+
+	2. Altered source versions must be plainly marked as such, and must not be
 	misrepresented as being the original software.
-	
+
 	3. This notice may not be removed or altered from any source distribution.
 -->
 <xslt:stylesheet version="1.0"
@@ -193,8 +193,8 @@
 						<!-- use a for-each so that the id() function works correctly on the external document -->
 						<xsl:for-each select="$theDocument_1">
 							<xsl:variable name="theFragment_1"
-								select="$theDocument_1//*[@xml:id= $fragment-id ]        
-                  |  id( $fragment-id)          
+								select="$theDocument_1//*[@xml:id= $fragment-id ]
+                  |  id( $fragment-id)
               | $theDocument_1//*[@id= $fragment-id ]" />
 							<xsl:if test="not($theFragment_1)">
 								<xsl:message terminate="no">
@@ -282,7 +282,7 @@
 					<xslt:when
 						test="string-length( $document-uri ) = 0">
 						<xslt:apply-templates mode="dsdl:go"
-							select="//iso:*[@xml:id= $fragment-id ] 
+							select="//iso:*[@xml:id= $fragment-id ]
               	 |id( $fragment-id)
               	 | //iso:*[@id= $fragment-id ]" />
 					</xslt:when>
@@ -291,12 +291,12 @@
 					<!-- There are three cases for includes with fragment:
 						0) No href file or no matching id - error!
 						1) REMOVED
-						
+
 						2) The linked-to element is sch:schema however the parent of the include
 						is not a schema. In this case, it is an error. (Actually, it should
 						be an error for other kinds of containment problems, but we won't
 						check for them in this version.)
-						
+
 						3) Otherwise, include the pointed-to element
 					-->
 
@@ -370,14 +370,14 @@
 
 						<!-- There are three cases for includes:
 							0) No text specified- error!
-							
+
 							1) REMOVED
-							
+
 							2) The linked-to element is sch:schema however the parent of the include
 							is not a schema. In this case, it is an error. (Actually, it should
 							be an error for other kinds of containment problems, but we won't
 							check for them in this version.)
-							
+
 							3) Otherwise, include the pointed-to element
 						-->
 						<xsl:choose>
@@ -401,7 +401,7 @@
 								</xsl:message>
 							</xsl:when>
 
-							<!-- If this were XLST 2, we could use  
+							<!-- If this were XLST 2, we could use
 								if ($theFragment) then $theFragment else $theContainedFragments
 								here (thanks to KN)
 							-->
@@ -458,7 +458,7 @@
 					<xslt:when
 						test="string-length( $document-uri ) = 0">
 						<xslt:apply-templates mode="dsdl:go"
-							select="//iso:*[@xml:id= $fragment-id ]/* 
+							select="//iso:*[@xml:id= $fragment-id ]/*
               	 |id( $fragment-id)/*
               	 | //iso:*[@id= $fragment-id ]/*" />
 					</xslt:when>
@@ -467,9 +467,9 @@
 					<!-- There are three cases for includes with fragment:
 						0) No href file or no matching id - error!
 						1) REMOVED
-						
+
 						2) REMOVED
-						
+
 						3) Otherwise, include the pointed-to element
 					-->
 
@@ -537,11 +537,11 @@
 
 						<!-- There are three cases for includes:
 							0) No text specified- error!
-							
+
 							1) REMOVED
-							
+
 							2) REMOVED
-							
+
 							3) Otherwise, include the pointed-to element
 						-->
 						<xsl:choose>
@@ -558,7 +558,7 @@
 
 							<!-- case 2 removed -->
 
-							<!-- If this were XLST 2, we could use  
+							<!-- If this were XLST 2, we could use
 								if ($theFragment) then $theFragment else $theContainedFragments
 								here (thanks to KN)
 							-->
@@ -618,7 +618,7 @@
 					<xslt:when
 						test="string-length( $document-uri ) = 0">
 						<xslt:apply-templates mode="dsdl:go"
-							select="//schold:*[@xml:id= $fragment-id ] 
+							select="//schold:*[@xml:id= $fragment-id ]
               	 |id( $fragment-id)
               	 | //schold:*[@id= $fragment-id ]" />
 					</xslt:when>
@@ -688,7 +688,7 @@
 								<xsl:value-of select="@href" />
 							</xsl:message>
 						</xsl:if>
-						<!-- If this were XLST 2, we could use  
+						<!-- If this were XLST 2, we could use
 							if ($theFragment) then $theFragment else $theContainedFragments
 							here (thanks to KN)
 						-->
@@ -751,7 +751,7 @@
 					<xslt:when
 						test="string-length( $document-uri ) = 0">
 						<xslt:apply-templates mode="dsdl:go"
-							select="//*[@xml:id= $fragment-id ] | id( $fragment-id) 
+							select="//*[@xml:id= $fragment-id ] | id( $fragment-id)
               	| //*[@id= $fragment-id ]" />
 					</xslt:when>
 
@@ -769,7 +769,7 @@
 						<xsl:for-each select="$theDocument_1">
 							<xsl:variable name="theFragment_1"
 								select="$theDocument_1//*[@xml:id= $fragment-id ]
-               | id( $fragment-id ) 
+               | id( $fragment-id )
                | $theDocument_1//*[@id= $fragment-id ]" />
 							<xsl:if test="not($theFragment_1)">
 								<xsl:message terminate="no">
@@ -982,7 +982,7 @@
 							select="document( @href,/ )" />
 						<xsl:variable name="theFragment_1"
 							select="$theDocument_1//*[@xml:id= current()/@xpointer  ]
-             
+
               | $theDocument_1//*[@id= current()/@xpointer  ]" />
 						<!-- removed
 							| $theDocument_1/id( @xpointer)
@@ -1000,7 +1000,7 @@
 									<xsl:variable name="theFragment_2"
 										select="$theDocument_2//*[@xml:id= current()/xi:fallback[1]/xi:include/@xpointer  ]
               				| $theDocument_2//*[@id= current()/xi:fallback[1]/xi:include/@xpointer  ]" />
-									<!-- removed 
+									<!-- removed
 										| $theDocument_2/id( xi:fallback[1]/xi:include/@xpointer)
 										because it id() would need rebasing in XSLT1 and that would mess up use of current()
 									-->
@@ -1093,7 +1093,7 @@
 					<xslt:when
 						test="string-length( $document-uri ) = 0">
 						<xslt:apply-templates mode="dsdl:go"
-							select="//*[@xml:id= $fragment-id ] | id( $fragment-id) 
+							select="//*[@xml:id= $fragment-id ] | id( $fragment-id)
               	| //*[@id= $fragment-id ]" />
 					</xslt:when>
 
@@ -1111,7 +1111,7 @@
 						<xsl:for-each select="$theDocument_1">
 							<xsl:variable name="theFragment_1"
 								select="$theDocument_1//*[@xml:id= $fragment-id ]
-               | id( $fragment-id ) 
+               | id( $fragment-id )
                | $theDocument_1//*[@id= $fragment-id ]" />
 							<xsl:if test="not($theFragment_1)">
 								<xsl:message terminate="no">
