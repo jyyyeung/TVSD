@@ -1,5 +1,5 @@
 exclude: .git|.tox
-default_stages: [commit]
+default_stages: [pre-commit]
 fail_fast: true
 
 repos:
@@ -8,28 +8,28 @@ repos:
         stages: [commit-msg]
       - id: commitizen-branch
         stages:
-          - push
+          - pre-push
     repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.14.1
+    rev: v3.29.1
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       # - id: check-yaml
       - id: trailing-whitespace
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.7.0
+    rev: 1.8.0
     hooks:
       - id: poetry-check
       - id: poetry-lock
   - repo: https://github.com/python-poetry/poetry-plugin-export
-    rev: 1.6.0
+    rev: 1.8.0
     hooks:
       - id: poetry-export
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.7.0
+    rev: 1.8.0
     hooks:
       - id: poetry-install
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
       - id: detect-secrets
