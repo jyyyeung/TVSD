@@ -41,11 +41,11 @@ lint:
       paths:
         # Generated files
         - docs
-        - pages
+        - tvsd_ui
     - linters: [ALL]
       paths:
         - staticfiles
-        - pages/migrations
+        - tvsd_ui/migrations
 
 actions:
   disabled:

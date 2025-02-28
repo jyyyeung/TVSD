@@ -8,8 +8,10 @@ default:
   sources: [xiao_bao, olevod]
   verbose: false
   debug: false
+  dry_run: false
 dev:
-  media_root: "@format {env[PWD]}/temp/media"
+  # media_root: "@format {env[PWD]}/temp/media"
+  media_root: /mnt/viewable
   create_media_root: true
   temp_root: "@format {env[PWD]}/temp/downloads"
   create_temp_root: true
@@ -17,3 +19,4 @@ dev:
   specials_dir: Specials
   verbose: true
   debug: true
+  secret_key: "dev-secret-key-change-in-production" # pragma: allowlist secret

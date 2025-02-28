@@ -2,11 +2,13 @@
 import logging
 import os
 import sys
-from typing import List, Tuple
+from typing import List, Tuple, TypedDict
 
 import typer
 from rich.console import Console
 from rich.table import Table
+
+from tvsd.types.season import Season
 
 from .config import settings
 from .download import Download
@@ -14,7 +16,41 @@ from .search import SearchQuery
 from .utils import dir_exists, is_video
 
 
-def search_media_and_download(query: str, specials_only: bool = False) -> None:
+def search_media(query: str) -> List[Season]:
+    """Search for media
+
+    This function searches for media based on the given query string.
+
+    Args:
+        query (str): query string
+
+    Returns:
+        List[Season]: A list of seasons
+    """
+    if not dir_exists(
+        path=settings.MEDIA_ROOT, create_if_not=settings.CREATE_MEDIA_ROOT
+    ):
+        raise typer.Exit(code=1)
+
+    logging.debug("Media Root: %s", settings.MEDIA_ROOT)
+
+    query_instance = SearchQuery(query)
+
+    if not dir_exists(path=settings.TEMP_ROOT, create_if_not=settings.CREATE_TEMP_ROOT):
+        raise typer.Exit(code=1)
+
+    logging.debug("Temp Root: %s", settings.TEMP_ROOT)
+
+    query_instance = SearchQuery(query)
+    logging.info("Searching for %s...", query)
+    shows = query_instance.find_shows()
+
+    return shows
+
+
+def search_media_and_download(
+    query: str, specials_only: bool = False, interactive: bool = True
+) -> None | Season:
     """Search for media and download
 
     This function searches for media based on the given query string and downloads it.
@@ -25,6 +61,7 @@ def search_media_and_download(query: str, specials_only: bool = False) -> None:
     Args:
         query (str): query string
         specials_only (bool): Download only specials episode. Defaults to False.
+        interactive (bool): Whether to run in interactive mode. If False, the function will return a tuple of (ShowDict, int). Defaults to True.
     """
 
     if not dir_exists(
@@ -50,10 +87,24 @@ def search_media_and_download(query: str, specials_only: bool = False) -> None:
         specials_only=specials_only,
     )
     logging.info("Starting %s guided download...", query_instance.chosen_show.title)
-    download_instance.guided_download()
+
+    if interactive:
+        download_instance.guided_download()
+        return None
+    else:
+        # TODO: Continue here
+        return query_instance.chosen_show
 
 
-def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
+class ShowDict(TypedDict):
+    name: str
+    title: str
+    year: str
+    num_seasons: int
+    index: int
+
+
+def list_shows_as_table(show_index=False) -> Tuple[List[ShowDict], int]:
     """List all shows in base directory as a table
 
     Args:
@@ -75,31 +126,35 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
     if show_index:
         table = Table("#", "Name", "Year", "#Seasons", "#Episodes")
 
-    for show in os.listdir(os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)):
+    for show_name in os.listdir(os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)):
         num_files = 0
         num_seasons = 0
         if not os.path.isdir(
-            os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR, show)
+            os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR, show_name)
         ):
             # Skip if not a directory
             continue
         # Iterate through seasons
         for _first in os.listdir(
-            os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR, show)
+            os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR, show_name)
         ):
             if os.path.isdir(
-                os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR, show, _first)
+                os.path.join(
+                    settings.MEDIA_ROOT, settings.SERIES_DIR, show_name, _first
+                )
             ):
                 num_seasons += 1
                 # Iterate through episodes
                 for _second in os.listdir(
-                    os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR, show, _first)
+                    os.path.join(
+                        settings.MEDIA_ROOT, settings.SERIES_DIR, show_name, _first
+                    )
                 ):
                     if os.path.isfile(
                         os.path.join(
                             settings.MEDIA_ROOT,
                             settings.SERIES_DIR,
-                            show,
+                            show_name,
                             _first,
                             _second,
                         )
@@ -108,8 +163,8 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
 
         # Only add show if it has at least one season
         if num_seasons > 0:
-            shows.append(show)
-            show_split = show.split(" ")
+            # Split show name into name and year
+            show_split = show_name.split(" ")
 
             if len(show_split) > 1:  # If show name has year
                 name: str = " ".join(show_split[:-1])
@@ -117,6 +172,16 @@ def list_shows_as_table(show_index=False) -> Tuple[List[str], int]:
             else:
                 name = show_split[0]
                 year = "N/A"
+
+            # Add show to list
+            show = ShowDict(
+                name=name,
+                title=show_name,
+                year=year.replace("(", "").replace(")", ""),
+                num_seasons=num_seasons,
+                index=num_shows,
+            )
+            shows.append(show)
 
             # Add show to table
             if show_index:

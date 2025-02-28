@@ -1,7 +1,7 @@
 {
   "cSpell.words": ["TVSD", "typer"],
   "[python]": {
-    "editor.defaultFormatter": "trunk.io"
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "docwriter.progress.trackMethods": true,
   "docwriter.progress.trackClasses": true,

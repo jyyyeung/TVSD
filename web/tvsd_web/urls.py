@@ -1,5 +1,5 @@
 """
-URL configuration for config project.
+URL configuration for tvsd_web project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -22,7 +22,7 @@ from django.urls import URLResolver, include, path
 
 urlpatterns: list[URLResolver] = [
     path("admin/", admin.site.urls),
-    path("", include("pages.urls")),
+    path("", include("web.tvsd_ui.urls")),
     path("unicorn/", include("django_unicorn.urls")),
 ]
 

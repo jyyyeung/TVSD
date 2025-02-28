@@ -1,0 +1,25 @@
+{% extends 'tvsd_ui/base.html' %}
+{% load unicorn %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  Home
+{% endblock %}
+
+{% block content %}
+  <h1 class="title">TVSD - TV Series Downloader</h1>
+  <p class="subtitle">Download your favorite TV series with ease.</p>
+  <hr class="is-divider" />
+  <p class="mb-4">Get started by searching for your favorite shows or managing your existing library.</p>
+  <a class="button is-primary is-large" href="{% url 'tvsd_ui:search' %}">
+    <span class="icon"><i class="fas fa-search"></i></span>
+    <span>Start Searching</span>
+  </a>
+
+  <section class="mt-6">
+    <form method="post" id="{{ form.helper.form_id }}">
+      {% crispy form %}
+    </form>
+  </section>
+{% endblock %}

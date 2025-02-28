@@ -45,7 +45,7 @@ More features coming soon, feel free to raise feature request or issues.
 Contributions are welcomed, contribution methods and accurate details will be included very soon.
 
 ```bash
-git clone https://github.com/SheepYY039/tvsd.git
+git clone https://github.com/jyyyeung/tvsd.git
 cd tvsd
 make setup-dev-env # install pre-commit hooks
 poetry install

@@ -29,7 +29,7 @@ classifiers = [
   # Environment
   "Environment :: Console",
 ]
-repository = "https://github.com/sheepyy039/TVSD.git"
+repository = "https://github.com/jyyyeung/TVSD.git"
 
 
 packages = [
@@ -39,11 +39,12 @@ exclude = [".venv"]
 
 [tool.poetry.urls]
 # # Homepage = "https://example.com"
-Documentation = "https://sheepyy039.github.io/TVSD"
-Changelog = "https://github.com/sheepyy039/TVSD/blob/main/CHANGELOG.md"
+Documentation = "https://jyyyeung.github.io/TVSD"
+Changelog = "https://github.com/jyyyeung/TVSD/blob/main/CHANGELOG.md"
 
 [tool.poetry.scripts]
 tvsd = "tvsd.__main__:main"
+tvsd-web = "tvsd.web_launcher:main [web]"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -57,15 +58,18 @@ chinese-converter = "^1.1.1"
 pytest = "^7.4.2"
 docstring-parser = "^0.15"
 dynaconf = "^3.2.4"
-django = "^5.0.2"
-django-unicorn = "^0.59.0"
-django-simple-bulma = "^2.6.0"
+django = { version = "^5.0.2", optional = true }
+django-unicorn = { version = "^0.59.0", optional = true }
+django-simple-bulma = { version = "^2.6.0", optional = true }
 whitenoise = "^6.6.0"
 pathvalidate = "^3.2.0"
-django-crispy-forms = "^2.1"
-crispy-bulma = "^0.11.0"
+django-crispy-forms = { version = "^2.1", optional = true }
+crispy-bulma = { version = "^0.11.0", optional = true }
 poetry-plugin-export = "^1.8.0"
 
+# Extra dependencies for web
+[tool.poetry.extras]
+web = ["django", "django-unicorn", "django-simple-bulma", "crispy-bulma"]
 
 [tool.poetry.group.dev.dependencies]
 commitizen = "^3.10.0"

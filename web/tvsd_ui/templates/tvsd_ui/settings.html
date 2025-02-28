@@ -1,0 +1,60 @@
+{% extends 'tvsd_ui/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Settings
+{% endblock %}
+{% block cssjs %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'bulma-checkradio.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'bulma-divider.min.css' %}" />
+{% endblock %}
+<!-- This is the content block -->
+{% block content %}
+  <h1 class="title">Settings</h1>
+  {% comment %} <p class="subtitle">Settings</p> {% endcomment %}
+
+  {% comment %} <form method="post" class="mt-4">
+    {% csrf_token %}
+    <div class="field">
+      <label class="label" for="mediaRoot">Media Root</label>
+      <div class="control">
+        <input type="text" class="input" id="mediaRoot" name="media_root" value="{{ media_root }}" required />
+      </div>
+      <p class="help">Path where downloaded media will be stored</p>
+    </div>
+
+    <div class="field">
+      <label class="label" for="tempRoot">Temporary Root</label>
+      <div class="control">
+        <input type="text" class="input" id="tempRoot" name="temp_root" value="{{ temp_root }}" required />
+      </div>
+      <p class="help">Path for temporary download files</p>
+    </div>
+
+    <div class="field">
+      <label class="label" for="createMediaRoot">Create Media Root</label>
+      <div class="control">
+        <label class="checkbox">
+          <input type="checkbox" name="create_media_root" checked="{{ create_media_root }}" />
+          Create Media Root if missing
+        </label>
+      </div>
+    </div>
+
+
+    <div class="field">
+      <div class="control">
+        <button type="submit" class="button is-primary">Save Settings</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="is-divider" data-content="OR"></div> {% endcomment %}
+
+  <section>
+    <form class="form-horizontal" method="post" id="{{ form.helper.form_id }}">
+      {% crispy config_form config_form.helper %}
+    </form>
+  </section>
+{% endblock %}

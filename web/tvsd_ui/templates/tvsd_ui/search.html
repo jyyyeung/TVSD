@@ -1,0 +1,120 @@
+{% extends 'tvsd_ui/base.html' %}
+{% comment %} {% load django_bootstrap5 %} {% endcomment %}
+{% load crispy_forms_tags %}
+{% block title %}
+  TVSD - Search
+{% endblock %}
+
+{% block content %}
+  <h1 class="title">Search Shows</h1>
+
+  <form method="post" class="mt-4">
+    {% csrf_token %}
+    <div class="columns">
+      <div class="column is-8">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input type="text" name="query" class="input" placeholder="Enter show name..." required />
+          </div>
+          <div class="control">
+            <button class="button is-primary" type="submit" id="search-button">
+              <span class="icon"><i class="fas fa-search"></i></span>
+              <span>Search</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="column is-4">
+        <label class="checkbox"><input type="checkbox" name="specials_only" id="specialsOnly" />Specials Only</label>
+      </div>
+    </div>
+  </form>
+
+  {% if results %}
+    <div class="mt-4">
+      <h3 class="title is-4">Search Results</h3>
+      <div class="columns is-multiline">
+        {% for result in results %}
+          <div class="column is-4">
+            <div class="card">
+              <div class="card-content">
+                <p class="title is-5">{{ result.title }}</p>
+                {% if result.note %}
+                  <p class="subtitle is-6">{{ result.note }}</p>
+                {% endif %}
+                {% if result.year %}
+                  <p class="subtitle is-6">Year: {{ result.year }}</p>
+                {% endif %}
+              </div>
+              <footer class="card-footer">
+                <form method="post" action="{% url 'tvsd_ui:download' %}" class="card-footer-item">
+                  {% csrf_token %}
+                  <input type="hidden" name="details_url" value="{{ result.details_url }}" />
+                  <button type="submit" class="button is-success is-small is-fullwidth">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                  </button>
+                </form>
+              </footer>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchForm = document.querySelector('form')
+      const searchButton = document.getElementById('search-button')
+      const resultsContainer = document.querySelector('.mt-4')
+
+      searchForm.addEventListener('submit', async function (e) {
+        e.preventDefault()
+
+        searchButton.classList.add('is-loading')
+
+        const formData = new FormData(this)
+
+        try {
+          const response = await fetch('{% url "tvsd_ui:search" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+          })
+
+          const html = await response.text()
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(html, 'text/html')
+          const newResults = doc.querySelector('.mt-4')
+
+          if (newResults) {
+            if (resultsContainer) {
+              resultsContainer.replaceWith(newResults)
+            } else {
+              searchForm.insertAdjacentElement('afterend', newResults)
+            }
+          }
+
+          // Handle messages
+          const messages = doc.querySelectorAll('.message')
+          if (messages.length > 0) {
+            const messageContainer = document.querySelector('.messages')
+            if (messageContainer) {
+              messageContainer.innerHTML = ''
+              messages.forEach((msg) => messageContainer.appendChild(msg))
+            }
+          }
+        } catch (error) {
+          console.error('Error:', error)
+        } finally {
+          searchButton.classList.remove('is-loading')
+        }
+      })
+    })
+  </script>
+{% endblock %}

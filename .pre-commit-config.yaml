@@ -1,4 +1,4 @@
-exclude: .git|.tox
+exclude: .git|.tox|.venv
 default_stages: [commit]
 fail_fast: true
 

@@ -28,10 +28,19 @@ console = Console()
 class SearchQuery:
     """Searches for a show based on query"""
 
-    def __init__(self, query: str) -> None:
+    def __init__(self, query: str, interactive: bool = True) -> None:
         self._query: str = query
         self._exists_locally = False
         self._chosen_show = None
+        self._interactive = interactive
+
+    def find_shows(self) -> List["Season"]:
+        """Finds shows information either locally or online.
+
+        Returns:
+            List[Season]: A list of seasons.
+        """
+        return self.find_shows_online(interactive=False)
 
     def find_show(self) -> "Season":
         """Finds show information either locally or online.
@@ -46,7 +55,7 @@ class SearchQuery:
         # self.check_local_shows(base_path)
 
         if not self._exists_locally or self._chosen_show is None:
-            self.find_shows_online()
+            self.find_shows_online(self._interactive)
 
         if self._chosen_show is None:
             raise ValueError("No show found")
@@ -82,11 +91,17 @@ class SearchQuery:
                     #     base_path + "/TV Series/" + directory
                     # )
 
-    def find_shows_online(self) -> None:
+    def find_shows_online(self, interactive: bool = True) -> None | List["Season"]:
         """
         Searches for TV shows online using the specified query and displays the results in a table.
         The user is prompted to choose a show from the table, and the chosen show is stored in the
         `_chosen_show` attribute of the `TVShowDownloader` instance.
+
+        Args:
+            interactive (bool): Whether to run in interactive mode. If False, the function will return a tuple of (ShowDict, int). Defaults to True.
+
+        Returns:
+            List[Season]: A list of seasons if interactive is False, otherwise None.
         """
         query_results: List[Season] = []
         # TODO: Search in db first / or put db results first
@@ -120,9 +135,13 @@ class SearchQuery:
             )
 
         console.print(table)
-        self._chosen_show = query_results[
-            typer.prompt(text="请选择你下载的节目", type=int)
-        ]
+        if interactive:
+            self._chosen_show = query_results[
+                typer.prompt(text="请选择你下载的节目", type=int)
+            ]
+            return None
+        else:
+            return query_results
 
     @property
     def chosen_show(self) -> "Season":

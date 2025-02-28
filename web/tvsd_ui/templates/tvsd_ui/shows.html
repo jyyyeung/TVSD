@@ -1,0 +1,43 @@
+{% extends 'tvsd_ui/base.html' %}
+
+{% block title %}
+  TVSD - Shows
+{% endblock %}
+
+{% block content %}
+  <h1 class="title">Your Shows ({{ count }})</h1>
+
+  <div class="table-container">
+    <table class="table is-striped is-fullwidth">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>Year</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for show in shows %}
+          <tr>
+            <td>{{ show.index }}</td>
+            <td>{{ show.title }}</td>
+            <td>{{ show.year }}</td>
+            <td>
+              <span class="tag {% if show.status_color == 'success' %}is-success{% elif show.status_color == 'warning' %}is-warning{% elif show.status_color == 'danger' %}is-danger{% else %}is-info{% endif %}">
+                {{ show.status }}
+              </span>
+            </td>
+            <td>
+              <div class="buttons are-small">
+                <button class="button is-info">Update</button>
+                <button class="button is-danger">Remove</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -4,7 +4,7 @@ from crispy_forms.helper import FormHelper
 from django import forms
 from django.conf import settings
 
-from pages.validators import validate_path
+from web.tvsd_ui.validators import validate_path
 from tvsd.sources import __all__ as SOURCE_LIST
 
 
@@ -16,7 +16,6 @@ class ConfigForm(forms.Form):
     for source in SOURCE_LIST:
         # Add Source to Choices
         SOURCES_CHOICES.append((source, source.upper()))
-
     # initial_sources: list[str] = []
     # if settings.DISABLED_SOURCES != []:
     #     # Filter Out Disabled Sources
