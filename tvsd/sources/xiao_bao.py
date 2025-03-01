@@ -68,6 +68,12 @@ class XiaoBao(Source):
             str(soup.find("p", attrs={"class": "data"}).contents[-1].get_text()) or None
         )
 
+    def _set_season_poster_url(self, soup: BeautifulSoup) -> str:
+        poster_tag = soup.find("body").find("div", attrs={"class": "myui-content__thumb"}).find("a", attrs={"class": "myui-vodlist__thumb"})
+        if poster_tag:
+            return poster_tag.find("img").get("data-original")
+        return ""
+
     ######## FETCH EPISODE M3U8 ########
 
     def _episode_url(self, relative_episode_url: str) -> str:
@@ -81,9 +87,7 @@ class XiaoBao(Source):
     def _set_episode_m3u8(self, episode_script: str) -> str:
         logging.debug(episode_script)
 
-        episode_m3u8_format = (
-            r"https:\\\/\\\/[\w\d\.\\\/]+\.m3u8"
-        )
+        episode_m3u8_format = r"https:\\\/\\\/[\w\d\.\\\/]+\.m3u8"
 
         episode_m3u8 = re.findall(episode_m3u8_format, episode_script)[0].replace(
             "\\", ""

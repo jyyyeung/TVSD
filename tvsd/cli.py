@@ -14,7 +14,6 @@ from tvsd import __app_name__, __version__, app
 from tvsd.actions import list_shows_as_table, search_media_and_download
 from tvsd.config import register_validators, settings, update_settings_path, validate_config
 
-# from tvsd.config import apply_config, validate_config_file
 from tvsd.utils import video_in_dir
 
 from .utils import typer_easy_cli

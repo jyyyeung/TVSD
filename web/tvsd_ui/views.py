@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.template.loader import render_to_string
 
+from tvsd.utils import get_sources_list
 from web.tvsd_ui.components.config_form import ConfigForm
 from web.tvsd_ui.components.search_bar import SearchBar
 
@@ -53,13 +54,18 @@ def show_list(request):
 
 def search_view(request):
     results = None
+    all_sources = get_sources_list()
+    context = {
+        "all_sources": all_sources,
+    }
     if request.method == "POST":
         query = request.POST.get("query")
+        sources = request.POST.getlist("sources")
         specials_only = request.POST.get("specials_only") == "on"
         messages.info(request, f"Searching for {query}")
         print(f"Searching for {query}")
         try:
-            results = search_media(query)
+            results = search_media(query, sources=sources, specials_only=specials_only)
             # print(f"Results: {results}")
             if results:
                 messages.success(request, f'Found {len(results)} results for "{query}"')
@@ -75,7 +81,8 @@ def search_view(request):
             )
             return HttpResponse(html)
 
-    return render(request, "tvsd_ui/search.html", {"results": results})
+    context["results"] = results
+    return render(request, "tvsd_ui/search.html", context)
 
 
 def home_view(request):

@@ -15,6 +15,16 @@
         <div class="field has-addons">
           <div class="control is-expanded">
             <input type="text" name="query" class="input" placeholder="Enter show name..." required />
+            <div class="control">
+              <div class="select">
+                <select name="sources">
+                  <option value="">All Sources</option>
+                  {% for source in all_sources %}
+                    <option value="{{ source }}">{{ source }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
           </div>
           <div class="control">
             <button class="button is-primary" type="submit" id="search-button">
@@ -37,14 +47,30 @@
         {% for result in results %}
           <div class="column is-4">
             <div class="card">
-              <div class="card-content">
-                <p class="title is-5">{{ result.title }}</p>
-                {% if result.note %}
-                  <p class="subtitle is-6">{{ result.note }}</p>
-                {% endif %}
-                {% if result.year %}
-                  <p class="subtitle is-6">Year: {{ result.year }}</p>
-                {% endif %}
+              <div class="card-content media">
+                <div class="media-content">
+                  <p class="title is-5">{{ result.title }}</p>
+                  {% if result.note %}
+                    <p class="subtitle is-6">{{ result.note }}</p>
+                  {% endif %}
+                  <p class="subtitle is-6">
+                    {% if result.year %}
+                      <p>Year: {{ result.year }}</p>
+                    {% endif %}
+                    {% if result.source %}
+                      <p>
+                        Source: {{ result.source }} {% if result.details_url %}
+                          <a href="{{ result.details_url }}" target="_blank"><span class="icon is-small"><i class="fas fa-external-link-alt"></i></span></a>
+                        {% endif %}
+                      </p>
+                    {% endif %}
+                  </p>
+                </div>
+                <figure class="media-right">
+                  <p class="image is-128x128">
+                    <img src="{{ result.poster_url }}" />
+                  </p>
+                </figure>
               </div>
               <footer class="card-footer">
                 <form method="post" action="{% url 'tvsd_ui:download' %}" class="card-footer-item">

@@ -16,13 +16,17 @@ from .search import SearchQuery
 from .utils import dir_exists, is_video
 
 
-def search_media(query: str) -> List[Season]:
+def search_media(
+    query: str, sources: List[str] = [], specials_only: bool = False
+) -> List[Season]:
     """Search for media
 
     This function searches for media based on the given query string.
 
     Args:
         query (str): query string
+        sources (List[str]): List of sources to search
+        specials_only (bool): Download only specials episode. Defaults to False.
 
     Returns:
         List[Season]: A list of seasons
@@ -34,14 +38,13 @@ def search_media(query: str) -> List[Season]:
 
     logging.debug("Media Root: %s", settings.MEDIA_ROOT)
 
-    query_instance = SearchQuery(query)
+    query_instance = SearchQuery(query, sources=sources)
 
     if not dir_exists(path=settings.TEMP_ROOT, create_if_not=settings.CREATE_TEMP_ROOT):
         raise typer.Exit(code=1)
 
     logging.debug("Temp Root: %s", settings.TEMP_ROOT)
 
-    query_instance = SearchQuery(query)
     logging.info("Searching for %s...", query)
     shows = query_instance.find_shows()
 

@@ -79,6 +79,7 @@ class Season:
         source: "Source",
         note: str = "",
         details_url: str = "",
+        poster_url: str = "",
     ) -> None:
         """
         Initializes a Season object.
@@ -103,6 +104,7 @@ class Season:
         self._note: str = note
         self._source: Source = source
         self._show: Show
+        self._poster_url: str = poster_url
 
         self._fetch_episode_m3u8 = fetch_episode_m3u8
 
@@ -261,6 +263,15 @@ class Season:
         """
         logging.info(self)
         return self._year
+
+    @property
+    def poster_url(self) -> str:
+        """Returns the poster url of the season
+
+        Returns:
+            str: poster url of the season
+        """
+        return self._poster_url
 
     @property
     def note(self) -> str:

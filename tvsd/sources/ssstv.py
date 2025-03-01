@@ -83,6 +83,12 @@ class SSSTV(Source):
             return year_tag.get_text()
         return ""
 
+    def _set_season_poster_url(self, soup: BeautifulSoup) -> str:
+        poster_tag = soup.find("div", attrs={"class": "module-item-pic"})
+        if poster_tag:
+            return poster_tag.find("img").get("data-src")
+        return ""
+
     ######## FETCH EPISODE M3U8 ########
 
     def _episode_url(self, relative_episode_url: str) -> str:

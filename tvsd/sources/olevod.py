@@ -66,6 +66,12 @@ class OLEVOD(Source):
 
         return f"https://www.olevod.com/index.php/vod/detail/id/{source_id}.html"
 
+    def _get_result_poster_url(self, query_result: BeautifulSoup) -> str:
+        poster_tag = query_result.find("a", attrs={"class": "case-img"}).find("img")
+        if poster_tag:
+            return poster_tag["src"]
+        return ""
+
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
     def _set_episode_title(self, soup: Tag) -> str:
@@ -81,6 +87,12 @@ class OLEVOD(Source):
         return soup.find(
             "a", {"href": re.compile(r"/index.php/vod/search/year/[0-9]{4}.html")}
         ).get_text()
+
+    def _set_season_poster_url(self, soup: BeautifulSoup) -> str:
+        poster_tag = soup.find("a", attrs={"class": "case-img"}).find("img")
+        if poster_tag:
+            return poster_tag["src"]
+        return ""
 
     ######## FETCH EPISODE M3U8 ########
 

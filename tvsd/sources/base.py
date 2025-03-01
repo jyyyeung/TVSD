@@ -65,6 +65,9 @@ class Source(ABC):
         self._is_simplified: bool = False
         self._is_traditional: bool = False
 
+    def __str__(self) -> str:
+        return self.source_name
+
     # @classmethod
     # def parse_from_json(cls, json_content):
     #     return cls(json_content)
@@ -226,6 +229,7 @@ class Source(ABC):
             fetch_episode_m3u8=self.fetch_episode_m3u8,
             episodes=details["episodes"],
             source=self,
+            poster_url=details["poster_url"],
         )
         return season
 
@@ -286,6 +290,7 @@ class Source(ABC):
             "description": self._set_season_description(soup),
             "episodes": self._set_season_episodes(soup),
             "year": self._set_season_year(soup),
+            "poster_url": self._set_season_poster_url(soup),
         }
 
         # print("Method for finding details from this source is undefined...")
@@ -355,6 +360,18 @@ class Source(ABC):
 
         Returns:
             str: Season year
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _set_season_poster_url(self, soup: BeautifulSoup) -> str:
+        """Sets the season poster url
+
+        Args:
+            soup (BeautifulSoup): Soup of the season details page
+
+        Returns:
+            str: Season poster url
         """
         raise NotImplementedError
 

@@ -5,12 +5,15 @@ TVSD Utilities, contains useful functions
 import logging
 import mimetypes
 import os
+import pkgutil
 import re
 from typing import Callable, List
 
 import cloudscraper
 import typer
 from docstring_parser import parse
+
+from tvsd import sources
 
 from .config import settings
 
@@ -272,3 +275,17 @@ def typer_easy_cli(func):
     )
 
     return func
+
+
+def get_sources_list() -> List[str]:
+    """
+    Returns a list of all sources.
+
+    Returns:
+        List[str]: List of all sources.
+    """
+    sources_list: List[str] = []
+    for _, module_name, __ in pkgutil.walk_packages(sources.__path__):
+        sources_list.append(module_name)
+
+    return sources_list

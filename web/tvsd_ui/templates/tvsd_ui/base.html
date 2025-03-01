@@ -1,4 +1,3 @@
-{% load django_simple_bulma %}
 {% load unicorn %}
 {% load static %}
 <!DOCTYPE html>
@@ -17,6 +16,7 @@
     {% comment %} <link rel="preload" href="{% static 'css/base.css' %}" as="style" /> {% endcomment %}
     {% comment %} <link rel="stylesheet" href="{% static 'css/base.css' %}" /> {% endcomment %}
     <!-- Include the Bulma CSS framework for styling -->
+    {% load django_simple_bulma %}
     {% bulma %}
     <!-- Include the Font Awesome CSS framework for icons -->
     {% font_awesome %}
@@ -42,5 +42,13 @@
         {% endblock %}
       </div>
     </section>
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          <strong>TVSD</strong> by <a href="https://github.com/jyyyeung">Jasmine Yeung</a>. The source code is licensed
+          <a href="https://opensource.org/license/mit">MIT</a>.
+        </p>
+      </div>
+    </footer>
   </body>
 </html>

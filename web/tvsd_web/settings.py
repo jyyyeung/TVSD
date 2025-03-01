@@ -195,7 +195,7 @@ BULMA_SETTINGS: dict[str, Any] = {
     # },
     "output_style": "compressed",  # production
     # "output_style": "expanded",
-    "fontawesome_token": "e761a01be3",
+    # "fontawesome_token": "e761a01be3",
 }
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bulma"

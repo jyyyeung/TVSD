@@ -11,9 +11,9 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from tvsd import sources
 
 # from tvsd.sources import *
+from tvsd import sources
 from tvsd.sources.base import Source
 
 from .config import settings
@@ -28,11 +28,14 @@ console = Console()
 class SearchQuery:
     """Searches for a show based on query"""
 
-    def __init__(self, query: str, interactive: bool = True) -> None:
+    def __init__(
+        self, query: str, interactive: bool = True, sources: List[str] = []
+    ) -> None:
         self._query: str = query
         self._exists_locally = False
         self._chosen_show = None
         self._interactive = interactive
+        self._sources: List[str] = sources
 
     def find_shows(self) -> List["Season"]:
         """Finds shows information either locally or online.
@@ -112,6 +115,11 @@ class SearchQuery:
             logging.debug("Found %s...", module_name)
             # Ignore template files
             if module_name.startswith("_"):
+                continue
+            if self._sources is not [] and module_name not in self._sources:
+                logging.debug(
+                    "Skipping %s because it is not in the sources list", module_name
+                )
                 continue
             importlib.import_module(f"tvsd.sources.{module_name}")
             for cls_name, cls_obj in inspect.getmembers(
