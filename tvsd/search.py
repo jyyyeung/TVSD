@@ -15,6 +15,7 @@ from rich.table import Table
 # from tvsd.sources import *
 from tvsd import sources
 from tvsd.sources.base import Source
+from tvsd.types.query import query_from_source
 
 from .config import settings
 
@@ -44,6 +45,12 @@ class SearchQuery:
             List[Season]: A list of seasons.
         """
         return self.find_shows_online(interactive=False)
+
+    def prepare_download(self, show: "Season") -> "Season":
+        """Prepares the download of the chosen show."""
+        self._chosen_show = show
+        self._chosen_show.fetch_details()
+        return self._chosen_show
 
     def find_show(self) -> "Season":
         """Finds show information either locally or online.
@@ -130,7 +137,7 @@ class SearchQuery:
                     continue
                 # Source is active
                 if issubclass(cls_obj, Source) and cls_obj().__status__ == "active":
-                    query_results += cls_obj().query_from_source(self._query)
+                    query_results += query_from_source(cls_obj(), self._query)
 
         table = Table("index", "Title", "Source", "Note")
 

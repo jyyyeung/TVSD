@@ -5,17 +5,22 @@ from typing import Any
 
 from bs4 import BeautifulSoup, ResultSet, Tag
 
-from tvsd.sources.base import Source
+from tvsd.sources.base import Source, zh_variation
 
 
 class XiaoBao(Source):
     """XiaoBao class"""
 
-    def __init__(self) -> None:
-        super().__init__()  # Call parent constructor
-        self.__status__ = "active"
-        self._domains = ["https://xiaoheimi.net"]
-        self._is_simplified = True
+    name: str = "小宝影院"
+    domains: list[str] = ["https://xiaoheimi.net"]
+    zh: zh_variation = "simplified"
+    __status__: str = "active"
+
+    # def __init__(self) -> None:
+    #     super().__init__()  # Call parent constructor
+    #     self.__status__ = "active"
+    #     self._domains = ["https://xiaoheimi.net"]
+    #     self._is_simplified = True
 
     ### SEARCHING FOR A SHOW ###
 
@@ -69,7 +74,11 @@ class XiaoBao(Source):
         )
 
     def _set_season_poster_url(self, soup: BeautifulSoup) -> str:
-        poster_tag = soup.find("body").find("div", attrs={"class": "myui-content__thumb"}).find("a", attrs={"class": "myui-vodlist__thumb"})
+        poster_tag = (
+            soup.find("body")
+            .find("div", attrs={"class": "myui-content__thumb"})
+            .find("a", attrs={"class": "myui-vodlist__thumb"})
+        )
         if poster_tag:
             return poster_tag.find("img").get("data-original")
         return ""

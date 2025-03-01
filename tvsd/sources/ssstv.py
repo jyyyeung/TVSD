@@ -3,16 +3,21 @@ from typing import Any
 
 from bs4 import BeautifulSoup, ResultSet, Tag
 
-from tvsd.sources.base import Source
+from tvsd.sources.base import Source, zh_variation
 
 
 class SSSTV(Source):
     """777tv class"""
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.__status__ = "active"
-        self._domains = ["https://777tv.tw"]
+    name: str = "777tv"
+    domains: list[str] = ["https://777tv.tw"]
+    zh: zh_variation = "simplified"
+    __status__: str = "active"
+
+    # def __init__(self) -> None:
+    #     super().__init__()
+    #     self.__status__ = "active"
+    #     self._domains = ["https://777tv.tw"]
 
     ### SEARCHING FOR A SHOW ###
 

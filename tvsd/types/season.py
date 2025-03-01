@@ -2,19 +2,26 @@
 TVSD Season class, parent of Episodes
 """
 
-import logging
+from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Callable, List
 
+from bs4 import Tag
+from pydantic import BaseModel, ConfigDict, Field
 import typer
 
+
 from tvsd.config import settings
+
 from tvsd.types.episode import Episode
 from tvsd.types.show import Show
 
+from tvsd.sources.base import Source
+from tvsd.types.season_details import SeasonDetailsFromURL
+
 if TYPE_CHECKING:
-    from tvsd.sources.base import Source
-    from tvsd.types import SeasonDetailsFromURL
+    from tvsd.types.episode import Episode
+    from tvsd.types.show import Show
 
 
 def check_season_index(show_title: str) -> int:
@@ -59,7 +66,54 @@ def check_season_index(show_title: str) -> int:
     return season_index
 
 
-class Season:
+def generate_episodes(
+    ep_tags: List[str | Tag], source: Source, season: Season
+) -> List["Episode"]:
+    """Generate Episode objects for the season.
+
+    This method generates Episode objects for the season based on the list of episodes
+    associated with the season. If an episode in the list is already an Episode object,
+    it is added to the list of generated Episode objects. If an episode in the list is
+    not an Episode object, its details are parsed from the source and a new Episode
+    object is created and added to the list of generated Episode objects.
+
+    Returns:
+        None
+    """
+    episode_objects: List["Episode"] = []
+    for episode_str in ep_tags:
+        # if isinstance(episode, Episode):
+        #     episode_object: "Episode" = episode
+        # else:
+        episode_details = source.parse_episode_details_from_li(episode_str)
+        episode_object = Episode(
+            title=episode_details["title"],
+            url=episode_details["url"],
+            season_info=season.get_season_info(),
+        )
+
+        episode_objects.append(episode_object)
+    season.episodes = episode_objects
+    return episode_objects
+
+
+class SeasonInfo(BaseModel):
+    """Includes information required to name a season episode file.
+
+    Attributes:
+        show_prefix (str): The prefix of the show.
+        season_index (int): The index of the season.
+        episode_number (int): The number of the episode.
+    """
+
+    show_prefix: str
+    season_index: int
+    relative_season_dir: str
+    fetch_episode_m3u8: Callable
+    source: Source
+
+
+class Season(BaseModel):
     """Represents a season of a TV show.
 
     Attributes:
@@ -71,42 +125,43 @@ class Season:
         details_url (str): The URL for the details of the season.
     """
 
-    def __init__(
-        self,
-        fetch_episode_m3u8: Callable,
-        episodes: List["Episode"],
-        details: "SeasonDetailsFromURL",
-        source: "Source",
-        note: str = "",
-        details_url: str = "",
-        poster_url: str = "",
-    ) -> None:
-        """
-        Initializes a Season object.
+    # Define Pydantic model fields
+    episode_strs: List[str | Tag]
+    episodes: List[Episode] = Field(default_factory=list)
+    details: "SeasonDetailsFromURL"
 
-        Args:
-            fetch_episode_m3u8 (Callable): A callable function that fetches the m3u8 file for an episode.
-            episodes (List[Episode]): A list of Episode objects.
-            details (SeasonDetailsFromURL): A dictionary containing details about the season.
-            source (Source): A Source object representing the source of the season.
-            note (str, optional): A note about the season. Defaults to "".
-            details_url (str, optional): The URL of the page containing details about the season. Defaults to "".
-        """
-        season_title: str = details["title"]
-        self._episodes: List["Episode"] = episodes
-        self._title: str = season_title
-        self._year: str = details["year"]
-        self._description: str = details["description"]
-        self._index: int | None = None
+    title: str = Field(default_factory=lambda self: self["details"].title)
+    year: str = Field(default_factory=lambda self: self["details"].year)
+    description: str = Field(default_factory=lambda self: self["details"].description)
+    index: int | None = None
+    details_url: str
+    note: str | None = None
+    poster_url: str | None = None
+    fetch_episode_m3u8: Callable
+    source: "Source"
+    show: Show | None = None
 
-        self._details_url: str = details_url
-        # self._source_id = source_id
-        self._note: str = note
-        self._source: Source = source
-        self._show: Show
-        self._poster_url: str = poster_url
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-        self._fetch_episode_m3u8 = fetch_episode_m3u8
+    # def __init__(self, **kwargs) -> None:
+    #     super().__init__(**kwargs)
+    # details = kwargs["details"]
+    # self.title = details.title
+    # self.year = details.year
+    # self.description = details.description
+
+    def __post_init__(self) -> None:
+        self.fetch_details()
+
+    def get_season_info(self) -> SeasonInfo:
+        """Get the season info for the season."""
+        return SeasonInfo(
+            show_prefix=self.show.prefix,
+            season_index=self.season_index,
+            relative_season_dir=self.relative_season_dir,
+            fetch_episode_m3u8=self.source.fetch_episode_m3u8,
+            source=self.source,
+        )
 
     def fetch_details(self) -> None:
         """Fetch details for season for download.
@@ -115,45 +170,17 @@ class Season:
         to prepare for download.
         """
         self.create_show()
-        # self.determine_season_index(self._title)
-        self.generate_episodes()
+        self.episodes = generate_episodes(self.episode_strs, self.source, self)
 
-    def generate_episodes(self) -> None:
-        """Generate Episode objects for the season.
+        # self.episodes = generate_episodes(self.episodes, self.source, self)
+        # self.generate_episodes()
 
-        This method generates Episode objects for the season based on the list of episodes
-        associated with the season. If an episode in the list is already an Episode object,
-        it is added to the list of generated Episode objects. If an episode in the list is
-        not an Episode object, its details are parsed from the source and a new Episode
-        object is created and added to the list of generated Episode objects.
+    def add_episode(self, episode: Episode) -> None:
+        """Add an episode to the season.
 
-        Returns:
-            None
+        This method adds an episode to the season.
         """
-        episode_objects: List["Episode"] = []
-        for episode in self._episodes:
-            if isinstance(episode, Episode):
-                episode_object: "Episode" = episode
-            else:
-                episode_details = self._source.parse_episode_details_from_li(episode)
-                episode_object = Episode(
-                    episode_name=episode_details["title"],
-                    season=self,
-                    episode_url=episode_details["url"],
-                )
-
-            episode_objects.append(episode_object)
-        self._episodes = episode_objects
-
-    @property
-    def episodes(self) -> List["Episode"]:
-        """
-        Returns the list of episodes in the season.
-
-        Returns:
-            List[Episode]: A list of Episode objects representing the episodes in the season.
-        """
-        return self._episodes
+        self.episodes.append(episode)
 
     def create_show(self) -> "Show":
         """
@@ -165,8 +192,12 @@ class Season:
         Returns:
             Show: The created parent show.
         """
-        show = Show(type(self._source), self._title, self.determine_show_begin_year())
-        self._show = show
+        show = Show(
+            title=self.title,
+            begin_year=self.determine_show_begin_year(),
+            source=self.source,
+        )
+        self.show = show
         return show
 
     def determine_season_index(self, season_title: str) -> int:
@@ -182,7 +213,7 @@ class Season:
         season_index = typer.prompt(
             text="Fix the season index? ", default=season_index, type=int
         )
-        self._index = season_index
+        self.index = season_index
         return season_index
 
     @property
@@ -196,10 +227,10 @@ class Season:
         Returns:
             int: season index
         """
-        if self._index is None:
-            self.determine_season_index(self._title)
+        if self.index is None:
+            self.determine_season_index(self.title)
 
-        return self._index or 1
+        return self.index or 1
 
     @property
     def relative_season_dir(self) -> str:
@@ -214,7 +245,7 @@ class Season:
         if self.season_index == 0:
             return self.relative_specials_dir
         return os.path.join(
-            self._show.relative_show_dir, f"Season {str(self.season_index).zfill(2)}"
+            self.show.relative_show_dir, f"Season {str(self.season_index).zfill(2)}"
         )
 
     @property
@@ -226,7 +257,7 @@ class Season:
         Returns:
             str: relative specials directory
         """
-        return os.path.join(self._show.relative_show_dir, settings.SPECIALS_DIR)
+        return os.path.join(self.show.relative_show_dir, settings.SPECIALS_DIR)
 
     def determine_show_begin_year(self) -> str:
         """Query the begin year of the show
@@ -254,86 +285,6 @@ class Season:
 
         return str(show_year)
 
-    @property
-    def year(self) -> str:
-        """Returns the year of the season
 
-        Returns:
-            str: year of the season
-        """
-        logging.info(self)
-        return self._year
-
-    @property
-    def poster_url(self) -> str:
-        """Returns the poster url of the season
-
-        Returns:
-            str: poster url of the season
-        """
-        return self._poster_url
-
-    @property
-    def note(self) -> str:
-        """Get the note of the show
-
-        This method returns the note of the show.
-
-        Returns:
-            str: Note of the show
-        """
-
-        return self._note
-
-    @note.setter  # the property decorates with `.setter` now
-    def note(self, note) -> None:  # name, e.g. "attribute", is the same
-        self._note = note  # the "value" name isn't special
-
-    @property
-    def details_url(self) -> str:  # This getter method name is *the* name
-        """Returns the details url of the season
-
-        Returns:
-            str: details url of the season
-        """
-        return self._details_url
-
-    @details_url.setter  # the property decorates with `.setter` now
-    def details_url(self, details_url) -> None:  # name, e.g. "attribute", is the same
-        self._details_url = details_url  # the "value" name isn't special
-
-    @property
-    def title(self) -> str:
-        """Returns the title of the season
-
-        Returns:
-            str: title of the season
-        """
-        return self._title
-
-    @property
-    def show(self) -> "Show":
-        """Returns the show of the season
-
-        Returns:
-            Show: show of the season
-        """
-        return self._show
-
-    @property
-    def source(self) -> "Source":
-        """Returns the source of the season
-
-        Returns:
-            Source: source of the season
-        """
-        return self._source
-
-    @property
-    def description(self) -> str:
-        """Returns the description of the season
-
-        Returns:
-            str: description of the season
-        """
-        return self._description
+SeasonInfo.model_rebuild()
+Season.model_rebuild()  # Rebuild model to resolve forward references

@@ -7,7 +7,7 @@ import mimetypes
 import os
 import pkgutil
 import re
-from typing import Callable, List
+from typing import List
 
 import cloudscraper
 import typer

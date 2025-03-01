@@ -339,3 +339,8 @@ temp/
 # Where static files end up after running `collect static`:
 staticfiles
 _vendor
+
+# Ignore all files in the temp directory
+temp/*
+temp_data
+

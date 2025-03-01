@@ -27,61 +27,61 @@ def search_bu_ding3(query):
     return result_list
 
 
-class BuDing3(Show):
-    """ """
+# class BuDing3(Show):
+#     """ """
 
-    def __init__(self, result) -> None:
-        super().__init__(Source.BuDing3, result)
+#     def __init__(self, result) -> None:
+#         super().__init__(Source.BuDing3, result)
 
-    @classmethod
-    def from_json(cls, json_content):
-        return cls(json_content)
+#     @classmethod
+#     def from_json(cls, json_content):
+#         return cls(json_content)
 
-    @classmethod
-    def from_query(cls, query_result):
-        data = {
-            "title": query_result["title"],
-            "note": None,
-            "source_id": None,
-            "details_url": "https://buding3.com" + query_result["url"],
-            "year": query_result["time"],
-        }
+#     @classmethod
+#     def from_query(cls, query_result):
+#         data = {
+#             "title": query_result["title"],
+#             "note": None,
+#             "source_id": None,
+#             "details_url": "https://buding3.com" + query_result["url"],
+#             "year": query_result["time"],
+#         }
 
-        return cls(data)
+#         return cls(data)
 
-    def fetch_details(self) -> Any:
-        soup = super().fetch_details_soup()
+#     def fetch_details(self) -> Any:
+#         soup = super().fetch_details_soup()
 
-        self.details["title"] = soup.find("img", attrs={"class": "lazy"})["alt"]
-        self.details["description"] = soup.find(
-            "div", attrs={"class": "des2"}
-        ).get_text()
-        self.details["episodes"] = soup.find(
-            "ul", attrs={"id": "ul_playlist_1"}
-        ).contents
-        self.details["year"] = (
-            soup.find({"dd": re.compile(r"<b>年代：</b>\n[0-9]{4}")})
-            .get_text()
-            .split("</b>")[-1]
-        )
+#         self.details["title"] = soup.find("img", attrs={"class": "lazy"})["alt"]
+#         self.details["description"] = soup.find(
+#             "div", attrs={"class": "des2"}
+#         ).get_text()
+#         self.details["episodes"] = soup.find(
+#             "ul", attrs={"id": "ul_playlist_1"}
+#         ).contents
+#         self.details["year"] = (
+#             soup.find({"dd": re.compile(r"<b>年代：</b>\n[0-9]{4}")})
+#             .get_text()
+#             .split("</b>")[-1]
+#         )
 
-        print(self.details["year"])
+#         print(self.details["year"])
 
-        return self.details
+#         return self.details
 
-    def fetch_episode_m3u8(self, episode_url):
-        response = HTMLSession().get(f"https://buding3.com{episode_url}")
-        print(f"https://buding3.com{episode_url}")
-        # BUG: Request timeout
-        response.html.render(wait=2, sleep=3)
+#     def fetch_episode_m3u8(self, episode_url):
+#         response = HTMLSession().get(f"https://buding3.com{episode_url}")
+#         print(f"https://buding3.com{episode_url}")
+#         # BUG: Request timeout
+#         response.html.render(wait=2, sleep=3)
 
-        source_str = "https://www.yhdmp.cc" + response.html.find("iframe")["src"]
-        print(source_str)
-        # source_str = re.findall(r'https%3A.*m3u8', source_str)[0]
+#         source_str = "https://www.yhdmp.cc" + response.html.find("iframe")["src"]
+#         print(source_str)
+#         # source_str = re.findall(r'https%3A.*m3u8', source_str)[0]
 
-        if len(source_str) == 0:
-            print("No Source available...")
-            return
-        episode_m3u8 = source_str
+#         if len(source_str) == 0:
+#             print("No Source available...")
+#             return
+#         episode_m3u8 = source_str
 
-        return episode_m3u8
+#         return episode_m3u8

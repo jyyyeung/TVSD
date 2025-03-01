@@ -4,25 +4,30 @@ from typing import Any
 
 from bs4 import BeautifulSoup, ResultSet, Tag
 
-from tvsd.sources.base import Source
+from tvsd.sources.base import Source, zh_variation
 
 
 class OLEVOD(Source):
     """Olevod class"""
 
-    def __init__(self) -> None:
-        super().__init__()  # Call parent constructor
-        self.__status__ = "active"
-        # self._domains = ["https://olevod.com", "https://olevod1.com"]
-        self._domains = ["https://olevod.com"]
-        self._is_simplified = True
+    domains: list[str] = ["https://olevod.com"]
+    zh: zh_variation = "simplified"
+    __status__: str = "active"
+    name: str = "Olevod"
+
+    # def __init__(self) -> None:
+    #     super().__init__()  # Call parent constructor
+    #     self.__status__ = "active"
+    #     # self._domains = ["https://olevod.com", "https://olevod1.com"]
+    #     self._domains = ["https://olevod.com"]
+    #     self._is_simplified = True
 
     ### SEARCHING FOR A SHOW ###
 
     def _search_url(self, search_query: str) -> str:
         return f"{self._domain}/index.php/vod/search.html?wd={search_query}&submit="
 
-    def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Any]:
+    def _get_query_results(self, query_result_soup: BeautifulSoup) -> ResultSet[Tag]:
         # TODO: Auto JS Guard
         logging.debug(query_result_soup)
         # query_result = []

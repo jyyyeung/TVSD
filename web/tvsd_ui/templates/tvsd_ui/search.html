@@ -73,18 +73,68 @@
                 </figure>
               </div>
               <footer class="card-footer">
-                <form method="post" action="{% url 'tvsd_ui:download' %}" class="card-footer-item">
-                  {% csrf_token %}
-                  <input type="hidden" name="details_url" value="{{ result.details_url }}" />
-                  <button type="submit" class="button is-success is-small is-fullwidth">
-                    <span class="icon"><i class="fas fa-download"></i></span>
-                    <span>Download</span>
-                  </button>
-                </form>
+                <button class="card-footer-item button is-success is-small is-fullwidth"
+                        onclick="showEpisodeModal({{ result.index }})"
+                >
+                  <span class="icon"><i class="fas fa-download"></i></span>
+                  <span>Download</span>
+                </button>
               </footer>
             </div>
           </div>
         {% endfor %}
+      </div>
+    </div>
+
+    <!-- Episode Selection Modal -->
+    <div id="episodeModal" class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Select Episodes to Download</p>
+          <button class="delete" aria-label="close" onclick="closeEpisodeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+          <form id="episodeForm" method="post" action="{% url 'tvsd_ui:download' %}">
+            {% csrf_token %}
+            <input type="hidden" name="details_url" id="details_url">
+            <input type="hidden" name="index" id="index">
+            <div class="field">
+              <div class="control">
+                <button type="button" class="button is-info is-small mb-3" onclick="selectAllEpisodes()">
+                  Select All Episodes
+                </button>
+                <button type="button" class="button is-info is-small mb-3 ml-2" onclick="deselectAllEpisodes()">
+                  Deselect All
+                </button>
+              </div>
+            </div>
+            <div id="episodeList" class="content">
+              <!-- Episodes will be loaded here -->
+              <div class="has-text-centered">
+                <span class="icon is-large">
+                  <i class="fas fa-spinner fa-pulse"></i>
+                </span>
+                <p>Loading episodes...</p>
+                {% comment %} List episodes here {% endcomment %}
+                <div id="episodeList">
+                  {% for episode in episodes %}
+                    <div class="column is-6">
+                      <label class="checkbox">
+                        <input type="checkbox" name="episodes" value="{{ episode.id }}">
+                        Episode {{ episode.number }}: {{ episode.title }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </form>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" onclick="submitEpisodeForm()">Download Selected</button>
+          <button class="button" onclick="closeEpisodeModal()">Cancel</button>
+        </footer>
       </div>
     </div>
   {% endif %}
@@ -92,7 +142,7 @@
 
 {% block extra_js %}
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    {% comment %} document.addEventListener('DOMContentLoaded', function () {
       const searchForm = document.querySelector('form')
       const searchButton = document.getElementById('search-button')
       const resultsContainer = document.querySelector('.mt-4')
@@ -141,6 +191,84 @@
           searchButton.classList.remove('is-loading')
         }
       })
-    })
+    }) {% endcomment %}
+
+    function showEpisodeModal(index) {
+      document.getElementById('episodeModal').classList.add('is-active');
+
+      // Fetch episodes for the show
+      fetch(`{% url "tvsd_ui:get_episodes_index" %}?index=${index}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log("data", data);
+          const episodeList = document.getElementById('episodeList');
+          episodeList.innerHTML = '';
+
+          if (data.error) {
+            episodeList.innerHTML = `
+              <div class="notification is-danger">
+                ${data.error}
+              </div>
+            `;
+            return;
+          }
+
+          // Group episodes by season
+          const seasons = {};
+          data.episodes.forEach(episode => {
+            const season = episode.season || 1;
+            if (!seasons[season]) {
+              seasons[season] = [];
+            }
+            seasons[season].push(episode);
+          });
+
+          // Create season sections with episodes
+          Object.keys(seasons).sort().forEach(season => {
+            const seasonDiv = document.createElement('div');
+            seasonDiv.className = 'mb-4';
+            seasonDiv.innerHTML = `
+              <h4 class="title is-5">Season ${season}</h4>
+              <div class="columns is-multiline">
+                ${seasons[season].map(episode => `
+                  <div class="column is-6">
+                    <label class="checkbox">
+                      <input type="checkbox" name="episodes" value="${episode.id || episode.number}">
+                      Episode ${episode.number}: ${episode.title}
+                    </label>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+            episodeList.appendChild(seasonDiv);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching episodes:', error);
+          document.getElementById('episodeList').innerHTML = `
+            <div class="notification is-danger">
+              Error loading episodes. Please try again.
+            </div>
+          `;
+        });
+    }
+
+    function closeEpisodeModal() {
+      document.getElementById('episodeModal').classList.remove('is-active');
+    }
+
+    function selectAllEpisodes() {
+      document.querySelectorAll('#episodeList input[type="checkbox"]')
+        .forEach(checkbox => checkbox.checked = true);
+    }
+
+    function deselectAllEpisodes() {
+      document.querySelectorAll('#episodeList input[type="checkbox"]')
+        .forEach(checkbox => checkbox.checked = false);
+    }
+
+    function submitEpisodeForm() {
+      document.getElementById('episodeForm').submit();
+    }
   </script>
 {% endblock %}

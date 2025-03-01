@@ -5,14 +5,18 @@ import json
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Annotated, Any, List, Literal, TYPE_CHECKING, Optional
 
 import chinese_converter
 from bs4 import BeautifulSoup, ResultSet, Tag
+from pydantic import BaseModel, Field
 
-from tvsd.types import EpisodeDetailsFromURL, SeasonDetailsFromURL
-from tvsd.types.season import Season
 from tvsd.utils import SCRAPER
+
+# from tvsd.types.season_details import SeasonDetailsFromURL
+
+
+from tvsd.types.episode import EpisodeDetailsFromURL
 
 
 def load_source_details(season_dir: str) -> None:
@@ -30,7 +34,7 @@ def load_source_details(season_dir: str) -> None:
         return None
     show_details = json.load(open(dir_file, "r"))
     # print(show_details)
-    source = Source(show_details["source"])
+    source = Source(**show_details["source"])
 
     # TODO: Complete this
 
@@ -44,26 +48,100 @@ def load_source_details(season_dir: str) -> None:
     #     return OLEVOD.from_json(show_details)
 
 
-class Source(ABC):
-    """Source class"""
+zh_variation = Annotated[
+    Literal["simplified", "traditional", "none"],
+    Field(
+        default="none",
+        description="The preferred Chinese variation of the source",
+    ),
+]
 
-    def __init__(self) -> None:
-        self._query: str
-        self._results: List[Season]
-        self._exists_locally: bool
-        self._chosen_show: Season
 
-        self._query_result_soup: BeautifulSoup
-        self._result_list: List[Season] = []
-        self._query_results: ResultSet[Any]
+# class SourceConfig(BaseModel):
+#     """Configuration for a source"""
 
-        self.__status__ = "parent"
+#     domains: List[str] = Field(default_factory=list)
+#     status: str = "parent"
+#     zh_variation: Literal["simplified", "traditional", "none"] = "none"
+#     name: Optional[str] = None
 
-        self._domains: List[str] = []
-        self._domain_index: int = 0
 
-        self._is_simplified: bool = False
-        self._is_traditional: bool = False
+class Source(BaseModel, ABC):
+    """Base Class for all Sources"""
+
+    # Configuration fields
+    domains: List[str] = Field(default_factory=list)
+    __status__: str = "parent"
+    zh: zh_variation = "none"
+    name: str | None = None
+
+    # Runtime state (not stored in model)
+    _domain_index: int = 0
+    _query: str | None = None
+    _results: List[Any] = []
+    _exists_locally: bool = False
+    _chosen_show: Any | None = None
+    _query_result_soup: BeautifulSoup | None = None
+
+    # class Config:
+    #     arbitrary_types_allowed = True
+
+    # def __init__(self) -> None:
+    #     self.config = SourceConfig(
+    #         domains=getattr(self, "domains", []),
+    #         status=getattr(self, "__status__", "parent"),
+    #         zh=getattr(self, "zh", "none"),
+    #         name=getattr(self, "name", None),
+    #     )
+
+    #     self._domain_index: int = 0
+    #     self._query: str | None = None
+    #     self._results: List[Any] = []
+    #     self._exists_locally: bool = False
+    #     self._chosen_show: Any | None = None
+    #     self._query_result_soup: BeautifulSoup | None = None
+
+    @property
+    def source_name(self) -> str:
+        """Returns the name of the class"""
+        return self.name or self.__class__.__name__
+
+    # @property
+    # def __status__(self) -> str:
+    #     """Returns the status of the source"""
+    #     return self.config.status
+
+    @property
+    def _domain(self) -> str:
+        return self.domains[self._domain_index]
+
+    @property
+    def is_simplified(self) -> bool:
+        """Checks if the source prefers simplified Chinese"""
+        return self.zh == "simplified" or self.zh == "none"
+
+    @property
+    def is_traditional(self) -> bool:
+        """Checks if the source prefers traditional Chinese"""
+        return self.zh == "traditional"
+
+    # def __init__(self) -> None:
+    #     self._query: str
+    #     self._results: List[Season]
+    #     self._exists_locally: bool
+    #     self._chosen_show: Season
+
+    #     self._query_result_soup: BeautifulSoup
+    #     self._result_list: List[Season] = []
+    #     self._query_results: ResultSet[Any]
+
+    #     self.__status__ = "parent"
+
+    #     self._domains: List[str] = []
+    #     self._domain_index: int = 0
+
+    #     self._is_simplified: bool = False
+    #     self._is_traditional: bool = False
 
     def __str__(self) -> str:
         return self.source_name
@@ -74,42 +152,42 @@ class Source(ABC):
 
     ### SEARCHING FOR A SHOW ###
 
-    def query_from_source(self, search_query: str) -> List[Season]:
-        """
-        query_from_source Searches for a show
+    # def query_from_source(self, search_query: str) -> List["Season"]:
+    #     """
+    #     query_from_source Searches for a show
 
-        Args:
-            search_query (str): Query to search for
+    #     Args:
+    #         search_query (str): Query to search for
 
-        Returns:
-            List[Season]: List of shows
-        """
-        if self._is_simplified:
-            search_query = chinese_converter.to_simplified(search_query)
-        if self._is_traditional:
-            search_query = chinese_converter.to_traditional(search_query)
+    #     Returns:
+    #         List[Season]: List of shows
+    #     """
+    #     if self.is_simplified:
+    #         search_query = chinese_converter.to_simplified(search_query)
+    #     if self.is_traditional:
+    #         search_query = chinese_converter.to_traditional(search_query)
 
-        search_url = self._search_url(search_query)
+    #     search_url = self._search_url(search_query)
 
-        logging.info("Searching %s...", {search_query})
-        logging.debug("Searching for %s in %s", search_query, search_url)
+    #     logging.info("Searching %s...", {search_query})
+    #     logging.debug("Searching for %s in %s", search_query, search_url)
 
-        query_result_soup = self.get_query_result_soup(search_url)
-        if query_result_soup is not None:
-            query_results = self._get_query_results(query_result_soup)
-            # Below are same for all
-            self._result_list: List[Season] = []
+    #     query_result_soup = self.get_query_result_soup(search_url)
+    #     if query_result_soup is not None:
+    #         query_results = self._get_query_results(query_result_soup)
+    #         # Below are same for all
+    #         self._result_list: List[Season] = []
 
-            for result in query_results:
-                show = self.parse_from_query(result)
-                if show is not None:
-                    self._result_list.append(show)
+    #         for result in query_results:
+    #             show = self.parse_from_query(result)
+    #             if show is not None:
+    #                 self._result_list.append(show)
 
-        if len(self._result_list) == 0 and len(self._domains) > self._domain_index + 1:
-            self._domain_index += 1
-            return self.query_from_source(search_query)
+    #     if len(self._result_list) == 0 and len(self.domains) > self._domain_index + 1:
+    #         self._domain_index += 1
+    #         return self.query_from_source(search_query)
 
-        return self._result_list
+    #     return self._result_list
 
     @abstractmethod
     def _search_url(self, search_query: str) -> str:
@@ -170,11 +248,11 @@ class Source(ABC):
             Episode: Episode object
         """
 
-        episode_details: EpisodeDetailsFromURL = {
-            "title": chinese_converter.to_simplified(self._set_episode_title(soup)),
-            "url": self._set_relative_episode_url(soup),
-        }
-        return EpisodeDetailsFromURL(episode_details)
+        episode_details: EpisodeDetailsFromURL = EpisodeDetailsFromURL(
+            title=chinese_converter.to_simplified(self._set_episode_title(soup)),
+            url=self._set_relative_episode_url(soup),
+        )
+        return episode_details
 
     @abstractmethod
     def _set_episode_title(self, soup: Tag) -> str:
@@ -202,36 +280,35 @@ class Source(ABC):
 
     ##### PARSE SEASON FROM QUERY RESULT #####
 
-    def parse_from_query(self, query_result: BeautifulSoup) -> "Season | None":
-        """Parses the query result
+    # def parse_from_query(self, query_result: BeautifulSoup) -> "Season | None":
+    #     """Parses the query result
 
-        Args:
-            query_result (BeautifulSoup): Query result
+    #     Args:
+    #         query_result (BeautifulSoup): Query result
 
-        Returns:
-            Season: Season object
-        """
+    #     Returns:
+    #         Season: Season object
+    #     """
+    #     from tvsd.types.season import Season
 
-        details_url = self._get_result_details_url(query_result)
-        if details_url is None:
-            return None
+    #     details_url = self._get_result_details_url(query_result)
+    #     if details_url is None:
+    #         return None
 
-        note = self._get_result_note(query_result)
-        details: "SeasonDetailsFromURL" = self.parse_season_from_details_url(
-            details_url
-        )
-        if details is None:
-            return None
-        season = Season(
-            note=note,
-            details=details,
-            details_url=details_url,
-            fetch_episode_m3u8=self.fetch_episode_m3u8,
-            episodes=details["episodes"],
-            source=self,
-            poster_url=details["poster_url"],
-        )
-        return season
+    #     note = self._get_result_note(query_result)
+    #     details = self.parse_season_from_details_url(details_url)
+    #     if details is None:
+    #         return None
+    #     season = Season(
+    #         note=note,
+    #         details=details,
+    #         details_url=details_url,
+    #         fetch_episode_m3u8=self.fetch_episode_m3u8,
+    #         episodes=details.episodes,
+    #         source=self,
+    #         poster_url=details.poster_url,
+    #     )
+    #     return season
 
     @abstractmethod
     def _get_result_note(self, query_result: BeautifulSoup) -> str:
@@ -271,30 +348,30 @@ class Source(ABC):
 
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
-    def parse_season_from_details_url(
-        self, season_url: str
-    ) -> "SeasonDetailsFromURL | None":
-        """Parses details from details url
+    # def parse_season_from_details_url(
+    #     self, season_url: str
+    # ) -> "SeasonDetailsFromURL | None":
+    #     """Parses details from details url
 
-        Args:
-            details_url (str, optional): Details url to the result page. Defaults to None.
+    #     Args:
+    #         details_url (str, optional): Details url to the result page. Defaults to None.
 
-        Returns:
-            dict: Details found on the details page
-        """
-        soup = self.fetch_details_soup(season_url)
-        if soup is None:
-            return None
-        details: SeasonDetailsFromURL = {
-            "title": chinese_converter.to_simplified(self._set_season_title(soup)),
-            "description": self._set_season_description(soup),
-            "episodes": self._set_season_episodes(soup),
-            "year": self._set_season_year(soup),
-            "poster_url": self._set_season_poster_url(soup),
-        }
+    #     Returns:
+    #         dict: Details found on the details page
+    #     """
+    #     soup = self.fetch_details_soup(season_url)
+    #     if soup is None:
+    #         return None
+    #     details: SeasonDetailsFromURL = SeasonDetailsFromURL(
+    #         title=chinese_converter.to_simplified(self._set_season_title(soup)),
+    #         description=self._set_season_description(soup),
+    #         episodes=self._set_season_episodes(soup),
+    #         year=self._set_season_year(soup),
+    #         poster_url=self._set_season_poster_url(soup),
+    #     )
 
-        # print("Method for finding details from this source is undefined...")
-        return SeasonDetailsFromURL(details)
+    #     # print("Method for finding details from this source is undefined...")
+    #     return details
 
     def fetch_details_soup(self, details_url: str) -> BeautifulSoup | None:
         """Grabs the details page soup
@@ -441,15 +518,5 @@ class Source(ABC):
 
     ################
 
-    @property
-    def source_name(self) -> str:
-        """Returns the name of the class
 
-        Returns:
-            str: Name of the class
-        """
-        return self.__class__.__name__
-
-    @property
-    def _domain(self):
-        return self._domains[self._domain_index]
+Source.model_rebuild()

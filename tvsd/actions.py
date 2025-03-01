@@ -16,9 +16,7 @@ from .search import SearchQuery
 from .utils import dir_exists, is_video
 
 
-def search_media(
-    query: str, sources: List[str] = [], specials_only: bool = False
-) -> List[Season]:
+def search_media(query: str, sources: List[str] = []) -> List[Season]:
     """Search for media
 
     This function searches for media based on the given query string.
@@ -97,6 +95,29 @@ def search_media_and_download(
     else:
         # TODO: Continue here
         return query_instance.chosen_show
+
+
+class DownloadOptions(TypedDict):
+    specials_only: bool
+    episodes: List[int]
+
+
+def download_show(show: Season, options: DownloadOptions) -> None:
+    """Download a show
+
+    This function downloads a show.
+
+    Args:
+        show (Season): The show to download
+    """
+    download_instance = Download(
+        target=show,
+        specials_only=options.specials_only,
+    )
+    if options.episodes:
+        download_instance.download_episodes(options.episodes)
+    else:
+        download_instance.download_all()
 
 
 class ShowDict(TypedDict):

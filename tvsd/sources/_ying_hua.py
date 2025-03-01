@@ -33,49 +33,49 @@ def search_yinghua(query: str) -> [Show]:
     return result_list
 
 
-class YingHua(Show):
-    def __init__(self, result):
-        super().__init__(Source.YingHua, result)
+# class YingHua(Show):
+#     def __init__(self, result):
+#         super().__init__(Source.YingHua, result)
 
-    @classmethod
-    def from_json(cls, json_content):
-        return cls(json_content)
+#     @classmethod
+#     def from_json(cls, json_content):
+#         return cls(json_content)
 
-    @classmethod
-    def from_query(cls, query_result):
-        data = {
-            "title": query_result.find_all("a")[1].get_text(),
-            "note": query_result.find("font").get_text(),
-            "source_id": None,
-            "details_url": f'https://www.yhdmp.cc{query_result.find("a")["href"]}',
-        }
+#     @classmethod
+#     def from_query(cls, query_result):
+#         data = {
+#             "title": query_result.find_all("a")[1].get_text(),
+#             "note": query_result.find("font").get_text(),
+#             "source_id": None,
+#             "details_url": f'https://www.yhdmp.cc{query_result.find("a")["href"]}',
+#         }
 
-        return cls(data)
+#         return cls(data)
 
-    def fetch_details(self):
-        soup = super().fetch_details_soup()
+#     def fetch_details(self):
+#         soup = super().fetch_details_soup()
 
-        self.details["title"] = self.title
-        self.details["episodes"] = soup.find_all("div", attrs={"class": "movurl"})[
-            1
-        ].findChildren("a")
-        self.details["year"] = soup.find(
-            "a", {"href": re.compile(r"/list/\?year=[0-9]{4}")}
-        ).get_text()
+#         self.details["title"] = self.title
+#         self.details["episodes"] = soup.find_all("div", attrs={"class": "movurl"})[
+#             1
+#         ].findChildren("a")
+#         self.details["year"] = soup.find(
+#             "a", {"href": re.compile(r"/list/\?year=[0-9]{4}")}
+#         ).get_text()
 
-        return self.details
+#         return self.details
 
-    def fetch_episode_m3u8(self, episode_url):
-        response = HTMLSession().get(f"https://www.yhdmp.cc{episode_url}")
-        response.html.render(wait=2, sleep=3)
+#     def fetch_episode_m3u8(self, episode_url):
+#         response = HTMLSession().get(f"https://www.yhdmp.cc{episode_url}")
+#         response.html.render(wait=2, sleep=3)
 
-        source_str = (
-            "https://www.yhdmp.cc" + response.html.find("iframe")[0].attrs["src"]
-        )
-        source_str = re.findall(r"https%3A.*m3u8", source_str)[0]
+#         source_str = (
+#             "https://www.yhdmp.cc" + response.html.find("iframe")[0].attrs["src"]
+#         )
+#         source_str = re.findall(r"https%3A.*m3u8", source_str)[0]
 
-        if len(source_str) == 0:
-            print("No Source available...")
-            return
-        episode_m3u8 = unquote(source_str)
-        return episode_m3u8
+#         if len(source_str) == 0:
+#             print("No Source available...")
+#             return
+#         episode_m3u8 = unquote(source_str)
+#         return episode_m3u8

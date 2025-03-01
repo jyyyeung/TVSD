@@ -68,6 +68,7 @@ crispy-bulma = { version = "^0.11.0", optional = true }
 poetry-plugin-export = "^1.8.0"
 
 # Extra dependencies for web
+pydantic = "^2.10.6"
 [tool.poetry.extras]
 web = ["django", "django-unicorn", "django-simple-bulma", "crispy-bulma"]
 

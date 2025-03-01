@@ -37,63 +37,63 @@ def search_iyf(query: str) -> [Show]:
     return result_list
 
 
-class IYF(Show):
-    def __init__(self, result):
-        super().__init__(Source.OLEVOD, result)
+# class IYF(Show):
+#     def __init__(self, result):
+#         super().__init__(Source.OLEVOD, result)
 
-    @classmethod
-    def from_json(cls, json_content):
-        return cls(json_content)
+#     @classmethod
+#     def from_json(cls, json_content):
+#         return cls(json_content)
 
-    @classmethod
-    def from_query(cls, query_result):
-        try:
-            note = query_result.find(
-                "span", attrs={"class": "pic_text text_right"}
-            ).get_text()
-        except AttributeError:
-            note = ""
+#     @classmethod
+#     def from_query(cls, query_result):
+#         try:
+#             note = query_result.find(
+#                 "span", attrs={"class": "pic_text text_right"}
+#             ).get_text()
+#         except AttributeError:
+#             note = ""
 
-        show = query_result.find("a", attrs={"class": "vodlist_thumb"})["href"]
-        source_id = re.search(r"/index.php/vod/detail/id/(\d+).html", show).group(1)
+#         show = query_result.find("a", attrs={"class": "vodlist_thumb"})["href"]
+#         source_id = re.search(r"/index.php/vod/detail/id/(\d+).html", show).group(1)
 
-        data = {
-            "title": query_result.find("a", attrs={"class": "vodlist_thumb"})["title"],
-            "note": note,
-            "source_id": source_id,
-            "details_url": f"https://www.olevod.com/index.php/vod/detail/id/{source_id}.html",
-        }
+#         data = {
+#             "title": query_result.find("a", attrs={"class": "vodlist_thumb"})["title"],
+#             "note": note,
+#             "source_id": source_id,
+#             "details_url": f"https://www.olevod.com/index.php/vod/detail/id/{source_id}.html",
+#         }
 
-        return cls(data)
+#         return cls(data)
 
-    def fetch_details(self):
-        """ """
-        soup = super().fetch_details_soup()
+#     def fetch_details(self):
+#         """ """
+#         soup = super().fetch_details_soup()
 
-        self.details["title"]: str = soup.find(
-            "h2", attrs={"class": "title"}
-        ).get_text()
-        self.details["description"] = (
-            soup.find("div", attrs={"class": "content_desc"}).find("span").get_text()
-        )
-        self.details["episodes"] = soup.find(
-            "ul", attrs={"class": "content_playlist"}
-        ).find_all("li")
-        self.details["year"] = soup.find(
-            "a", {"href": re.compile(r"/index.php/vod/search/year/[0-9]{4}.html")}
-        ).get_text()
+#         self.details["title"]: str = soup.find(
+#             "h2", attrs={"class": "title"}
+#         ).get_text()
+#         self.details["description"] = (
+#             soup.find("div", attrs={"class": "content_desc"}).find("span").get_text()
+#         )
+#         self.details["episodes"] = soup.find(
+#             "ul", attrs={"class": "content_playlist"}
+#         ).find_all("li")
+#         self.details["year"] = soup.find(
+#             "a", {"href": re.compile(r"/index.php/vod/search/year/[0-9]{4}.html")}
+#         ).get_text()
 
-        return self.details
+#         return self.details
 
-    def fetch_episode_m3u8(self, episode_url):
-        episode_details_page = self._scraper.get(
-            "https://www.olevod.com" + episode_url
-        ).content
-        episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
-        episode_script: str = str(
-            episode_soup.find("div", attrs={"class": "player_video"}).find("script")
-        )
-        episode_m3u8 = re.findall(
-            r"https:\\\/\\\/europe.olemovienews.com[\w\d\/\\\.]*.m3u8", episode_script
-        )[0].replace("\\", "")
-        return episode_m3u8
+#     def fetch_episode_m3u8(self, episode_url):
+#         episode_details_page = self._scraper.get(
+#             "https://www.olevod.com" + episode_url
+#         ).content
+#         episode_soup: BeautifulSoup = BeautifulSoup(episode_details_page, "html.parser")
+#         episode_script: str = str(
+#             episode_soup.find("div", attrs={"class": "player_video"}).find("script")
+#         )
+#         episode_m3u8 = re.findall(
+#             r"https:\\\/\\\/europe.olemovienews.com[\w\d\/\\\.]*.m3u8", episode_script
+#         )[0].replace("\\", "")
+#         return episode_m3u8

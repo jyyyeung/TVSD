@@ -3,6 +3,7 @@
 import logging
 import os
 import shutil
+from typing import List
 
 import m3u8_To_MP4
 import typer
@@ -82,7 +83,7 @@ class Download:
         for episode in season.episodes:
             if (
                 typer.prompt(
-                    text=f"Would you like to download this {episode.name}?",
+                    text=f"Would you like to download this {episode.title}?",
                     type=str,
                     default="n",
                 ).capitalize()
@@ -120,7 +121,7 @@ class Download:
                 try:
                     self.download_episode(episode)
                 except ValueError as e:
-                    logging.info("Skipping [%s]: %s", episode.name, e)
+                    logging.info("Skipping [%s]: %s", episode.title, e)
 
         elif isinstance(target, Episode):
             # download episode
@@ -128,7 +129,7 @@ class Download:
 
                 self.download_episode(target)
             except ValueError as e:
-                logging.info("Skipping [%s]: %s", target.name, e)
+                logging.info("Skipping [%s]: %s", target.title, e)
 
         else:
             raise TypeError("Target must be Show, Season or Episode")
@@ -167,6 +168,15 @@ class Download:
         else:
             self.set_regular_ep_index(episode)
 
+    def download_episodes(self, episodes: List["Episode"]) -> None:
+        """Download a list of episodes
+
+        Args:
+            episodes (List[Episode]): List of episodes to download
+        """
+        for episode in episodes:
+            self.download_episode(episode)
+
     def download_episode(self, episode: "Episode") -> None:
         """Download an episode
 
@@ -194,7 +204,7 @@ class Download:
         existing_file: str = episode.file_exists_locally
 
         if existing_file != "":
-            print(f"{episode.name} already exists in directory, skipping... ")
+            print(f"{episode.title} already exists in directory, skipping... ")
             number = int(existing_file.split(" - ")[1].split("E")[1])
             if episode.is_specials:
                 self._specials_index = number + 1
