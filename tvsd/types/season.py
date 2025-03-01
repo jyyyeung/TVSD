@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from tvsd.types.show import Show
 
 
-def check_season_index(show_title: str) -> int:
+def check_season_index(show_title: str, is_interactive: bool = True) -> int:
     """
     Checks the season number for a particular show based on the show title.
 
@@ -59,7 +59,10 @@ def check_season_index(show_title: str) -> int:
         season_index = int(show_title.lower().split("season")[-1])
     elif "part" in show_title:
         season_index = 1
-    elif typer.prompt("这个节目是否续季？（not S1)", default="").capitalize() == "Y":
+    elif (
+        is_interactive
+        and typer.prompt("这个节目是否续季？（not S1)", default="").capitalize() == "Y"
+    ):
         season_index: int = typer.prompt(text="这个节目是第几季？", type=int)
     else:
         season_index = 1
@@ -140,6 +143,7 @@ class Season(BaseModel):
     fetch_episode_m3u8: Callable
     source: "Source"
     show: Show | None = None
+    is_interactive: bool = True
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -209,10 +213,11 @@ class Season(BaseModel):
         Returns:
             int: index of season
         """
-        season_index: int = check_season_index(season_title)
-        season_index = typer.prompt(
-            text="Fix the season index? ", default=season_index, type=int
-        )
+        season_index: int = check_season_index(season_title, self.is_interactive)
+        if self.is_interactive:
+            season_index = typer.prompt(
+                text="Fix the season index? ", default=season_index, type=int
+            )
         self.index = season_index
         return season_index
 

@@ -1,41 +1,50 @@
-import os
+"""
+Models for the tvsd_ui app.
+"""
 
 from django.db import models
 
-from tvsd.config import settings
+
+class SearchSession(models.Model):
+    """Stores search session data"""
+
+    session_id = models.CharField(max_length=100, unique=True)
+    query = models.CharField(max_length=200)
+    sources = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def __str__(self) -> str:
+        return f"Search for '{self.query}' ({self.session_id})"
 
 
-class Show(models.Model):
-    title = models.CharField(max_length=200)
-    source = models.CharField(max_length=200)
-    begin_year = models.CharField(max_length=200)
-    prefix = models.CharField(max_length=200)
+class SearchResult(models.Model):
+    """Stores individual search results"""
 
-    def __str__(self):
-        return self.title
-
-    def relative_show_dir(self):
-        return os.path.join(settings.SERIES_DIR, self.prefix)
-
-
-class Season(models.Model):
-    show = models.ForeignKey(Show, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
-    source = models.CharField(max_length=200)
-    begin_year = models.CharField(max_length=200)
-    prefix = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.title
-
-
-class Episode(models.Model):
+    session = models.ForeignKey(
+        SearchSession, on_delete=models.CASCADE, related_name="results"
+    )
     index = models.IntegerField()
-    season = models.ForeignKey(Season, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    source = models.CharField(max_length=200)
-    begin_year = models.CharField(max_length=200)
-    prefix = models.CharField(max_length=200)
+    note = models.TextField(blank=True, null=True)
+    year = models.CharField(max_length=10, blank=True, null=True)
+    source_name = models.CharField(max_length=100)
+    details_url = models.URLField(max_length=500)
+    poster_url = models.URLField(max_length=500, blank=True, null=True)
+    data = models.JSONField(blank=True, null=True)  # For any additional data
 
-    def __str__(self):
-        return self.title
+    def __str__(self) -> str:
+        return f"{self.title} ({self.index})"
+
+
+class SearchResultEpisode(models.Model):
+    """Stores episodes for search results"""
+
+    result = models.ForeignKey(
+        SearchResult, on_delete=models.CASCADE, related_name="episodes"
+    )
+    number = models.IntegerField()
+    title = models.CharField(max_length=200)
+
+    def __str__(self) -> str:
+        return f"Episode {self.number}: {self.title}"

@@ -9,7 +9,9 @@ from tvsd.types.season import Season, SeasonInfo
 from tvsd.types.season_details import SeasonDetailsFromURL
 
 
-def query_from_source(source: Source, search_query: str) -> List["Season"]:
+def query_from_source(
+    source: Source, search_query: str, is_interactive: bool = True
+) -> List["Season"]:
     """
     query_from_source Searches for a show
 
@@ -36,18 +38,20 @@ def query_from_source(source: Source, search_query: str) -> List["Season"]:
         # Below are same for all
 
         for result in query_results:
-            show = season_from_query_result(source, result)
+            show = season_from_query_result(source, result, is_interactive)
             if show is not None:
                 _result_list.append(show)
 
     if len(_result_list) == 0 and len(source.domains) > source._domain_index + 1:
         source._domain_index += 1
-        return query_from_source(source, search_query)
+        return query_from_source(source, search_query, is_interactive)
 
     return _result_list
 
 
-def season_from_query_result(source: Source, query_result: BeautifulSoup) -> Season:
+def season_from_query_result(
+    source: Source, query_result: BeautifulSoup, is_interactive: bool = True
+) -> Season:
     """
     season_from_query_result Parses a query result into a Season object
 
@@ -72,6 +76,7 @@ def season_from_query_result(source: Source, query_result: BeautifulSoup) -> Sea
         episode_strs=details.episode_strs,
         source=source,
         poster_url=details.poster_url,
+        is_interactive=is_interactive,
     )
     return season
 

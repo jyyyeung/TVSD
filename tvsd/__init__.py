@@ -2,14 +2,25 @@
 TVSD init module
 """
 
-from importlib.metadata import PackageMetadata, metadata
+import importlib.metadata
+from importlib.metadata import PackageMetadata
+from typing import Dict, Optional
 
 from typer import Typer
 
-_DISTRIBUTION_METADATA: PackageMetadata = metadata("tvsd")
-__version__: str = _DISTRIBUTION_METADATA["Version"]
 __app_name__ = "tvsd"
 
+try:
+    _DISTRIBUTION_METADATA: PackageMetadata = importlib.metadata.metadata("tvsd")
+    __version__ = _DISTRIBUTION_METADATA["Version"]
+except importlib.metadata.PackageNotFoundError:
+    # If running from source or in development mode
+    __version__ = "0.0.0.dev0"
+
+app: Dict[str, Optional[str]] = {
+    "name": __app_name__,
+    "version": __version__,
+}
 
 app = Typer(
     name=__name__,

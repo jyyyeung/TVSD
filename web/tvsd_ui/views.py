@@ -3,18 +3,14 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.template.loader import render_to_string
-import os
-import uuid
-import pickle
-from django.conf import settings as django_settings
+from django.utils import timezone
+import datetime
 
-from tvsd.types.season import Season
 from tvsd.utils import get_sources_list
 from web.tvsd_ui.components.config_form import ConfigForm
 from web.tvsd_ui.components.search_bar import SearchBar
-import pickle
+from web.tvsd_ui.models import SearchSession, SearchResult, SearchResultEpisode
 
-# from tvsd.actions import search_media_and_download
 from tvsd.actions import (
     DownloadOptions,
     download_show,
@@ -76,30 +72,67 @@ def search_view(request):
         messages.info(request, f"Searching for {query}")
         print(f"Searching for {query}")
         try:
-            results = search_media(query, sources=sources)
+            results = search_media(query, sources=sources, is_interactive=False)
             print(f"Results: {results}")
-            # Store the index of each result for later reference
-            for index, result in enumerate(results):
-                result.index = index
 
             if results:
-                # Generate a unique ID for this search session
-                search_id = str(uuid.uuid4())
-                request.session['search_id'] = search_id
-                request.session['search_results_count'] = len(results)
-                request.session['has_results'] = True
+                # Create a new search session
+                session_id = f"search_{timezone.now().timestamp()}"
+                expires_at = timezone.now() + datetime.timedelta(hours=24)
 
-                # Save the results to a temporary file
-                temp_dir = os.path.join(django_settings.BASE_DIR, 'temp_data')
-                os.makedirs(temp_dir, exist_ok=True)
+                search_session = SearchSession.objects.create(
+                    session_id=session_id,
+                    query=query,
+                    sources=sources,
+                    expires_at=expires_at,
+                )
 
-                pickle_path = os.path.join(temp_dir, f"{search_id}.pickle")
-                with open(pickle_path, 'wb') as f:
-                    pickle.dump(results, f)
+                # Store each result in the database
+                for index, result in enumerate(results):
+                    search_result = SearchResult.objects.create(
+                        session=search_session,
+                        index=index,
+                        title=result.title if hasattr(result, "title") else "",
+                        note=result.note if hasattr(result, "note") else "",
+                        year=result.year if hasattr(result, "year") else "",
+                        source_name=(
+                            result.source.__class__.__name__
+                            if hasattr(result, "source")
+                            else ""
+                        ),
+                        details_url=(
+                            result.details_url if hasattr(result, "details_url") else ""
+                        ),
+                        poster_url=(
+                            result.poster_url if hasattr(result, "poster_url") else ""
+                        ),
+                    )
 
+                    # Store the result's details URL in the session for later use
+                    if hasattr(result, "details_url"):
+                        result.fetch_details()
+                        # Store episodes if available
+                        if hasattr(result, "episodes"):
+                            for episode in result.episodes:
+                                SearchResultEpisode.objects.create(
+                                    result=search_result,
+                                    number=(
+                                        episode.episode_number
+                                        if hasattr(episode, "episode_number")
+                                        else 0
+                                    ),
+                                    title=(
+                                        episode.title
+                                        if hasattr(episode, "title")
+                                        else ""
+                                    ),
+                                )
+
+                # Store the session ID in the user's session
+                request.session["search_session_id"] = session_id
                 messages.success(request, f'Found {len(results)} results for "{query}"')
             else:
-                request.session['has_results'] = False
+                request.session["search_session_id"] = None
                 messages.warning(request, f'No results found for "{query}"')
         except Exception as e:
             messages.error(request, f"Error: {str(e)}")
@@ -152,37 +185,33 @@ def get_episodes_index(request):
     except ValueError:
         return JsonResponse({"error": "Index must be an integer"}, status=400)
 
-    # Check if we have results in the session
-    if not request.session.get('has_results', False):
-        return JsonResponse({"error": "No search results found in session"}, status=400)
+    # Check if we have a search session ID in the user's session
+    session_id = request.session.get("search_session_id")
+    if not session_id:
+        return JsonResponse({"error": "No active search session found"}, status=400)
 
     try:
-        # Get the search ID from the session
-        search_id = request.session.get('search_id')
-        if not search_id:
-            return JsonResponse({"error": "No search ID found in session"}, status=400)
+        # Get the search session from the database
+        search_session = SearchSession.objects.get(session_id=session_id)
 
-        # Load the results from the temporary file
-        temp_dir = os.path.join(django_settings.BASE_DIR, 'temp_data')
-        pickle_path = os.path.join(temp_dir, f"{search_id}.pickle")
+        # Get the result with the specified index
+        search_result = SearchResult.objects.get(session=search_session, index=index)
 
-        if not os.path.exists(pickle_path):
-            return JsonResponse({"error": "Search results file not found"}, status=400)
+        # Get the episodes for this result
+        episodes = SearchResultEpisode.objects.filter(result=search_result)
 
-        with open(pickle_path, 'rb') as f:
-            seasons = pickle.load(f)
-
-        if index < 0 or index >= len(seasons):
-            return JsonResponse({"error": f"Index {index} out of range"}, status=400)
-
-        print(f"Seasons: {seasons}")
-        season = seasons[index]
-        season.fetch_details()
-        episodes = [
-            {"number": ep.episode_number, "title": ep.title} for ep in season.episodes
+        # Format the episodes for the response
+        episode_data = [
+            {"number": episode.number, "title": episode.title} for episode in episodes
         ]
-        print(f"Episodes: {episodes}")
-        return JsonResponse({"episodes": episodes})
+
+        return JsonResponse({"episodes": episode_data})
+    except SearchSession.DoesNotExist:
+        return JsonResponse({"error": "Search session not found"}, status=400)
+    except SearchResult.DoesNotExist:
+        return JsonResponse(
+            {"error": f"Result with index {index} not found"}, status=400
+        )
     except Exception as e:
         return JsonResponse(
             {"error": f"Error processing episodes: {str(e)}"}, status=500

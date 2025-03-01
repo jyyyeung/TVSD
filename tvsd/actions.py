@@ -16,7 +16,9 @@ from .search import SearchQuery
 from .utils import dir_exists, is_video
 
 
-def search_media(query: str, sources: List[str] = []) -> List[Season]:
+def search_media(
+    query: str, sources: List[str] = [], is_interactive: bool = True
+) -> List[Season]:
     """Search for media
 
     This function searches for media based on the given query string.
@@ -36,7 +38,7 @@ def search_media(query: str, sources: List[str] = []) -> List[Season]:
 
     logging.debug("Media Root: %s", settings.MEDIA_ROOT)
 
-    query_instance = SearchQuery(query, sources=sources)
+    query_instance = SearchQuery(query, sources=sources, interactive=is_interactive)
 
     if not dir_exists(path=settings.TEMP_ROOT, create_if_not=settings.CREATE_TEMP_ROOT):
         raise typer.Exit(code=1)
@@ -117,7 +119,7 @@ def download_show(show: Season, options: DownloadOptions) -> None:
     if options.episodes:
         download_instance.download_episodes(options.episodes)
     else:
-        download_instance.download_all()
+        download_instance.download_all(target=show)
 
 
 class ShowDict(TypedDict):

@@ -29,11 +29,14 @@ INSTALLED_APPS: list[str] = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "django_simple_bulma",
+    # Third party apps
     "crispy_forms",
     "crispy_bulma",
-    "tvsd_ui",
     "django_unicorn",
+    "django_simple_bulma",
+    # Local apps
+    "web.tvsd_ui",
+    # "tvsd_ui",
 ]
 
 MIDDLEWARE: list[str] = [

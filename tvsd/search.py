@@ -13,7 +13,7 @@ from rich.table import Table
 
 
 # from tvsd.sources import *
-from tvsd import sources
+from tvsd import sources as sources_module
 from tvsd.sources.base import Source
 from tvsd.types.query import query_from_source
 
@@ -118,7 +118,7 @@ class SearchQuery:
 
         logging.debug("Searching for %s", self._query)
 
-        for _, module_name, __ in pkgutil.walk_packages(sources.__path__):
+        for _, module_name, __ in pkgutil.walk_packages(sources_module.__path__):
             logging.debug("Found %s...", module_name)
             # Ignore template files
             if module_name.startswith("_"):
@@ -137,7 +137,9 @@ class SearchQuery:
                     continue
                 # Source is active
                 if issubclass(cls_obj, Source) and cls_obj().__status__ == "active":
-                    query_results += query_from_source(cls_obj(), self._query)
+                    query_results += query_from_source(
+                        cls_obj(), self._query, self._interactive
+                    )
 
         table = Table("index", "Title", "Source", "Note")
 

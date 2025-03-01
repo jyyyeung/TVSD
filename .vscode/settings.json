@@ -1,5 +1,8 @@
 {
-  "cSpell.words": ["TVSD", "typer"],
+  "cSpell.words": [
+    "TVSD",
+    "typer"
+  ],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
@@ -8,5 +11,21 @@
   "docwriter.progress.trackFunctions": false,
   "docwriter.style": "Google",
   "docwriter.hotkey.mac": "⌘ + .",
-  "conventionalCommits.scopes": ["CLI", "Source"]
+  "conventionalCommits.scopes": [
+    "CLI",
+    "Source"
+  ],
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "default",
+      "database": "./web/db.sqlite3"
+    }
+  ],
+  "pylint.args": [
+    "load-plugins=pylint_django"
+  ],
+  "pylint.enabled": true
 }
