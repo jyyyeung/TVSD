@@ -116,7 +116,7 @@ class SearchQuery:
             # Ignore template files
             if module_name.startswith("_"):
                 continue
-            if self._sources is not [] and module_name not in self._sources:
+            if len(self._sources) > 0 and module_name not in self._sources:
                 logging.debug(
                     "Skipping %s because it is not in the sources list", module_name
                 )

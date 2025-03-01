@@ -61,6 +61,7 @@ def search_view(request):
     if request.method == "POST":
         query = request.POST.get("query")
         sources = request.POST.getlist("sources")
+        sources = [source for source in sources if source != ""]
         specials_only = request.POST.get("specials_only") == "on"
         messages.info(request, f"Searching for {query}")
         print(f"Searching for {query}")
