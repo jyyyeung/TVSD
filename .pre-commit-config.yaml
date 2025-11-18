@@ -1,5 +1,5 @@
 exclude: .git|.tox
-default_stages: [commit]
+default_stages: [pre-commit]
 fail_fast: true
 
 repos:
@@ -8,7 +8,7 @@ repos:
         stages: [commit-msg]
       - id: commitizen-branch
         stages:
-          - push
+          - pre-push
     repo: https://github.com/commitizen-tools/commitizen
     rev: v3.14.1
   - repo: https://github.com/pre-commit/pre-commit-hooks
