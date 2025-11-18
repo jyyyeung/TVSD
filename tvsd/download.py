@@ -116,6 +116,12 @@ class Download:
             self._specials_index = 1
             self._regular_ep_index = 1
 
+            if not target.episodes:
+                logging.warning("No episodes found for season '%s'. The source may not have loaded episode data.", target.title)
+                return
+
+            logging.info("Found %d episodes to download", len(target.episodes))
+
             for episode in target.episodes:
                 try:
                     self.download_episode(episode)

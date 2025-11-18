@@ -93,9 +93,23 @@ def callback(
     if verbose:
         typer.echo("Will write verbose output")
         settings.set("verbose", True)
-        logging.basicConfig(level=logging.DEBUG)
+        # Force reconfiguration of logging to ensure DEBUG level is set
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)s | %(levelname)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            force=True,  # Python 3.8+ - force reconfiguration
+        )
+        # Also set root logger level explicitly
+        logging.getLogger().setLevel(logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s | %(levelname)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            force=True,
+        )
+        logging.getLogger().setLevel(logging.INFO)
 
     if series_dir:
         settings.set("series_dir", series_dir)
