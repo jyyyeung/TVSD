@@ -1,12 +1,14 @@
 # TV Series Downloader [电视节目下载程序]
 
-[![GitHub version](https://badge.fury.io/gh/SheepYY039%2FTVSD.svg)](https://badge.fury.io/gh/SheepYY039%2FTVSD) [![PyPI version](https://badge.fury.io/py/tvsd.svg)](https://badge.fury.io/py/tvsd)
+[![GitHub version](https://badge.fury.io/gh/jyyyeung%2FTVSD.svg)](https://badge.fury.io/gh/jyyyeung%2FTVSD) [![PyPI version](https://badge.fury.io/py/tvsd.svg)](https://badge.fury.io/py/tvsd)
 [![PyPi Version](https://img.shields.io/pypi/v/tvsd.svg)](https://pypi.python.org/pypi/tvsd/)
 
 [![PyPi Python Versions](https://img.shields.io/pypi/pyversions/tvsd.svg)](https://pypi.python.org/pypi/tvsd/)
 [![PyPi Downloads](http://pepy.tech/badge/tvsd)](http://pepy.tech/project/tvsd)
 
-> This Program is under active development
+> **Status: parked, still working (as of 2026-11).** This is a personal tool that is revived
+> occasionally rather than actively developed. See [Current status](#current-status) for what
+> works today and how to check it yourself in under a minute.
 
 A small program to download TV and movies from websites, and saves files in a [Plex](https://www.plex.tv/)-readable format.
 
@@ -38,19 +40,56 @@ tvsd search <your-search-query> # Search query for media from sources and downlo
 tvsd clean-temp # Removes everything in temp downloading directory, useful after app crashed or aborted
 ```
 
-More features coming soon, feel free to raise feature request or issues.
+## Current status
+
+TVSD scrapes sites that are not built to be scraped, so it decays when a site changes. Rather
+than pretend otherwise, the repo ships a smoke test that says exactly which layer rotted:
+
+```bash
+make install-deps  # poetry install + yt-dlp/ffmpeg prerequisites
+make test          # unit tests, no network
+make smoke         # live check: search -> details -> m3u8 -> Plex naming
+```
+
+`make smoke` prints one PASS/FAIL line per layer and exits non-zero on failure, so "is this
+still working?" is a 60-second question instead of an afternoon of debugging.
+
+| Date | Layer | State |
+| --- | --- | --- |
+| 2026-11 | `xiao_bao` (ibaotv.com, formerly xiaoheimi.net) | working |
+| 2026-11 | `olevod` | dead — the site is now a Vue SPA with a WASM/encrypted player |
+| 2026-11 | `ssstv` | dead — 403 / timeouts |
+
+Sources are marked `__status__ = "active"|"dead"` and only active ones are queried, so dead
+sources cost nothing. Reviving one means rewriting its ~90-line scraper in `tvsd/sources/`, then
+running `make smoke` against it.
+
+### Prerequisites
+
+- Python 3.10+
+- `ffmpeg` on `PATH` (remuxing the downloaded segments)
+- `yt-dlp` on `PATH` or installed in the same environment (the download engine)
+
+```bash
+brew install ffmpeg yt-dlp          # macOS
+sudo apt install ffmpeg yt-dlp      # Debian/Ubuntu
+pip install tvsd "yt-dlp>=2025.1.1" # or let pip provide yt-dlp
+```
+
+`tvsd` checks both tools before it starts a download and tells you what is missing.
 
 ## Contribution
 
 Contributions are welcomed, contribution methods and accurate details will be included very soon.
 
 ```bash
-git clone https://github.com/SheepYY039/tvsd.git
+git clone https://github.com/jyyyeung/TVSD.git
 cd tvsd
 make setup-dev-env # install pre-commit hooks
-poetry install
-# python3 setup.py install
+make install-deps   # poetry install + ffmpeg/yt-dlp check
 cp .env.example .env # update .env according to your environment
+make test           # unit tests
+make smoke          # live check against the sources
 ```
 
 ### Versioning
@@ -70,23 +109,13 @@ poetry build
 poetry publish
 ```
 
-### Bulma Configuration
-
-Quoting from the `django-simple-bulma` documentation
-
-> Run `python manage.py collectstatic` command in order to build Bulma and move it to your `staticfiles` folder. Please note that you will need to use this command every time you make a change to the configuration, as this is the only way to rebuild the Bulma css file.
-
-```bash
-poetry run python manage.py collectstatic
-```
-
-## Features
 
 - [x] Search & Download Shows
+- [x] Plex naming (season/episode detection, Season 00 for specials)
+- [x] Resume, retries and progress via `yt-dlp`
 - [ ] Track new episodes
-- [ ] Web UI
-- [ ] Docker
-- [ ] Add Searching Progress Bar
+- [ ] TMDB/IMDB metadata lookup (issue #1)
+- [ ] Per-source maintenance (see [Current status](#current-status))
 
 ## Inspired By and Credits to
 

@@ -147,7 +147,7 @@ soup = BeautifulSoup(response.content, "html.parser")
 1. Check if episode exists locally
 2. Fetch episode page
 3. Extract m3u8 URL from player script
-4. Download using `m3u8_To_MP4.multithread_uri_download()`
+4. Download using `tvsd.downloader.download_m3u8()` (wraps `yt-dlp`, which needs `ffmpeg`)
 5. Save to destination directory
 6. Clean up temp directory
 
@@ -177,7 +177,8 @@ soup = BeautifulSoup(response.content, "html.parser")
 - Check temp directory permissions
 - Verify media root exists and is writable
 - Check network connectivity
-- May need to update `m3u8_To_MP4` library
+- Update `yt-dlp` (`terminal: pip install -U yt-dlp`) - the sites it fetches change often
+- Run `make smoke` to see which layer broke
 
 ### Code Style
 
@@ -211,20 +212,14 @@ poetry config pypi-token.pypi <token>
 poetry publish
 ```
 
-### Django Web UI Development
+### Smoke test
+
+The Django web UI was removed; the CLI is the whole product now. To check that the
+scrapers still match the live sites:
 
 ```bash
-# Run Django dev server
-poetry run python manage.py runserver
-
-# Collect static files (for Bulma)
-poetry run python manage.py collectstatic
-
-# Create migrations
-poetry run python manage.py makemigrations
-
-# Apply migrations
-poetry run python manage.py migrate
+poetry run python scripts/smoke.py            # full live check
+poetry run python scripts/smoke.py --offline  # engine + config only
 ```
 
 ### Testing
@@ -253,7 +248,7 @@ poetry run pytest --cov=tvsd
 4. **Concurrent downloads**: Download multiple episodes simultaneously
 5. **Source health checks**: Validate sources before use
 6. **Better error recovery**: Retry logic, fallback sources
-7. **Web UI completion**: Finish Django interface
+7. **Per-source scraper refresh**: rewrite a dead source in `tvsd/sources/`
 8. **API**: REST API for programmatic access
 9. **Notifications**: Alert when new episodes available
 10. **Auto-organization**: Better file organization options

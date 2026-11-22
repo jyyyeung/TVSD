@@ -5,18 +5,23 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python Debugger: Django",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/manage.py",
-      "args": ["runserver"],
-      "django": true
-    },
-    {
       "name": "Python Debugger: Module",
       "type": "debugpy",
       "request": "launch",
       "module": "tvsd"
+    },
+    {
+      "name": "Python Debugger: Smoke test",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/smoke.py"
+    },
+    {
+      "name": "Python Debugger: Module CLI - search",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "tvsd",
+      "args": ["--env", "dev", "--verbose", "search", "庆余年"]
     }
   ]
 }

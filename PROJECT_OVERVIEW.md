@@ -85,18 +85,6 @@ Each source must implement:
   - `DRY_RUN` - Test mode without actual downloads
   - `sources` - List of active sources
 
-#### 7. **Web UI** (`pages/`)
-
-- Django-based web interface (incomplete)
-- Components:
-  - `SearchBar` - Search form component
-  - `ConfigForm` - Settings form component
-- Views:
-  - `index_view` - Main search page
-  - `settings_view` - Configuration page
-- Uses Django Unicorn for reactive components
-- Uses Bulma CSS framework
-
 #### 8. **Utilities** (`tvsd/utils.py`)
 
 - `SCRAPER` - CloudScraper instance for web scraping
@@ -127,12 +115,10 @@ TVSD/
 │       ├── show.py         # Show class
 │       ├── season.py       # Season class
 │       └── episode.py      # Episode class
-├── pages/                   # Django web UI
-│   ├── views.py            # Django views
-│   ├── components/         # UI components
-│   └── templates/           # HTML templates
-├── config/                  # Django config
 ├── settings.yaml            # Default configuration
+├── scripts/
+│   └── smoke.py            # Live health check (search -> details -> m3u8 -> naming)
+├── tests/                   # Unit tests (no network)
 ├── pyproject.toml          # Poetry dependencies
 └── README.md               # User documentation
 ```
@@ -154,7 +140,7 @@ TVSD/
    - For each episode:
      - Check if already exists locally
      - Fetch m3u8 URL from source
-     - Download using `m3u8_To_MP4` library
+     - Download using `yt-dlp` via `tvsd.downloader.download_m3u8()` (requires `ffmpeg`)
      - Save to: `{MEDIA_ROOT}/{SERIES_DIR}/{Show Name (Year)}/Season {NN}/{filename}.mp4`
      - Specials go to: `{MEDIA_ROOT}/{SERIES_DIR}/{Show Name (Year)}/{SPECIALS_DIR}/`
 
@@ -162,14 +148,11 @@ TVSD/
 
 - **typer** - CLI framework
 - **rich** - Terminal UI (tables, formatting)
-- **m3u8_To_MP4** - Download and convert m3u8 streams
+- **yt-dlp** - Download engine (HLS handling, resume, retries); needs `ffmpeg` on `PATH`
 - **beautifulsoup4** - HTML parsing
-- **cloudscraper** - Web scraping (bypasses Cloudflare)
+- **cloudscraper** - Web scraping (bypasses Cloudflare), pinned to a commit
 - **chinese-converter** - Chinese character conversion
 - **dynaconf** - Configuration management
-- **django** - Web UI (incomplete)
-- **django-unicorn** - Reactive components
-- **django-simple-bulma** - Bulma CSS integration
 
 ## Naming Convention
 
@@ -272,7 +255,7 @@ cp .env.example .env  # Configure environment
 2. **Logging**: Better structured logging
 3. **Testing**: More comprehensive test coverage
 4. **Documentation**: API documentation, source plugin guide
-5. **Web UI**: Complete the Django web interface
+5. **Source plugins**: Make sources pluggable so a dead site is a one-file fix
 6. **Database**: Add proper database for tracking shows
 7. **Progress tracking**: Better download progress indicators
 8. **Resume downloads**: Handle interrupted downloads
