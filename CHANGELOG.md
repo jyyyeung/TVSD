@@ -1,3 +1,36 @@
+## v1.5.0 (2026-11-22)
+
+Park-hardening revival: the CLI works again, and it is now cheap to find out when it stops.
+
+### Feat
+
+- **download**: replace the unmaintained `m3u8_To_MP4` engine with `yt-dlp` (resume, retries,
+  progress and the ffmpeg remux come from the engine); `ffmpeg` + `yt-dlp` are system
+  prerequisites checked before each download
+- **smoke**: `scripts/smoke.py` / `make smoke` reports PASS/FAIL per layer (engine, config,
+  sources, search, details, m3u8, naming); `--offline` for CI
+- **tests**: unit tests for episode numbering, Plex filenames, Season 00 detection, title
+  cleanup and source filtering, plus a GitHub Actions job that runs them
+
+### Fix
+
+- **episode**: `Episode._number` was only an annotation, so every download raised
+  `AttributeError` on the first filename access
+- **search**: source names were compared unnormalised, so `xiaobao` never matched the
+  configured `xiao_bao` and searches returned nothing; an empty result now reports instead of
+  raising `IndexError`
+- **naming**: strip site branding and noise from season titles while keeping `第N季` and the
+  year that season detection needs
+- **naming**: an unknown begin year no longer produces a `Show ()` prefix
+- **prompts**: the season-index and begin-year questions are skipped when stdin is not a TTY
+- **sources**: mark `olevod` and `ssstv` dead (Vue/WASM SPA, 403s) so they are never queried
+
+### Refactor
+
+- **cleanup**: delete the unfinished Django web UI and its six dependencies, the committed
+  `dist/` wheels, the empty `db.sqlite3` and the generated `requirements.txt` (89 advisories)
+- **deps**: pin `cloudscraper` to a commit instead of a moving branch; drop `pathvalidate`
+
 ## v1.4.1 (2024-08-08)
 
 ### Fix
