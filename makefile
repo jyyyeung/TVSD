@@ -25,3 +25,17 @@ fetch-tags:
 
 push-tag: fetch-tags
 	git push --follow-tags origin main
+
+install-deps:
+	poetry install
+	@command -v ffmpeg >/dev/null || echo "WARNING: ffmpeg not found on PATH (brew install ffmpeg)"
+	@command -v yt-dlp >/dev/null || echo "WARNING: yt-dlp not found on PATH (brew install yt-dlp)"
+
+test:
+	poetry run pytest -q
+
+smoke:
+	poetry run python scripts/smoke.py
+
+smoke-offline:
+	poetry run python scripts/smoke.py --offline
