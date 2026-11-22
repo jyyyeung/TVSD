@@ -25,6 +25,23 @@ if TYPE_CHECKING:
 console = Console()
 
 
+def _normalise_source_name(name: str) -> str:
+    """Normalise a source name so that ``xiao_bao`` matches ``XiaoBao``."""
+    return name.replace("_", "").replace("-", "").strip().lower()
+
+
+def _enabled_sources() -> set:
+    """Return the enabled sources from settings, normalised for comparison."""
+    return {_normalise_source_name(str(source)) for source in settings.SOURCES or []}
+
+
+def _source_enabled(source: Source) -> bool:
+    """Return whether the given source should be queried with the current settings."""
+    return source.__status__ == "active" and (
+        _normalise_source_name(source.source_name) in _enabled_sources()
+    )
+
+
 class SearchQuery:
     """Searches for a show based on query"""
 
@@ -106,7 +123,7 @@ class SearchQuery:
                 if cls_name == "Source" or not inspect.isclass(cls_obj):
                     continue
                 # Source is active
-                if issubclass(cls_obj, Source) and cls_obj().__status__ == "active":
+                if issubclass(cls_obj, Source) and _source_enabled(cls_obj()):
                     query_results += cls_obj().query_from_source(self._query)
 
         table = Table("index", "Title", "Source", "Note")
@@ -120,6 +137,14 @@ class SearchQuery:
             )
 
         console.print(table)
+
+        if not query_results:
+            console.print(
+                f"[red]No results for {self._query!r}.[/red] "
+                f"Enabled sources: {', '.join(sorted(_enabled_sources())) or 'none'}"
+            )
+            raise typer.Exit(code=1)
+
         self._chosen_show = query_results[
             typer.prompt(text="请选择你下载的节目", type=int)
         ]

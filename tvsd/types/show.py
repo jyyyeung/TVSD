@@ -94,7 +94,10 @@ class Show:
 
         show_title = self._title.partition(" 第")[0]
 
-        show_prefix: str = show_title + " (" + str(self.begin_year) + ")"
+        begin_year = str(self.begin_year or "").strip()
+        show_prefix: str = (
+            f"{show_title} ({begin_year})" if begin_year else show_title
+        )
         self._prefix = show_prefix
         return show_prefix
 

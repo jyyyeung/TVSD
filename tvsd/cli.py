@@ -3,7 +3,7 @@
 import logging
 import os
 import shutil
-from typing import Optional
+from typing import List, Optional
 
 import typer
 
@@ -12,7 +12,12 @@ from rich import print as rprint
 
 from tvsd import __app_name__, __version__, app
 from tvsd.actions import list_shows_as_table, search_media_and_download
-from tvsd.config import register_validators, settings, update_settings_path, validate_config
+from tvsd.config import (
+    register_validators,
+    settings,
+    update_settings_path,
+    validate_config,
+)
 
 # from tvsd.config import apply_config, validate_config_file
 from tvsd.utils import video_in_dir
@@ -63,10 +68,7 @@ def callback(
     env: Optional[str] = typer.Option(
         None, "--env", "-e", help="Specify the environment"
     ),
-    dry_run: Optional[bool]=typer.Option(
-        False,
-        "--dry-run"
-    )
+    dry_run: Optional[bool] = typer.Option(False, "--dry-run"),
 ) -> None:
     """
     Entry point for the TVSD CLI application.
@@ -135,6 +137,12 @@ def search(
         "-s",
         help="Download Specials Only",
     ),
+    sources: Optional[List[str]] = typer.Option(
+        None,
+        "--source",
+        "-src",
+        help="Specify the sources to use",
+    ),
 ) -> None:
     """
     Search for media and download
@@ -146,6 +154,10 @@ def search(
 
     # raises on first error found
     settings.validators.validate()
+
+    if sources:
+        settings.set("sources", sources)
+        logging.info("Sources set to %s", sources)
 
     search_media_and_download(query, specials_only)
 
@@ -298,7 +310,7 @@ def clean_base(
         )
 
     if target == "":
-        target=os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)
+        target = os.path.join(settings.MEDIA_ROOT, settings.SERIES_DIR)
 
     for root, dirs, _ in os.walk(target, topdown=False):
         for name in dirs:

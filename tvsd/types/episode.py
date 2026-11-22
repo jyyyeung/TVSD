@@ -5,7 +5,7 @@ Episode class.
 import logging
 import os
 from re import Match, findall, match
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from tvsd.config import settings
 from tvsd.utils import file_exists_in_base, relative_to_absolute_path
@@ -40,7 +40,7 @@ class Episode:
         """
         self._name: str = episode_name
         self._url: str = episode_url
-        self._number: int
+        self._number: Optional[int] = None
 
         self._season: "Season" = season
 
@@ -76,7 +76,6 @@ class Episode:
             int: The identified episode number.
         """
         try:
-            print(self._name)
             episode_number_identifying_regex = r"^[0-9]{8}[（(]*第(\d+)[期集][(（上中下)）]*[)）]?$|^(\d{1,3})$|^第(\d+)[期集][上中下]*$"
             episode_number_match: Match[str] | None = match(
                 episode_number_identifying_regex, self._name
@@ -90,7 +89,6 @@ class Episode:
                     0
                 ]
 
-                print(f"episode_number: {identified_number}")
                 # episode_index = int(re.findall(r'\d*', episode_number)[0])
                 resulting_index = int(findall(r"^\d{1,3}$", identified_number)[0])
 

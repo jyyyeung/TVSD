@@ -1,4 +1,4 @@
-"""Custom types for TVSD """
+"""Custom types for TVSD"""
 
 from typing import List, TypedDict
 

@@ -4,6 +4,7 @@ TVSD Season class, parent of Episodes
 
 import logging
 import os
+import sys
 from typing import TYPE_CHECKING, Callable, List
 
 import typer
@@ -28,7 +29,6 @@ def check_season_index(show_title: str) -> int:
         int: The index of the season identified from the title.
     """
     season_index = 1
-    print(show_title)
     if "第" in show_title:
         if "第一季" in show_title:
             season_index = 1
@@ -53,7 +53,7 @@ def check_season_index(show_title: str) -> int:
     elif "part" in show_title:
         season_index = 1
     elif typer.prompt("这个节目是否续季？（not S1)", default="").capitalize() == "Y":
-        season_index: int = typer.prompt(text="这个节目是第几季？", type=int)
+        season_index = typer.prompt(text="这个节目是第几季？", type=int)
     else:
         season_index = 1
     return season_index
@@ -177,9 +177,12 @@ class Season:
             int: index of season
         """
         season_index: int = check_season_index(season_title)
-        season_index = typer.prompt(
-            text="Fix the season index? ", default=season_index, type=int
-        )
+        # Only ask a human when there is one: scripts, CI and the smoke test must not
+        # block on a prompt they can never answer.
+        if sys.stdin.isatty() and not settings.get("NON_INTERACTIVE", False):
+            season_index = typer.prompt(
+                text="Fix the season index? ", default=season_index, type=int
+            )
         self._index = season_index
         return season_index
 
@@ -235,19 +238,20 @@ class Season:
         Returns:
             str: Begin year of the show as a string
         """
-        print(self.year)
-        season_year = int(self.year)
+        season_year_text = str(self.year or "").strip()
+        season_year = int(season_year_text) if season_year_text.isdigit() else 0
         show_year: int = season_year
 
-        if self.season_index > 1:
+        if season_year and self.season_index > 1:
             # TODO: Auto
-
             show_year = season_year - self.season_index + 1
-            show_year = typer.prompt(
-                text=f"第一季在那一年？(calculated={show_year})",
-                type=int,
-                default=show_year,
-            )
+            # Only ask a human when there is one (see determine_season_index).
+            if sys.stdin.isatty() and not settings.get("NON_INTERACTIVE", False):
+                show_year = typer.prompt(
+                    text=f"第一季在那一年？(calculated={show_year})",
+                    type=int,
+                    default=show_year,
+                )
         # self.begin_year = season_year
 
         return str(show_year)

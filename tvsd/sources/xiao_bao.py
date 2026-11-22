@@ -7,6 +7,47 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 
 from tvsd.sources.base import Source
 
+# The site appends its own branding, status and promo tokens to <title>, e.g.
+# "庆余年第二季(2024) 已完结 免费在线观看 - 小宝影院". Plex names must not carry them.
+# "第N季" is kept (season detection in Season.determine_season_index needs it) but is
+# turned into a separate word, because Show.generate_show_prefix drops everything from
+# " 第" onwards.
+_SITE_SUFFIX_REGEX = re.compile(
+    r"\s*[-–—]\s*(?:小宝影院|小宝影视|在线视频|ibaotv|xiaoheimi).*$", re.IGNORECASE
+)
+_TITLE_NOISE_TOKENS = (
+    "免费在线观看",
+    "高清完整版",
+    "在线观看",
+    "已完结",
+    "已完結",
+    "全集",
+    "高清",
+    "HD",
+)
+_UPDATE_TO_REGEX = re.compile(r"更新至\s*\d+\s*[集期].*$")
+_YEAR_SUFFIX_REGEX = re.compile(r"\s*[(（]\d{4}[)）]\s*$")
+_SEASON_TOKEN_REGEX = re.compile(r"(?<=[^\s])(第[一二三四五六七八九十]+季)")
+_YEAR_REGEX = re.compile(r"\d{4}")
+
+
+def _clean_season_title(raw_title: str) -> str:
+    """Strip site branding, promo/status tokens and the year suffix from a page title.
+
+    Args:
+        raw_title (str): The raw ``<title>`` of a details page.
+
+    Returns:
+        str: The cleaned show title, e.g. ``庆余年 第二季``.
+    """
+    title = _SITE_SUFFIX_REGEX.sub("", raw_title)
+    title = _UPDATE_TO_REGEX.sub("", title)
+    for token in _TITLE_NOISE_TOKENS:
+        title = title.replace(token, " ")
+    title = _YEAR_SUFFIX_REGEX.sub("", title)
+    title = _SEASON_TOKEN_REGEX.sub(r" \1", title)
+    title = re.sub(r"\s{2,}", " ", title).strip()
+    return title
 
 class XiaoBao(Source):
     """XiaoBao class"""
@@ -53,7 +94,7 @@ class XiaoBao(Source):
     #### PARSE SEASON DETAILS FROM DETAILS URL ####
 
     def _set_season_title(self, soup: BeautifulSoup) -> str:
-        return str(soup.title.string).replace(" - 小宝影院 - 在线视频", "") or None
+        return _clean_season_title(str(soup.title.string)) or None
 
     def _set_season_description(self, soup: BeautifulSoup):
         return soup.find(
@@ -64,9 +105,9 @@ class XiaoBao(Source):
         return soup.find("ul", attrs={"class": "myui-content__list"}).contents or None
 
     def _set_season_year(self, soup: BeautifulSoup):
-        return (
-            str(soup.find("p", attrs={"class": "data"}).contents[-1].get_text()) or None
-        )
+        data = str(soup.find("p", attrs={"class": "data"}).contents[-1].get_text())
+        year = _YEAR_REGEX.search(data)
+        return year.group(0) if year else None
 
     ######## FETCH EPISODE M3U8 ########
 

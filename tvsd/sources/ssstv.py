@@ -11,7 +11,8 @@ class SSSTV(Source):
 
     def __init__(self) -> None:
         super().__init__()
-        self.__status__ = "active"
+        # DEAD as of 2026-11: 777tv.tw answers 403 and ssstv.com times out.
+        self.__status__ = "dead"
         self._domains = ["https://777tv.tw"]
 
     ### SEARCHING FOR A SHOW ###

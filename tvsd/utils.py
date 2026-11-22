@@ -6,7 +6,7 @@ import logging
 import mimetypes
 import os
 import re
-from typing import Callable, List
+from typing import List
 
 import cloudscraper
 import typer
@@ -19,12 +19,17 @@ SCRAPER = cloudscraper.create_scraper(
     # browser={
     #     "custom": "ScraperBot/1.0",
     # },
-    browser={
-        "browser": "chrome",
-        "platform": "windows",
-        "desktop": True,
-        "mobile": False,
-    },
+    enable_stealth=True,
+    # Dumps every HTTP request plus the full HTML to stdout when enabled. Keep it off
+    # unless you are debugging a source's selectors.
+    debug=bool(settings.get("SCRAPER_DEBUG", False)),
+    # browser="chrome",
+    # browser={
+    #     # "browser": "chrome",
+    #     "platform": "windows",
+    #     "desktop": True,
+    #     "mobile": False,
+    # },
 )
 
 
