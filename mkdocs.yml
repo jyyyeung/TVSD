@@ -1,11 +1,11 @@
 # Project information
 site_name: TVSD
-site_url: https://SheepYY039.github.io/tvsd
+site_url: https://jyyyeung.github.io/TVSD
 site_author: JYYYEUNG
 
 # Repository
-repo_name: SheepYY039/TVSD
-repo_url: https://github.com/SheepYY039/tvsd
+repo_name: jyyyeung/TVSD
+repo_url: https://github.com/jyyyeung/TVSD
 edit_uri: edit/main/docs/
 docs_dir: docs
 watch: [mkdocs.yml, README.md, CHANGELOG.md, tvsd]

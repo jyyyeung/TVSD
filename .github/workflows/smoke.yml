@@ -1,0 +1,30 @@
+name: live smoke
+
+# The point of a parked repo is that it keeps checking itself. This runs the same
+# check as `make smoke` against the real sites once a week, so a source that rots
+# shows up as a red run instead of as a surprise the next time a download is wanted.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install --no-interaction
+
+      - name: Live smoke test
+        run: poetry run python scripts/smoke.py
