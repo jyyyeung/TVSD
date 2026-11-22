@@ -29,7 +29,7 @@ classifiers = [
   # Environment
   "Environment :: Console",
 ]
-repository = "https://github.com/sheepyy039/TVSD.git"
+repository = "https://github.com/jyyyeung/TVSD.git"
 
 
 packages = [
@@ -39,32 +39,28 @@ exclude = [".venv"]
 
 [tool.poetry.urls]
 # # Homepage = "https://example.com"
-Documentation = "https://sheepyy039.github.io/TVSD"
-Changelog = "https://github.com/sheepyy039/TVSD/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/jyyyeung/TVSD#readme"
+Changelog = "https://github.com/jyyyeung/TVSD/blob/main/CHANGELOG.md"
 
 [tool.poetry.scripts]
 tvsd = "tvsd.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-typer = "^0.9.0"
+typer = "0.12.5"
 rich = "^13.6.0"
-m3u8-To-MP4 = "^0.1.11"
 multipledispatch = "^1.0.0"
 beautifulsoup4 = "^4.12.2"
-cloudscraper = "^1.2.71"
 chinese-converter = "^1.1.1"
 pytest = "^7.4.2"
 docstring-parser = "^0.15"
 dynaconf = "^3.2.4"
-django = "^5.0.2"
-django-unicorn = "^0.59.0"
-django-simple-bulma = "^2.6.0"
-whitenoise = "^6.6.0"
-pathvalidate = "^3.2.0"
-django-crispy-forms = "^2.1"
-crispy-bulma = "^0.11.0"
-poetry-plugin-export = "^1.8.0"
+click = "8.1.7"
+# Download engine: yt-dlp turns the resolved m3u8 into an mp4 and needs ffmpeg
+# (system dependency) to remux HLS segments. See tvsd/downloader.py.
+yt-dlp = ">=2025.1.1"
+# Pinned to an exact commit: there is no release of the maintained fork on PyPI.
+cloudscraper = { git = "https://github.com/VeNoMouS/cloudscraper.git", rev = "9ea528a8675f1bebd49ff853d142e94988a95178" }
 
 
 [tool.poetry.group.dev.dependencies]
@@ -75,6 +71,7 @@ isort = "^5.12.0"
 
 importlib-metadata = "^6.8.0"
 pre-commit = "^3.6.1"
+mypy = "^1.18.2"
 
 
 [tool.poetry.group.docs]

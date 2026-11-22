@@ -2,12 +2,13 @@
 
 import logging
 import os
+import re
 import shutil
 
-import m3u8_To_MP4
 import typer
 
 from tvsd.config import settings
+from tvsd.downloader import DownloadEngineError, download_m3u8
 from tvsd.types.episode import Episode
 from tvsd.types.season import Season
 from tvsd.types.show import Show
@@ -201,7 +202,15 @@ class Download:
 
         if existing_file != "":
             print(f"{episode.name} already exists in directory, skipping... ")
-            number = int(existing_file.split(" - ")[1].split("E")[1])
+            number_match = re.search(r"S\d+E(\d+)", existing_file)
+            if number_match is None:
+                logging.warning(
+                    "Cannot read the episode number from %s, keeping the current index",
+                    existing_file,
+                )
+                return
+
+            number = int(number_match.group(1))
             if episode.is_specials:
                 self._specials_index = number + 1
             else:
@@ -221,24 +230,26 @@ class Download:
                 "m3u8 not found in episode url, Stream probably does not exist"
             )
 
-        temp_dir: str = os.path.join(settings.TEMP_ROOT, episode.filename)
-        if not os.path.isdir(temp_dir):
+        if settings.DRY_RUN:
+            logging.info("DRY_RUN: would download %s", episode_m3u8)
+            return
 
-            mkdir_if_no(temp_dir)
-            print(f"Downloading {episode.filename} to {absolute_dest_dir}...")
-            try:
-                if not settings.DRY_RUN:
-                    m3u8_To_MP4.multithread_uri_download(
-                        m3u8_uri=episode_m3u8,
-                        mp4_file_name=episode.filename,
-                        mp4_file_dir=absolute_dest_dir,
-                        tmpdir=temp_dir,
-                    )
-                print("Completed downloading, removing temp dir...")
-            except Exception as error:
-                print("Error downloading episode: " + str(error))
-                print("Removing temp dir...")
-            if not settings.DRY_RUN:
-                shutil.rmtree(temp_dir, ignore_errors=True)
-        else:
-            print("Temp Dir for this episode exists, should be already downloading")
+        temp_dir: str = os.path.join(settings.TEMP_ROOT, episode.filename)
+        mkdir_if_no(temp_dir)
+        print(f"Downloading {episode.filename} to {absolute_dest_dir}...")
+
+        try:
+            written = download_m3u8(
+                m3u8_url=episode_m3u8,
+                dest_dir=absolute_dest_dir,
+                filename=episode.filename,
+                temp_dir=temp_dir,
+                referer=getattr(episode.season.source, "domain", None),
+            )
+        except DownloadEngineError as error:
+            logging.error("%s", error)
+            raise
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+        print(f"Completed downloading {written}")

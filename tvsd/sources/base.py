@@ -30,7 +30,7 @@ def load_source_details(season_dir: str) -> None:
         return None
     show_details = json.load(open(dir_file, "r"))
     # print(show_details)
-    source = Source(show_details["source"])
+    # source = Source(show_details["source"])  # TODO: Fix - cannot instantiate abstract class
 
     # TODO: Complete this
 
@@ -214,9 +214,7 @@ class Source(ABC):
             return None
 
         note = self._get_result_note(query_result)
-        details: "SeasonDetailsFromURL" = self.parse_season_from_details_url(
-            details_url
-        )
+        details: SeasonDetailsFromURL = self.parse_season_from_details_url(details_url)
         if details is None:
             return None
         season = Season(
@@ -299,7 +297,8 @@ class Source(ABC):
         """
 
         try:
-            show_details_page = SCRAPER.get(details_url).content
+            logging.debug(f"Fetching details soup for {details_url}")
+            show_details_page = SCRAPER.get(details_url, timeout=None).content
             soup: BeautifulSoup = BeautifulSoup(show_details_page, "html.parser")
             return soup
         except ConnectionResetError as error:
@@ -436,3 +435,12 @@ class Source(ABC):
     @property
     def _domain(self):
         return self._domains[self._domain_index]
+
+    @property
+    def domain(self) -> str:
+        """Public getter for the currently used domain of this source.
+
+        Returns:
+            str: The domain base url, e.g. ``https://ibaotv.com``.
+        """
+        return self._domain
