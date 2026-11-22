@@ -20,9 +20,10 @@ plugins:
           inventories:
             - https://docs.python.org/3/objects.inv
           paths: [tvsd]
-          selection:
-            docstring_style: google
+          # PythonConfig accepts only inventories/paths/options/locale at this level;
+          # everything else belongs under `options`.
           options:
+            docstring_style: google
             #   docstring_options:
             #     ignore_init_summary: yes
             merge_init_into_class: true
