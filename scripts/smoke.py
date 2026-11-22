@@ -113,23 +113,40 @@ def _iter_source_classes() -> list:
     return classes
 
 
-def diagnose_empty_search(source: Source, query: str) -> str:
-    """Say why a search returned nothing: blocked page or a changed parser."""
+VERDICT_PARSE = "parse"
+VERDICT_BLOCKED = "blocked"
+
+
+def diagnose_empty_search(source: Source, query: str) -> Tuple[str, str]:
+    """Say why a search returned nothing, and whether the page was even readable.
+
+    Returns:
+        Tuple[str, str]: VERDICT_PARSE when the page came back and can be judged,
+        VERDICT_BLOCKED when it did not, plus a human-readable reason.
+    """
     from tvsd.utils import SCRAPER
 
     url = source._search_url(query)  # noqa: SLF001 - the smoke test reports on internals
     try:
         response = SCRAPER.get(url, timeout=25)
     except Exception as error:  # noqa: BLE001 - the whole point is to report it
-        return f"search page unreachable ({type(error).__name__}: {error})"
+        return VERDICT_BLOCKED, f"search page unreachable ({type(error).__name__}: {error})"
     if response.status_code != 200:
-        return f"search page returned HTTP {response.status_code}, which looks like blocking"
+        return (
+            VERDICT_BLOCKED,
+            f"search page returned HTTP {response.status_code}, which looks like blocking",
+        )
     body = response.text or ""
     if "clearfix" in body:
-        return "page still carries the result markup, so the parser is what broke"
+        return (
+            VERDICT_PARSE,
+            "the page came back with its result-list markup, so nothing was parsed out of it "
+            "(the parser broke, or this query has no matches)",
+        )
     return (
+        VERDICT_PARSE,
         f"HTTP 200 but no result markup at all ({len(body)} bytes); "
-        "the site probably served a challenge page to this network"
+        "the site serves something other than a result list",
     )
 
 def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
@@ -149,10 +166,9 @@ def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
         state["source"] = candidates[0]
         matches = candidates[0].query_from_source(query)
         if not matches:
-            reason = diagnose_empty_search(candidates[0], query)
+            verdict, reason = diagnose_empty_search(candidates[0], query)
             message = f"0 results for {query!r} on {candidates[0].source_name}: {reason}"
-            if "HTTP 200" not in reason:
-                # No page to judge: the source may be fine and this network may be refused.
+            if verdict == VERDICT_BLOCKED:
                 raise Skip(f"{message} (unverifiable from this network; run `make smoke` locally)")
             raise RuntimeError(message)
         state["matches"] = matches
