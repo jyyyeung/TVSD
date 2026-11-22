@@ -40,6 +40,16 @@ tvsd search <your-search-query> # Search query for media from sources and downlo
 tvsd clean-temp # Removes everything in temp downloading directory, useful after app crashed or aborted
 ```
 
+Defaults are built in. Override them with a `settings.yaml` in the current directory, with
+`~/.config/tvsd/settings.yaml`, with `TVSD_*` environment variables, or per run with flags. The
+default media root is `/mnt/viewable`, and it has to exist before a command will validate the
+config:
+
+```bash
+mkdir -p ~/Movies/TVSD
+tvsd --media-root ~/Movies/TVSD search <your-search-query>
+```
+
 ## Current status
 
 TVSD scrapes sites that are not built to be scraped, so it decays when a site changes. Rather

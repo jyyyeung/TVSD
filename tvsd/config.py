@@ -10,6 +10,9 @@ from dynaconf import Dynaconf, LazySettings, Validator
 
 CONFIG_DIR_PATH = Path(typer.get_app_dir(__name__))
 CONFIG_FILE_PATH: Path = CONFIG_DIR_PATH / "settings.yaml"
+# Shipped inside the package so an installed tvsd still has defaults when it is
+# run outside a checkout (later files win, so the user config overrides these).
+PACKAGE_FILE_PATH: Path = Path(__file__).parent / "default_settings.yaml"
 
 
 def hook_function(_settings: Dynaconf) -> None:
@@ -26,7 +29,7 @@ def hook_function(_settings: Dynaconf) -> None:
 
 settings: LazySettings = Dynaconf(
     envvar_prefix="TVSD",
-    settings_files=["settings.yaml", CONFIG_FILE_PATH],
+    settings_files=[PACKAGE_FILE_PATH, "settings.yaml", CONFIG_FILE_PATH],
     environments=True,
     load_dotenv=True,
     ignore_unknown_envvars=True,

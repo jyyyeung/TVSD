@@ -35,7 +35,7 @@ repository = "https://github.com/jyyyeung/TVSD.git"
 packages = [
   { include = "tvsd*" }, # package names should match these glob patterns (["*"] by default)}
 ]
-exclude = [".venv"]
+exclude = [".venv", "tvsd/.gitignore"]
 
 [tool.poetry.urls]
 # # Homepage = "https://example.com"

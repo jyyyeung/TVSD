@@ -1,0 +1,21 @@
+default:
+  media_root: /mnt/viewable
+  create_media_root: false
+  temp_root: "@format {env[HOME]}/Movies/temp-parts"
+  create_temp_root: true
+  series_dir: TV Series
+  specials_dir: Specials
+  # Only sources that still respond belong here; olevod and ssstv are marked dead
+  # (Source.__status__ == "dead") and are skipped even if listed.
+  sources: [xiao_bao]
+  verbose: false
+  debug: false
+dev:
+  media_root: "@format {env[PWD]}/temp/media"
+  create_media_root: true
+  temp_root: "@format {env[PWD]}/temp/downloads"
+  create_temp_root: true
+  series_dir: TV Series
+  specials_dir: Specials
+  verbose: true
+  debug: true
