@@ -1,0 +1,17 @@
+# Documentation toolchain, deliberately separate from the library's dependencies:
+# mkdocstrings-python 2.x needs Python >=3.11 while tvsd still supports 3.10, and
+# mkdocstrings 1.x needs griffe 2.x. Pinning both generations together is what keeps
+# `mkdocs build` from failing with "No module named 'griffe.collections'".
+# Install with: pip install -r docs/requirements.txt .
+mkdocs==1.6.1
+mkdocs-material==9.8.2
+mkdocs-material-extensions==1.3.1
+mkdocs-autorefs==1.4.5
+mkdocstrings==1.0.8
+mkdocstrings-python==2.0.11
+mkdocs-typer==0.0.3
+mkdocs-homepage-copier==1.0.0
+mkdocs-literate-nav==0.6.3
+markdown-it-py==3.0.0
+pymdown-extensions==13.1.2
+black==23.9.1
