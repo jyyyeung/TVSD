@@ -1,3 +1,14 @@
+## v1.5.1 (2026-11-22)
+
+Metadata only: no module changed.
+
+### Fix
+
+- **deps**: `pytest` (and its plugins) were runtime dependencies, so every `pip install tvsd`
+  dragged in a test runner. They now live in the poetry dev group and only the docs toolchain
+  moved out to `docs/requirements.txt`.
+- **deps**: drop `multipledispatch`, which nothing imported.
+
 ## v1.5.0 (2026-11-22)
 
 Park-hardening revival: the CLI works again, and it is now cheap to find out when it stops.

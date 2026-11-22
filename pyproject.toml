@@ -9,7 +9,7 @@ description = "search and downloads TV and movies from websites"
 readme = "README.md"
 keywords = ["download", "tv", "search", "m3u8"]
 license = "MIT"
-version = "1.5.0"
+version = "1.5.1"
 classifiers = [
   # 发展时期,常见的如下
   #   3 - Alpha
@@ -49,7 +49,6 @@ tvsd = "tvsd.__main__:main"
 python = "^3.10"
 typer = "0.12.5"
 rich = "^13.6.0"
-multipledispatch = "^1.0.0"
 beautifulsoup4 = "^4.12.2"
 chinese-converter = "^1.1.1"
 docstring-parser = "^0.15"
@@ -83,7 +82,7 @@ profile = "black"
 [tool.commitizen]
 name = "cz_conventional_commits"
 version_scheme = "pep440"
-version = "1.5.0"
+version = "1.5.1"
 tag_format = "v$version"
 version_files = [
   "pyproject.toml:^version",
