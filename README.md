@@ -88,6 +88,10 @@ pip install tvsd "yt-dlp>=2025.1.1" # or let pip provide yt-dlp
 
 `tvsd` checks both tools before it starts a download and tells you what is missing.
 
+If a source starts serving a real Cloudflare challenge (the search step fails while the
+site still loads in a browser), `make install-stealth` swaps in the maintained
+`cloudscraper` fork; see [KNOWN_ISSUES.md](KNOWN_ISSUES.md#dependencies).
+
 ## Contribution
 
 Contributions are welcomed, contribution methods and accurate details will be included very soon.

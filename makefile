@@ -39,3 +39,9 @@ smoke:
 
 smoke-offline:
 	poetry run python scripts/smoke.py --offline
+
+# Optional: swap the PyPI cloudscraper (1.2.71, 2023) for the maintained fork, which
+# knows how to answer newer Cloudflare challenges. Not in package metadata because
+# PyPI rejects git dependencies; the CLI works either way (see tvsd/utils.py).
+install-stealth:
+	poetry run pip install --force-reinstall --no-deps "cloudscraper @ git+https://github.com/VeNoMouS/cloudscraper.git@9ea528a8675f1bebd49ff853d142e94988a95178"

@@ -52,9 +52,13 @@ listed under `sources:` in `settings.yaml`. Run `make smoke` to re-check all of 
 
 - `cloudscraper` comes from PyPI, whose newest release (1.2.71, 2023) predates the fork
   TVSD was written against. `tvsd/utils.py` uses it when the arguments it needs exist and
-  otherwise falls back to a plain `requests.Session` with a desktop user agent, so a site
-  that starts serving a real Cloudflare challenge will fail rather than be evaded.
+  otherwise falls back to a plain `requests.Session` with a desktop user agent, so a plain
+  install survives sites that only need a browser user agent, not a solved challenge.
 - `cloudscraper` debug output is off by default; set `SCRAPER_DEBUG=true` to see raw HTTP traffic.
+- If a source starts serving a real Cloudflare challenge, upgrade the scraper with
+  `make install-stealth` — it overlays `VeNoMouS/cloudscraper@9ea528a` (3.0.0) on top of the
+  install. That overlay cannot live in package metadata (PyPI rejects git dependencies), so
+  it is a deliberate, optional step rather than a default.
 
 ## Testing
 
