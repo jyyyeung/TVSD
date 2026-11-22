@@ -27,7 +27,6 @@ plugins:
             #   docstring_options:
             #     ignore_init_summary: yes
             merge_init_into_class: true
-            returns_named_value: false
             #   show_submodules: no
             show_source: false
 
@@ -46,7 +45,6 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             signature_crossrefs: true
-            summary: true
 
   - search
   - mkdocs-homepage-copier
