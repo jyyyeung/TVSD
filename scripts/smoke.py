@@ -150,9 +150,11 @@ def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
         matches = candidates[0].query_from_source(query)
         if not matches:
             reason = diagnose_empty_search(candidates[0], query)
-            raise RuntimeError(
-                f"0 results for {query!r} on {candidates[0].source_name}: {reason}"
-            )
+            message = f"0 results for {query!r} on {candidates[0].source_name}: {reason}"
+            if "HTTP 200" not in reason:
+                # No page to judge: the source may be fine and this network may be refused.
+                raise Skip(f"{message} (unverifiable from this network; run `make smoke` locally)")
+            raise RuntimeError(message)
         state["matches"] = matches
         return f"{len(matches)} results for {query!r} on {candidates[0].source_name}"
 
