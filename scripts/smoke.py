@@ -37,6 +37,10 @@ PASS = "PASS"
 FAIL = "FAIL"
 SKIP = "SKIP"
 
+
+class Skip(Exception):
+    """Raised when a check cannot run because an earlier one already failed."""
+
 results: List[Tuple[str, str, str]] = []
 
 
@@ -47,6 +51,9 @@ def check(name: str, description: str, func: Callable[[], str]) -> bool:
     except DownloadEngineError as error:
         results.append((name, FAIL, str(error)))
         return False
+    except Skip as reason:
+        results.append((name, SKIP, str(reason)))
+        return True
     except Exception as error:  # noqa: BLE001 - a smoke test reports, it does not raise
         results.append((name, FAIL, f"{type(error).__name__}: {error}"))
         traceback.print_exc(limit=2)
@@ -106,6 +113,25 @@ def _iter_source_classes() -> list:
     return classes
 
 
+def diagnose_empty_search(source: Source, query: str) -> str:
+    """Say why a search returned nothing: blocked page or a changed parser."""
+    from tvsd.utils import SCRAPER
+
+    url = source._search_url(query)  # noqa: SLF001 - the smoke test reports on internals
+    try:
+        response = SCRAPER.get(url, timeout=25)
+    except Exception as error:  # noqa: BLE001 - the whole point is to report it
+        return f"search page unreachable ({type(error).__name__}: {error})"
+    if response.status_code != 200:
+        return f"search page returned HTTP {response.status_code}, which looks like blocking"
+    body = response.text or ""
+    if "clearfix" in body:
+        return "page still carries the result markup, so the parser is what broke"
+    return (
+        f"HTTP 200 but no result markup at all ({len(body)} bytes); "
+        "the site probably served a challenge page to this network"
+    )
+
 def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
     """Build the network checks around one chosen source and query."""
 
@@ -123,14 +149,16 @@ def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
         state["source"] = candidates[0]
         matches = candidates[0].query_from_source(query)
         if not matches:
+            reason = diagnose_empty_search(candidates[0], query)
             raise RuntimeError(
-                f"0 results for {query!r} on {candidates[0].source_name}: "
-                "search markup probably changed"
+                f"0 results for {query!r} on {candidates[0].source_name}: {reason}"
             )
         state["matches"] = matches
         return f"{len(matches)} results for {query!r} on {candidates[0].source_name}"
 
     def details() -> str:
+        if "matches" not in state:
+            raise Skip("search yielded nothing to inspect")
         season = state["matches"][0]
         season.fetch_details()
         state["season"] = season
@@ -142,6 +170,8 @@ def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
         )
 
     def m3u8() -> str:
+        if "season" not in state:
+            raise Skip("details page was not parsed")
         episode = state["season"].episodes[0]
         url = episode.fetch_episode_m3u8_url
         if not url or "m3u8" not in url:
@@ -149,6 +179,8 @@ def make_live_checks(query: str) -> List[Tuple[str, str, Callable[[], str]]]:
         return url
 
     def plex_name() -> str:
+        if "season" not in state:
+            raise Skip("details page was not parsed")
         episode = state["season"].episodes[0]
         return episode.filename
 
