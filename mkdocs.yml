@@ -16,7 +16,8 @@ plugins:
       default_handler: python
       handlers:
         python:
-          import:
+          # mkdocstrings 1.x renamed this from `import` to `inventories`.
+          inventories:
             - https://docs.python.org/3/objects.inv
           paths: [tvsd]
           selection:
