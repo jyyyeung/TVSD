@@ -150,7 +150,7 @@ TVSD/
 - **rich** - Terminal UI (tables, formatting)
 - **yt-dlp** - Download engine (HLS handling, resume, retries); needs `ffmpeg` on `PATH`
 - **beautifulsoup4** - HTML parsing
-- **cloudscraper** - Web scraping (bypasses Cloudflare), pinned to a commit
+- **cloudscraper** - Web scraping (optional Cloudflare evasion layer over `requests`)
 - **chinese-converter** - Chinese character conversion
 - **dynaconf** - Configuration management
 

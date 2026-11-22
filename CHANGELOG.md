@@ -29,7 +29,8 @@ Park-hardening revival: the CLI works again, and it is now cheap to find out whe
 
 - **cleanup**: delete the unfinished Django web UI and its six dependencies, the committed
   `dist/` wheels, the empty `db.sqlite3` and the generated `requirements.txt` (89 advisories)
-- **deps**: pin `cloudscraper` to a commit instead of a moving branch; drop `pathvalidate`
+- **deps**: `cloudscraper` comes from PyPI with a `requests` fallback instead of a git pin
+  (PyPI rejects git dependencies in metadata); drop `pathvalidate` and two dead draft sources
 
 ## v1.4.1 (2024-08-08)
 

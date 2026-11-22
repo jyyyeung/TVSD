@@ -50,9 +50,10 @@ listed under `sources:` in `settings.yaml`. Run `make smoke` to re-check all of 
 
 ## Dependencies
 
-- `cloudscraper` is pinned to a git commit (`VeNoMouS/cloudscraper@9ea528a`) because no PyPI
-  release carries the Cloudflare fixes TVSD needs. Installing therefore needs network access to
-  GitHub.
+- `cloudscraper` comes from PyPI, whose newest release (1.2.71, 2023) predates the fork
+  TVSD was written against. `tvsd/utils.py` uses it when the arguments it needs exist and
+  otherwise falls back to a plain `requests.Session` with a desktop user agent, so a site
+  that starts serving a real Cloudflare challenge will fail rather than be evaded.
 - `cloudscraper` debug output is off by default; set `SCRAPER_DEBUG=true` to see raw HTTP traffic.
 
 ## Testing

@@ -59,8 +59,10 @@ click = "8.1.7"
 # Download engine: yt-dlp turns the resolved m3u8 into an mp4 and needs ffmpeg
 # (system dependency) to remux HLS segments. See tvsd/downloader.py.
 yt-dlp = ">=2025.1.1"
-# Pinned to an exact commit: there is no release of the maintained fork on PyPI.
-cloudscraper = { git = "https://github.com/VeNoMouS/cloudscraper.git", rev = "9ea528a8675f1bebd49ff853d142e94988a95178" }
+# Cloudscraper is optional at runtime (tvsd/utils.py falls back to requests), but
+# shipping it means the harder sites keep working out of the box.
+cloudscraper = ">=1.2.71"
+requests = ">=2.31"
 
 
 [tool.poetry.group.dev.dependencies]

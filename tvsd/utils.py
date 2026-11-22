@@ -8,29 +8,43 @@ import os
 import re
 from typing import List
 
-import cloudscraper
+import requests
 import typer
 from docstring_parser import parse
 
 from .config import settings
 
-SCRAPER = cloudscraper.create_scraper(
-    delay=10,
-    # browser={
-    #     "custom": "ScraperBot/1.0",
-    # },
-    enable_stealth=True,
-    # Dumps every HTTP request plus the full HTML to stdout when enabled. Keep it off
-    # unless you are debugging a source's selectors.
-    debug=bool(settings.get("SCRAPER_DEBUG", False)),
-    # browser="chrome",
-    # browser={
-    #     # "browser": "chrome",
-    #     "platform": "windows",
-    #     "desktop": True,
-    #     "mobile": False,
-    # },
+try:  # optional: the Cloudflare evasions in cloudscraper are nice to have, but
+    # the releases on PyPI are older than the code TVSD was developed against,
+    # and a git dependency cannot be declared in published package metadata.
+    import cloudscraper
+except ImportError:  # pragma: no cover - exercised only without the extra
+    cloudscraper = None
+
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 )
+
+
+def _new_scraper() -> requests.Session:
+    """Build the HTTP session the sources scrape with."""
+    # Dumps every HTTP request plus the full HTML to stdout when enabled. Keep it
+    # off unless you are debugging a source's selectors.
+    debug = bool(settings.get("SCRAPER_DEBUG", False))
+    if cloudscraper is not None:
+        for extra in ({"enable_stealth": True}, {}):
+            try:
+                return cloudscraper.create_scraper(delay=10, debug=debug, **extra)
+            except TypeError:
+                # This cloudscraper release does not know one of the arguments.
+                continue
+    scraper = requests.Session()
+    scraper.headers["User-Agent"] = USER_AGENT
+    return scraper
+
+
+SCRAPER = _new_scraper()
 
 
 def mkdir_if_no(check_dir: str, recursive: bool = True) -> None:
