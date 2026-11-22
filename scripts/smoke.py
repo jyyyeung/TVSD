@@ -21,6 +21,7 @@ Exit code 0 when all checks pass, 1 when any of them fails.
 """
 
 import argparse
+import os
 import sys
 import traceback
 from typing import Callable, List, Tuple
@@ -240,10 +241,24 @@ def main() -> int:
         print(f"{name.ljust(width)}  {verdict:4}  {detail}")
 
     failed = [name for name, verdict, _ in results if verdict == FAIL]
+    live = {"search", "details", "m3u8", "naming"}
+    live_passed = [name for name, verdict, _ in results if verdict == PASS and name in live]
+    live_skipped = [name for name, verdict, _ in results if verdict == SKIP and name in live]
+
     print()
     if failed:
         print(f"[FAILED] {len(failed)} check(s): {', '.join(failed)}")
         return 1
+
+    if live_skipped and not live_passed:
+        message = (
+            "network checks were skipped, so this run proves nothing about the sources "
+            "(run `make smoke` from a network the sites accept)"
+        )
+        print(f"[INCONCLUSIVE] {message}")
+        if os.environ.get("GITHUB_ACTIONS"):
+            print(f"::warning::{message}")
+        return 0
 
     print("[OK] everything above is working")
     return 0
