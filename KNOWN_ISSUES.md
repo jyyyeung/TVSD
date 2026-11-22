@@ -65,6 +65,10 @@ listed under `sources:` in `settings.yaml`. Run `make smoke` to re-check all of 
 - `tests/` covers episode numbering, Plex naming, title cleanup and source filtering — no network.
 - `scripts/smoke.py` covers the live chain (search → details → m3u8 → naming) and is the fastest
   way to see which layer broke. It is not part of `pytest` because it needs the internet.
+- A scheduled GitHub workflow runs that smoke test weekly. It is a compromise: the sites
+  sometimes answer `403` to datacenter IPs, so a blocked run reports `SKIP` and
+  `[INCONCLUSIVE]` instead of a verdict. Only a `200` page is judged, and a run from your own
+  machine (`make smoke`) is the authoritative one.
 
 ## Not implemented
 
